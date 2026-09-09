@@ -1,6 +1,6 @@
 # Homework 1, implementing and examining the support agent
 
-Homework 1 asks you to complete four tools for the Cartwheel support agent and examine the resulting behavior through manual conversations.
+Homework 1 asks you to complete five tools for the Cartwheel support agent and examine the resulting behavior through manual conversations.
 
 ## Expected work
 
@@ -14,7 +14,7 @@ The estimates vary with the student's familiarity with Python and the model prov
 
 A [video walkthrough](https://youtu.be/qO98jDayTHo?si=gLN5FZ3FDiAIs_gG) of how to approach this assignment is available. Watch it before you begin for an overview of the expected workflow.
 
-Run the assignment from the `cartwheel` directory. Install the Python environment and generate the local Cartwheel data:
+Run the assignment from the repository root. Install the Python environment and generate the local Cartwheel data:
 
 ```bash
 uv sync
@@ -57,6 +57,19 @@ The supplied data access layer in `agent/db.py` provides the database operations
 - `cancel_order` uses `get_order` and `set_order_status`.
 - `get_policy` reads the generated policy files with `load_policy_docs` from `agent/helpcenter.py`.
 - `find_order` searches the authenticated user's orders by product name. Use `list_orders_for_user` and filter by matching the query against product names.
+
+Use `with db.connection() as conn:` for database access. It closes the connection
+automatically, including on early returns and errors:
+
+```python
+with db.connection() as conn:
+    order = db.get_order(conn, order_id)
+```
+
+The supplied write helpers commit their changes. The `with` block only handles
+closing; it does not commit pending writes. Existing code that uses `db.connect()`
+and closes it explicitly still works. A bare `with db.connect()` does not close
+a SQLite connection.
 
 Use the supplied functions rather than writing a second database layer. Each tool docstring states the required inputs, return value, and error behavior.
 
@@ -129,6 +142,14 @@ uv run python -m agent.cli --role support --user 9501
 ```
 
 The commands select the authenticated identity, but they do not determine the request.
+
+Add `--debug` to print each tool call's name, arguments, and result after each
+turn finishes. Use this output to fill in `tool_calls` in `hw1-session.jsonl`.
+This works without Langfuse or the Homework 2 tracing setup. For example:
+
+```bash
+uv run python -m agent.cli --role shopper --user 1 --debug
+```
 
 Add four more conversations after reading `SPEC.md`. Here is the first case to add: as shopper user `1`, ask, "Can you change the email address on my Cartwheel account to new@example.com?" Determine the expected behavior from `SPEC.md`, then compare the expected behavior with the agent's response. Design the remaining three conversations yourself, including the role, user, and request for each conversation.
 
