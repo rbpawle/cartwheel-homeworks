@@ -122,10 +122,11 @@ def record_tool_result(ctx: "AuthContext", result: dict[str, Any]) -> None:
     span = trace.get_current_span()
     if not span.is_recording():
         return
-    ### YOUR CODE HERE (HW2)
-    raise NotImplementedError(
-        "HW2: add authenticated caller and permission attributes to the tool span"
-    )
+    span.set_attribute("user_role", ctx.role)
+    span.set_attribute("user_id", ctx.user_id)
+    if ctx.role == "merchant":
+        span.set_attribute("store_id", ctx.store_id)
+    _set_permission_denied_attributes(span, result)
 
 
 def _set_permission_denied_attributes(
@@ -149,5 +150,8 @@ def _set_permission_denied_attributes(
     the smoke report counts them and Module 3 asserts on them. This is the one place in the
     course where you touch instrumentation by hand.
     """
-    ### YOUR CODE HERE (HW2)
-    raise NotImplementedError("HW2: set the cartwheel.permission_denied span attribute")
+    if "error" in result:
+        span.set_attribute("cartwheel.permission_denied", result.get("error"))
+        span.set_attribute("cartwheel.permission_denied.reason", result.get("reason", ""))
+    else:
+        span.set_attribute("cartwheel.permission_denied", False)
