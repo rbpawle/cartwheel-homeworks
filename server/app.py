@@ -37,6 +37,10 @@ from fastapi import FastAPI, Header, HTTPException
 from opentelemetry import trace
 from pydantic import BaseModel
 
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import SimpleSpanProcessor
+from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
+
 from agent import db
 from agent.agent import build_agent, prompt_version, render_system_prompt
 from agent.auth import ROLES, AuthContext
@@ -123,8 +127,29 @@ def create_session(body: SessionCreate) -> dict[str, Any]:
     session id and a signed token. The token payload must contain session_id,
     user_id, role, store_id, and issued_at.
     """
-    ### YOUR CODE HERE (HW2)
-    raise NotImplementedError("HW2: implement POST /sessions")
+    if body.role not in ROLES:
+        raise HTTPException(status_code=400, detail="unknown role")
+
+    with db.connect() as conn:
+        user = db.get_user(conn, body.user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="unknown user")
+    if user.role != body.role:
+        raise HTTPException(status_code=403, detail="claimed user role differs from user's stored role")
+
+    session_id = uuid.uuid4().hex
+    ctx = AuthContext(user_id=user.id, role=user.role, store_id=user.store_id)
+    sqlite_session = SQLiteSession(session_id)
+    _SESSIONS[session_id] = (ctx, sqlite_session)
+
+    token = create_token({
+        "session_id": session_id,
+        "user_id": user.id,
+        "role": user.role,
+        "store_id": user.store_id,
+        "issued_at": time.time()
+    })
+    return {"session_id": session_id, "token": token}
 
 
 def _authorize(session_id: str, authorization: str | None) -> AuthContext:
@@ -142,9 +167,9 @@ def _authorize(session_id: str, authorization: str | None) -> AuthContext:
 
 @app.post("/sessions/{session_id}/messages")
 async def post_message(
-    session_id: str,
-    body: MessageIn,
-    authorization: str | None = Header(default=None),
+        session_id: str,
+        body: MessageIn,
+        authorization: str | None = Header(default=None),
 ) -> dict[str, Any]:
     """Run one authenticated conversation turn inside a root trace span.
 
@@ -158,8 +183,32 @@ async def post_message(
     gen_ai.output.messages on the root span as JSON arrays of OTel GenAI
     messages with role and parts fields.
     """
-    ### YOUR CODE HERE (HW2)
-    raise NotImplementedError("HW2: implement the traced message endpoint")
+    ctx = _authorize(session_id, authorization)
+    sqlite_session = _SESSIONS[session_id][1]
+
+    agent = build_agent(ctx, body.model)
+
+    tracer = trace.get_tracer("cartwheel.server")
+    with tracer.start_as_current_span("cartwheel.session_message") as span:
+        prompt_ver = prompt_version(render_system_prompt(ctx))
+        span.set_attribute("cartwheel.user_role", ctx.role)
+        span.set_attribute("cartwheel.user_id", str(ctx.user_id))
+        span.set_attribute("cartwheel.prompt_version", prompt_ver)
+        if body.scenario_id:
+            span.set_attribute("cartwheel.scenario_id", body.scenario_id)
+
+        if os.environ.get("TRACELOOP_TRACE_CONTENT", "false").lower() == "true":
+            span.set_attribute("gen_ai.input.messages",
+                               json.dumps([{"role": "user", "parts": [
+                                   {"type": "text", "content": body.message}]}]))
+
+        result = await Runner.run(agent, body.message, session=sqlite_session)
+
+        if os.environ.get("TRACELOOP_TRACE_CONTENT", "false").lower() == "true":
+            span.set_attribute("gen_ai.output.messages",
+                               json.dumps([{"role": "assistant", "parts": [
+                                   {"type": "text", "content": result.final_output}]}]))
+        return {"session_id": session_id, "reply": result.final_output, "prompt_version": prompt_ver}
 
 
 @app.get("/health")
