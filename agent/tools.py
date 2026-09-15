@@ -281,6 +281,4 @@ def find_order(ctx: AuthContext, query: str) -> dict[str, Any]:
     hits = process.extract(query, titles, scorer=fuzz.WRatio, score_cutoff=70, limit=5)
     matches = [db._order_from_row(rows[i]) for _, _, i in hits]
     serialized_orders = [o.to_public_dict() for o in matches]
-    for d in serialized_orders:
-        d["id"] = d.pop("order_id")
     return {"ok": True, "orders": serialized_orders}

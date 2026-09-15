@@ -55,3 +55,8 @@ def analysis_state(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     shutil.copytree(src, dst)
     monkeypatch.setenv("CARTWHEEL_ANALYSIS_STATE", str(dst))
     return dst
+
+
+@pytest.fixture(autouse=True)
+def _langfuse_offline(monkeypatch):
+    for k in ("LANGFUSE_PUBLIC_KEY", "LANGFUSE_SECRET_KEY", "LANGFUSE_HOST"): monkeypatch.delenv(k, raising=False)

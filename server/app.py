@@ -202,7 +202,7 @@ async def post_message(
                                json.dumps([{"role": "user", "parts": [
                                    {"type": "text", "content": body.message}]}]))
 
-        result = await Runner.run(agent, body.message, session=sqlite_session)
+        result = await Runner.run(agent, body.message, context=ctx, session=sqlite_session)
 
         if os.environ.get("TRACELOOP_TRACE_CONTENT", "false").lower() == "true":
             span.set_attribute("gen_ai.output.messages",
