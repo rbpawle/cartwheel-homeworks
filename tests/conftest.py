@@ -96,3 +96,8 @@ def order_search_cases(world_copy):
             "support": [oid for oid, user, store in reversed(matches)],
         }
     return title, expected
+
+
+@pytest.fixture(autouse=True)
+def _langfuse_offline(monkeypatch):
+    for k in ("LANGFUSE_PUBLIC_KEY", "LANGFUSE_SECRET_KEY", "LANGFUSE_HOST"): monkeypatch.delenv(k, raising=False)

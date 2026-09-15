@@ -17,6 +17,8 @@ dependencies = [
     "pyyaml>=6.0",
     "numpy>=1.24",
     "docetl>=0.2",
+    "rapidfuzz>=3.14.5",
+    "openinference-instrumentation-openai-agents>=2.4.1",
 ]
 
 [dependency-groups]

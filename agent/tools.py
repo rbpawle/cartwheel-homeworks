@@ -18,8 +18,13 @@ They are marked xfail and flip to passing as you implement each function.
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
 from typing import Any
 
+from rapidfuzz import process, fuzz
+
+import agent
 from agent import db
 from agent.auth import AuthContext, can_cancel_order, permission_denied
 from agent.helpcenter import load_policy_docs
@@ -52,16 +57,24 @@ def get_policy(ctx: AuthContext, policy_id: str) -> dict[str, Any]:
     Implementation notes:
         agent.helpcenter.load_policy_docs() returns every parsed doc.
     """
-    ### YOUR CODE HERE (HW1)
-    raise NotImplementedError("HW1: implement get_policy")
+    docs = load_policy_docs()
+    for doc in docs:
+        if doc.policy_id == policy_id:
+            return {"ok": True,
+                    "policy_id": policy_id,
+                    "title": doc.title,
+                    "audience": doc.audience,
+                    "body": doc.body}
+    else:
+        return {"ok": False, "error": "not_found", "reason": f"Policy id {policy_id} not found in policy dir"}
 
 
 def search_products(
-    ctx: AuthContext,
-    query: str,
-    store: str | None = None,
-    max_price_usd: float | None = None,
-    limit: int = 5,
+        ctx: AuthContext,
+        query: str,
+        store: str | None = None,
+        max_price_usd: float | None = None,
+        limit: int = 5,
 ) -> dict[str, Any]:
     """Search the product catalog. Risk tier: read.
 
@@ -95,8 +108,35 @@ def search_products(
         agent.db.list_products(conn, store_id) gives the candidate set.
         Use `with db.connection() as conn:` to close the database automatically.
     """
-    ### YOUR CODE HERE (HW1)
-    raise NotImplementedError("HW1: implement search_products")
+    query = query.strip()
+    if not query:
+        return {"ok": False, "error": "invalid_argument", "reason": "Received empty query"}
+    if max_price_usd is not None and max_price_usd <= 0:
+        return {"ok": False, "error": "invalid_argument", "reason": "max_price_usd must be strictly positive."}
+    with db.connect() as conn:
+        if store:
+            store_obj = db.get_store_by_name(conn, store)
+            if not store_obj:
+                return {"ok": False, "error": "not_found", "reason": f"Store '{store}' not found in database."}
+            store_id = store_obj.id
+        else:
+            store_id = None
+        products = db.list_products(conn, store_id)
+    query_tokens = query.split()
+    matches = [{"product_id": product.id,
+                "store_id": product.store_id,
+                "title": product.title,
+                "price_usd": product.price_usd}
+               for product in products
+               if all(query_token.lower() in f"{product.title} {product.description}".lower()
+                      for query_token in query_tokens)
+               and (max_price_usd is None or product.price_usd <= max_price_usd)]
+    matches.sort(key=lambda x: (x["price_usd"], x["product_id"]))
+
+    limit = max(1, min(limit, MAX_SEARCH_LIMIT))
+
+    matches = matches[:limit]
+    return {"ok": True, "products": matches, "count": len(matches)}
 
 
 def list_my_orders(ctx: AuthContext) -> dict[str, Any]:
@@ -121,8 +161,20 @@ def list_my_orders(ctx: AuthContext) -> dict[str, Any]:
         scope is baked into which query you run. That is the point of the
         tool: the model cannot ask for someone else's orders through it.
     """
-    ### YOUR CODE HERE (HW1)
-    raise NotImplementedError("HW1: implement list_my_orders")
+    if ctx.role == "support":
+        return {"ok": False, "error": "invalid_argument",
+                "reason": "Support staff have no orders of their own and look up "
+                          "specific orders with get_order instead"}
+    with db.connect() as conn:
+        if ctx.role == "shopper":
+            orders = db.list_orders_for_user(conn, ctx.user_id, DEFAULT_ORDER_LIMIT)
+        elif ctx.role == "merchant":
+            if ctx.store_id is None:
+                return {"ok": False, "error": "invalid_argument", "reason": "Merchant context is missing a store_id"}
+            orders = db.list_orders_for_store(conn, ctx.store_id, DEFAULT_ORDER_LIMIT)
+        else:
+            return {"ok": False, "error": "invalid_argument", "reason": f"Role {ctx.role} cannot list orders"}
+    return {"ok": True, "orders": [order.to_public_dict() for order in orders], "count": len(orders)}
 
 
 def cancel_order(ctx: AuthContext, order_id: int, reason: str) -> dict[str, Any]:
@@ -167,8 +219,20 @@ def cancel_order(ctx: AuthContext, order_id: int, reason: str) -> dict[str, Any]
     paused = kill_switch("cancel_order")
     if paused is not None:
         return {"ok": False, "error": "paused", "reason": paused}
-    ### YOUR CODE HERE (HW1)
-    raise NotImplementedError("HW1: implement cancel_order")
+
+    with db.connect() as conn:
+        order = db.get_order(conn, order_id)
+        if not order:
+            return {"ok": False, "error": "not_found", "reason": f"No order with order_id {order_id} exists."}
+        if not can_cancel_order(ctx, order.user_id, order.store_id):
+            return permission_denied(f"{ctx.role} cannot cancel order_id {order_id}")
+        if order.status != "placed":
+            return {"ok": False,
+                    "error": "not_eligible",
+                    "reason": f"Only orders with status 'placed' may be cancelled, order "
+                              f"{order_id} has status {order.status}"}
+        db.set_order_status(conn, order_id, "cancelled")
+        return {"ok": True, "order_id": order_id, "status": "cancelled"}
 
 
 def find_order(ctx: AuthContext, query: str) -> dict[str, Any]:
@@ -202,5 +266,25 @@ def find_order(ctx: AuthContext, query: str) -> dict[str, Any]:
         (at most 5), each as the dict returned by agent.db. If no orders
         match, return {"ok": True, "orders": []}.
     """
-    ### YOUR CODE HERE (HW1)
-    raise NotImplementedError("HW1: implement find_order")
+    scope, params = "", []
+    if ctx.role == "shopper":
+        scope, params = "WHERE o.user_id = ?", [ctx.user_id]
+    elif ctx.role == "merchant":
+        if ctx.store_id is None:
+            return {"ok": False, "error": "invalid_argument", "reason": "Merchant context is missing a store_id"}
+        scope, params = "WHERE o.store_id = ?", [ctx.store_id]
+    elif ctx.role != "support":
+        return {"ok": False, "error": "invalid_argument", "reason": f"Role {ctx.role} cannot search orders"}
+
+    with db.connect() as conn:
+        rows = conn.execute(
+            f"SELECT o.*, p.title AS product_title "
+            f"FROM orders o JOIN products p ON o.product_id = p.id {scope}", params
+        ).fetchall()
+
+    # rank + top-5 + threshold in one call
+    titles = {i: r["product_title"] for i, r in enumerate(rows)}
+    hits = process.extract(query, titles, scorer=fuzz.WRatio, score_cutoff=70, limit=5)
+    matches = [db._order_from_row(rows[i]) for _, _, i in hits]
+    serialized_orders = [o.to_public_dict() for o in matches]
+    return {"ok": True, "orders": serialized_orders}

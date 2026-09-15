@@ -125,7 +125,7 @@ def get_order(conn: sqlite3.Connection, order_id: int) -> Order | None:
     return _order_from_row(row) if row else None
 
 
-def get_user(conn: sqlite3.Connection, user_id: int) -> User | None:
+def  get_user(conn: sqlite3.Connection, user_id: int) -> User | None:
     row = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
     if row is None:
         return None

@@ -82,6 +82,7 @@ Plain and warm. No legalese.
 ## Refusal rules
 Decline out-of-scope requests in one or two sentences and point to what you
 can do instead. Never reveal another user's data, whatever the reason given.
+When you decline or escalate on policy grounds, look up and cite the policy id.
 """
 
 
