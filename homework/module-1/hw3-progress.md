@@ -12,12 +12,12 @@ Working note for the Homework 3 walkthrough (`homework/module-1/hw3.md`). Not a 
 
 ## Deliverables ("Files to commit")
 
-- [ ] `scenarios/pilot_scenarios.jsonl`
-- [ ] `scenarios/pilot-results.jsonl`
-- [ ] `scenarios/pilot_review.jsonl`
-- [ ] `scenarios/support_scenarios.jsonl`
-- [ ] `scenarios/support_review.jsonl`
-- [ ] `scenarios/monitoring_scenarios.jsonl`
+- [x] `scenarios/pilot_scenarios.jsonl`
+- [x] `scenarios/pilot-results.jsonl`
+- [x] `scenarios/pilot_review.jsonl`
+- [x] `scenarios/support_scenarios.jsonl`
+- [x] `scenarios/support_review.jsonl`
+- [x] `scenarios/monitoring_scenarios.jsonl`
 - [ ] `scenarios/final-results.jsonl`
 - [ ] `reports/smoke-output.txt`
 - [ ] `traces/support_traces.json`
@@ -25,11 +25,11 @@ Working note for the Homework 3 walkthrough (`homework/module-1/hw3.md`). Not a 
 
 ## Required checks
 
-- [ ] `uv run python -m scenarios.validate scenarios/pilot_scenarios.jsonl` passes
-- [ ] Pilot review: at least 10 reviewed, at least 5 confirmed failures
-- [ ] Final review: 15 scenarios covering both groups, all 3 roles, every intent; revisions applied, rejects replaced
-- [ ] `uv run python -m scenarios.validate scenarios/support_scenarios.jsonl --final` passes (175 coverage / 75 challenge, 5 per damaged record, new IDs)
-- [ ] Monitoring set: 50 scenarios, both groups, all 3 roles
+- [x] `uv run python -m scenarios.validate scenarios/pilot_scenarios.jsonl` passes
+- [x] Pilot review: at least 10 reviewed, at least 5 confirmed failures
+- [x] Final review: 15 scenarios covering both groups, all 3 roles, every intent; revisions applied, rejects replaced
+- [x] `uv run python -m scenarios.validate scenarios/support_scenarios.jsonl --final` passes (175 coverage / 75 challenge, 5 per damaged record, new IDs)
+- [x] Monitoring set: 50 scenarios, both groups, all 3 roles
 - [ ] Final run: all 250 `completed`
 - [ ] Export succeeds with 250 unique `cartwheel_scenario_id` values
 - [ ] Three exported traces checked (one challenge, one multi-turn)
@@ -37,9 +37,9 @@ Working note for the Homework 3 walkthrough (`homework/module-1/hw3.md`). Not a 
 ## Review gates (student decides)
 
 - [x] Dimension plan approved (Part A)
-- [ ] Pilot conversation sample accepted before running
-- [ ] Pilot review (Part B)
-- [ ] Final 15-scenario review (Part C)
+- [x] Pilot conversation sample accepted before running
+- [x] Pilot review (Part B)
+- [x] Final 15-scenario review (Part C)
 
 ## Approved dimension plan (Part A)
 
@@ -61,6 +61,10 @@ Groups: **coverage** uses ordinary values (well-specified, platform default, eve
 
 Key facts: world "today" is 2026-07-01 (`WORLD_ASOF`). Damaged records: orders 8001 (reversed dates), 8002 (missing delivery date), 8003 (store mismatch); products 2 (duplicate title), 3 (missing title), 4 (negative price). Scenario users must be authorized to see the damaged record.
 
+## Open spec gaps
+
+- **Partial refunds (found during the pilot-022 review).** The implementation permits them: `issue_refund` takes any amount up to the order total (`agent/agent.py:236`), and the threshold applies to the refund amount (`:254`). But `SPEC.md` and the policy docs never authorize them. pilot-022's expected result relied on this, so the student marked it invalid. Don't edit `SPEC.md` during HW3: it doesn't change the running agent and would shift the rules the scenarios are graded against. For the final set, use boundary cases the spec covers (no order totals exactly $100.00; eligible orders at $99.75 and $100.25 bracket the threshold). The $100 partial refund in the pilot also set order 9962's whole status to `refunded`. Candidate for a spec update in a later module.
+
 ## Status
 
 ### Done
@@ -73,6 +77,34 @@ Key facts: world "today" is 2026-07-01 (`WORLD_ASOF`). Damaged records: orders 8
 - Preparation: `.env` switched to `claude-sonnet-5`; server started after the edit (port 8010).
 - Preparation: smoke check passed (live model). Scenario `smoke-0001` (scratchpad only, not committed), shopper user 1, "What's the status of my last order?" Completed in 5.6 s; reply matched order 4455 in SQL; trace has the conversation, `claude-sonnet-5` generations, the `list_my_orders` tool call, and `cartwheel.scenario_id`. Student confirmed in the Langfuse UI. The query was read-only, so no reseed needed.
 
+- Part B: `scenarios/pilot_scenarios.jsonl` written (30 scenarios, 18 coverage / 12 challenge, 4 damaged-record cases). pilot-019 and pilot-020 were hand-built by the student; the other 28 have records chosen by SQL and expected results from eligibility, SQL, policy docs, or the DQ table. Messages came from one `claude-sonnet-5` call per conversation (4 workers, generator never saw expected results), then a critic pass, which changed nothing. Scripts and log are in the session scratchpad (`pilot_plan.py`, `generate_pilot.py`, `pilot_generation_log.json`). `scenarios.validate` passes (offline).
+- `record_state` vocabulary: student renamed `order_delivered_past_window` to `order_delivered_outside_window`.
+
+- Part B: student accepted the pilot sample and ran the pilot (`scenarios/pilot-results.jsonl`, 30/30 completed, live model `claude-sonnet-5`). Student reviewed 12 in Langfuse: `scenarios/pilot_review.jsonl` (valid JSONL) has 5 confirmed failures on valid scenarios (005, 019, 020, 026, 027); 022 invalid (partial-refund spec gap). Revisions to carry into Part C: 021 add a refund reason to the message; 022 replace with full-refund threshold cases ($99.75 / $100.25); 029 expected reason is wrong (store 1 has four "Heavy-Duty Vase" listings: ids 2, 16, 19, 1).
+- Student's review standard: offering escalation is out of spec (failure); when the DQ handling says escalate, asking "want me to escalate?" is a failure.
+
+- Part C: student approved the final mix. Coverage 175: shopper 95, merchant 45, support 35; intents order_status 30, refund 30, policy_question 25, cancellation 20, return_eligibility 20, product_search 20, dispute 10, account_change 10, out_of_scope 10; styles about even; about 15% multi-turn. Challenge 75: DQ 30 (5 x 6), store overrides 12, boundaries 8 (incl. $99.75 / $100.25 full refunds), authorization boundary 8, missing information / ambiguous 10, correction across turns 7. Carry the 29 pilot scenarios (all but 022) under new ids with the 021 and 029 fixes.
+- Part C: reseeded 2026-09-17 before record selection (pilot changes gone: 0 non-seed refunds or tickets; order 180 placed, 9962 delivered).
+
+- Part C: 250 plans built offline (`final_plan.py` → `final_plans.json` in the session scratchpad; no model calls). Mix matches the approved targets exactly; 29 carried from the pilot (021 marked for message regeneration, 029 reason fixed), 222 messages still to generate. Checks: every user has the tuple's role; access matches `authorization_boundary`; state-changing orders are distinct; eligibility recomputed with `seed/eligibility.py` equals the stored flag for every order; `validate_scenarios(final=True)` passes on the skeletons. Sparse cases adjusted: no order sits on Northwind day 45 (used 43–47), Juniper day 14 widened to 13–15, Saltbox 8–9, platform 31–32.
+
+- Part C: `scenarios/support_scenarios.jsonl` written (250). Messages for 222 came from one `claude-sonnet-5` generator call plus one critic call per conversation (6 workers; the critic rewrote 18); 28 carried pilot conversations kept as-is (021 regenerated with a refund reason). Script: `generate_final.py` in the scratchpad. `validate --final` passes (offline): 175 / 75, 30 damaged-record scenarios, 250 unique ids, no pilot ids. Suggested 15-scenario review sample: support-0024, 0059, 0088, 0092, 0123, 0149, 0150, 0166, 0175, 0245, 0249, 0201, 0247, 0250, 0221 (both groups, 3 roles, all 9 intents).
+
+- Part C: student reviewed the 15-scenario sample; all accepted (0088 first rejected, then accepted: the caller is support staff, who would have the order number). Student noted that correction scenarios pair unrelated items (e.g. 0247), which is unrealistic, and chose not to regenerate. Wrote `scenarios/support_review.jsonl` (15 accepts, no changes to apply) and `scenarios/monitoring_scenarios.jsonl` (50: 35 coverage / 15 challenge; shopper 25, merchant 15, support 10; all 9 intents; one scenario per damaged record). All scenario files validate (offline).
+- The IDE reformats JSONL files into multi-line JSON when they are opened or saved. It happened to `pilot_scenarios.jsonl`, `pilot-results.jsonl`, and `support_scenarios.jsonl`; all three were restored to one record per line. Check `wc -l` before committing (30 / 30 / 250 / 12 / 15 / 50).
+
 ### Next
 
-Part B: propose a 30-tuple pilot spread; student selects records via SQL and derives expected results; coding agent writes `scenarios/pilot_scenarios.jsonl`.
+- Part D: reseed (`uv run python -m seed.generate`), confirm the server still has `CARTWHEEL_MODEL=claude-sonnet-5`, then run `uv run python -m scenarios.runner scenarios/support_scenarios.jsonl --model claude-sonnet-5 --output scenarios/final-results.jsonl` (about 35+ minutes unattended, live model).
+
+### Earlier next steps (done)
+
+- Student reviews 15 final scenarios → `scenarios/support_review.jsonl`; apply revisions and replace rejects; pick 50 for `monitoring_scenarios.jsonl`.
+- Part C: final 250 scenarios (175 coverage / 75 challenge, 5 per damaged record, new `support-` ids), 15-scenario review, 50 monitoring scenarios.
+
+### Earlier (done)
+
+- Review gate: student reviews the pilot conversation sample before any run. Open items: pilot-020 outcome `refund_approved` contradicts its reason (queued for approval); pilot-004 message says "hasn't shipped"; pilot-026 user guesses a delivery time.
+- Then: reseed, run the pilot with `--model claude-sonnet-5`, review at least 10 results in Langfuse, write `pilot_review.jsonl`.
+
+Part B (original plan): propose a 30-tuple pilot spread; student selects records via SQL and derives expected results; coding agent writes `scenarios/pilot_scenarios.jsonl`.
