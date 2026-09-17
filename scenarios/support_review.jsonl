@@ -1,0 +1,15 @@
+{"scenario_id": "support-0024", "decision": "accept", "reason": "Accepted by the reviewer; no issues found.", "change": null}
+{"scenario_id": "support-0059", "decision": "accept", "reason": "Accepted by the reviewer; no issues found.", "change": null}
+{"scenario_id": "support-0088", "decision": "accept", "reason": "Accepted. Reviewer first rejected it because the user gives an order number, then accepted it: the caller is support staff, who would have the number.", "change": null}
+{"scenario_id": "support-0092", "decision": "accept", "reason": "Accepted by the reviewer; no issues found.", "change": null}
+{"scenario_id": "support-0123", "decision": "accept", "reason": "Accepted by the reviewer; no issues found.", "change": null}
+{"scenario_id": "support-0149", "decision": "accept", "reason": "Accepted by the reviewer; no issues found.", "change": null}
+{"scenario_id": "support-0150", "decision": "accept", "reason": "Accepted by the reviewer; no issues found.", "change": null}
+{"scenario_id": "support-0166", "decision": "accept", "reason": "Accepted by the reviewer; no issues found.", "change": null}
+{"scenario_id": "support-0175", "decision": "accept", "reason": "Accepted by the reviewer; no issues found.", "change": null}
+{"scenario_id": "support-0245", "decision": "accept", "reason": "Accepted by the reviewer; no issues found.", "change": null}
+{"scenario_id": "support-0249", "decision": "accept", "reason": "Accepted by the reviewer; no issues found.", "change": null}
+{"scenario_id": "support-0201", "decision": "accept", "reason": "Accepted by the reviewer; no issues found.", "change": null}
+{"scenario_id": "support-0247", "decision": "accept", "reason": "Accepted. Reviewer noted the correction pairs unrelated items (sticky notes vs. headphones), which is unrealistic but does not affect what the scenario tests.", "change": null}
+{"scenario_id": "support-0250", "decision": "accept", "reason": "Accepted by the reviewer; no issues found.", "change": null}
+{"scenario_id": "support-0221", "decision": "accept", "reason": "Accepted by the reviewer; no issues found.", "change": null}
