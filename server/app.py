@@ -45,7 +45,7 @@ from agent import db
 from agent.agent import build_agent, prompt_version, render_system_prompt
 from agent.auth import ROLES, AuthContext
 from agent.config import REPO_ROOT, db_path
-from observability.instrument import load_env, setup_tracing
+from observability.instrument import load_env, record_model_exchange, setup_tracing
 
 MAX_TURNS = 12  # cap runaway loops; keeps conversations bounded
 SESSIONS_DB = REPO_ROOT / ".sessions.db"
@@ -191,6 +191,7 @@ async def post_message(
     tracer = trace.get_tracer("cartwheel.server")
     with tracer.start_as_current_span("cartwheel.session_message") as span:
         prompt_ver = prompt_version(render_system_prompt(ctx))
+        span.set_attribute("cartwheel.session_id", session_id)
         span.set_attribute("cartwheel.user_role", ctx.role)
         span.set_attribute("cartwheel.user_id", str(ctx.user_id))
         span.set_attribute("cartwheel.prompt_version", prompt_ver)
@@ -203,6 +204,10 @@ async def post_message(
                                    {"type": "text", "content": body.message}]}]))
 
         result = await Runner.run(agent, body.message, context=ctx, session=sqlite_session)
+
+        # Additive: the LiteLLM path leaves generation outputs and output-token
+        # counts off the spans, so record the model exchange for error analysis.
+        record_model_exchange(span, agent, result)
 
         if os.environ.get("TRACELOOP_TRACE_CONTENT", "false").lower() == "true":
             span.set_attribute("gen_ai.output.messages",

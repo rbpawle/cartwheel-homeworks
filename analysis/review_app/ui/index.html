@@ -1,0 +1,701 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cartwheel trace review</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<style>
+  :root {
+    --bg: #fbfaf8; --panel: #fff; --line: #e3e0da; --ink: #23201c; --muted: #6f6a63;
+    --user: #2f6f9f; --assistant: #2e7d5b; --tool: #8a6d3b; --write: #a4402f;
+    --accent: #3d5afe; --suggest: #9a7bd0; --pass: #2e7d5b; --fail: #a4402f;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); }
+  header { position: sticky; top: 0; z-index: 20; background: var(--panel); border-bottom: 1px solid var(--line); padding: 8px 16px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  header h1 { font-size: 15px; margin: 0 8px 0 0; font-weight: 600; }
+  nav button { border: 1px solid var(--line); background: var(--panel); padding: 5px 10px; border-radius: 6px; cursor: pointer; margin-right: 4px; font-size: 13px; }
+  nav button.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .muted { color: var(--muted); font-size: 12px; }
+  .badge { display: inline-block; padding: 1px 7px; border: 1px solid var(--line); border-radius: 999px; font-size: 11px; background: #f4f2ee; margin-right: 4px; white-space: nowrap; }
+  .badge.group-challenge { background: #f6e9e6; border-color: #e3c9c2; }
+  .badge.group-coverage { background: #e9f1ec; border-color: #c6ddcf; }
+  .badge.flag { background: #fdf3da; border-color: #e8d6a6; }
+  main { display: none; padding: 16px; }
+  main.active { display: block; }
+
+  /* ---- review layout: list | conversation | margin notes ---- */
+  /* #review is an id selector, so it must not set display outside .active or it
+     would outrank `main { display: none }` and stay visible under every view. */
+  main:not(.active) { display: none !important; }
+  #review.active { display: grid; grid-template-columns: 280px minmax(0, 1fr) 280px; gap: 24px; align-items: start; }
+  #list { position: sticky; top: 58px; max-height: calc(100vh - 74px); overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+  #list .filters { padding: 8px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 4px; }
+  #list .filters select, #list .filters input { font-size: 12px; padding: 3px; border: 1px solid var(--line); border-radius: 4px; background: #fff; }
+  .row { padding: 7px 9px; border-bottom: 1px solid var(--line); cursor: pointer; font-size: 12px; }
+  .row:hover { background: #f4f2ee; }
+  .row.sel { background: #eef1ff; border-left: 3px solid var(--accent); }
+  .row .sid { font-weight: 600; }
+  .row .dot { float: right; font-size: 11px; }
+  .conv { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; }
+  .conv h2 { font-size: 16px; margin: 0 0 4px; }
+  details.expected { margin: 12px 0 24px; border: 1px dashed var(--line); border-radius: 6px; padding: 8px 10px; background: #faf7f0; }
+  details.expected summary { cursor: pointer; font-size: 12px; color: var(--muted); }
+  details.expected .outcome { font-weight: 600; font-family: ui-monospace, Menlo, monospace; margin-top: 6px; }
+  .turn { margin-top: 32px; }
+  .turn:first-of-type { margin-top: 16px; }
+  .turn-head { font-size: 11px; color: var(--muted); border-bottom: 1px solid var(--line); padding-bottom: 3px; margin-bottom: 12px; }
+  .msg { border-left: 3px solid var(--line); padding: 2px 0 2px 10px; margin-bottom: 16px; }
+  .msg.user { border-color: var(--user); }
+  .msg.assistant { border-color: var(--assistant); }
+  .role { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 2px; }
+  .msg.user .role { color: var(--user); }
+  .msg.assistant .role { color: var(--assistant); }
+  .tool { border: 1px solid #e2d6bd; border-radius: 6px; background: #fdfaf3; margin-bottom: 16px; }
+  .tool.write { border-color: #e6c3bb; background: #fdf5f3; }
+  .tool .call { padding: 5px 9px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: var(--tool); display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+  .tool.write .call { color: var(--write); }
+  .tool .args { flex: 1 1 100%; color: var(--muted); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .tool .result { border-top: 1px dashed #e2d6bd; padding: 4px 9px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
+  .tool .result .status { font-weight: 700; }
+  .tool .result .status.err { color: var(--write); }
+  pre { margin: 4px 0 0; padding: 6px 8px; background: #f6f4ef; border-radius: 4px; overflow-x: auto; font-size: 12px; }
+  .ann-mark { background: #fff3b0; border-bottom: 1px solid #e3c000; }
+  #notes { position: sticky; top: 58px; }
+  .note { border: 1px solid var(--line); border-left: 3px solid var(--accent); background: var(--panel); border-radius: 6px; padding: 7px 9px; margin-bottom: 8px; font-size: 12px; }
+  .note.suggestion { border-left-style: dashed; border-left-color: var(--suggest); background: #faf7ff; }
+  .note .quote { color: var(--muted); font-style: italic; margin-bottom: 4px; }
+  .note .actions { margin-top: 5px; display: flex; gap: 6px; }
+  button.small { font-size: 11px; padding: 2px 7px; border: 1px solid var(--line); background: #fff; border-radius: 4px; cursor: pointer; }
+  #popover { position: absolute; z-index: 40; display: none; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px; width: 300px; box-shadow: 0 6px 20px rgba(0,0,0,.12); }
+  #popover textarea { width: 100%; height: 66px; border: 1px solid var(--line); border-radius: 4px; padding: 6px; font: inherit; font-size: 12px; }
+  table { border-collapse: collapse; width: 100%; background: var(--panel); }
+  th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; font-size: 13px; vertical-align: top; }
+  th { background: #f4f2ee; font-size: 12px; }
+  .pill { border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; cursor: pointer; font-size: 12px; background: #fff; }
+  .pill.on-fail { background: #fbe9e6; border-color: var(--fail); color: var(--fail); font-weight: 600; }
+  .pill.on-pass { background: #e9f1ec; border-color: var(--pass); color: var(--pass); font-weight: 600; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+  .bar { height: 8px; background: #eceae5; border-radius: 4px; overflow: hidden; }
+  .bar > span { display: block; height: 100%; background: var(--accent); }
+  details.exchange { margin: 6px 0 18px; border: 1px solid var(--line); border-radius: 6px; background: #f8f7f4; }
+  details.exchange > summary { cursor: pointer; padding: 5px 9px; font-size: 12px; color: var(--muted); }
+  .step { border-top: 1px solid var(--line); padding: 8px 10px; }
+  .step .hd { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .step .side { margin: 4px 0 4px 8px; padding-left: 8px; border-left: 2px solid var(--line); }
+  .step .side.req { border-color: #b9b3a7; }
+  .step .side.res { border-color: var(--assistant); }
+  .prov { font-size: 10px; text-transform: uppercase; letter-spacing: .04em; border: 1px solid var(--line); border-radius: 3px; padding: 0 4px; margin-left: 5px; background: #fff; }
+  .prov.reconstructed { border-color: #c9b27a; color: #8a6d3b; background: #fdf8ec; }
+  .prov.from_code { border-color: #a9a2d6; color: #5b53a0; background: #f4f2fb; }
+  .callline { font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: var(--tool); }
+  #confirm-pop { display: none; position: absolute; z-index: 40; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 6px 20px rgba(0,0,0,.12); padding: 8px; width: 240px; font-size: 12px; }
+  #confirm-pop .actions { display: flex; gap: 6px; margin-top: 6px; }
+  input[type=text], textarea, select { font: inherit; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  kbd { border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; font-size: 11px; background: #f6f4ef; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Cartwheel review</h1>
+  <nav>
+    <button data-view="review" class="active">Review</button>
+    <button data-view="taxonomy">Taxonomy</button>
+    <button data-view="labeling">Labeling</button>
+    <button data-view="progress">Progress</button>
+    <button data-view="suggestions">Suggestions</button>
+  </nav>
+  <span class="muted" id="meta"></span>
+  <span class="muted" style="margin-left:auto"><kbd>j</kbd>/<kbd>k</kbd> next/prev · <kbd>e</kbd> expected · select text to annotate</span>
+</header>
+
+<main id="review" class="active">
+  <div id="list">
+    <div class="filters">
+      <select id="f-group"><option value="">group: all</option><option>coverage</option><option>challenge</option></select>
+      <select id="f-role"><option value="">role: all</option><option>shopper</option><option>merchant</option><option>support</option></select>
+      <select id="f-intent"><option value="">intent: all</option></select>
+      <select id="f-state"><option value="">reviewed: all</option><option value="todo">unreviewed</option><option value="done">reviewed</option></select>
+      <input id="f-text" type="text" placeholder="search text" size="12">
+    </div>
+    <div class="filters" style="border-top:0">
+      <select id="s-strategy" title="selection strategy">
+        <option value="diversity">diversity</option>
+        <option value="random">random</option>
+        <option value="outlier">outlier</option>
+      </select>
+      <input id="s-k" type="number" min="1" max="100" value="15" style="width:52px" title="batch size">
+      <button class="small" id="s-run">sample</button>
+      <button class="small" id="s-clear" hidden>clear</button>
+      <span class="muted" id="s-note" style="flex-basis:100%"></span>
+      <select id="s-saved" style="flex:1" title="saved sample sets"><option value="">saved samples…</option></select>
+      <button class="small" id="s-trash" title="delete the selected sample set">🗑</button>
+    </div>
+    <div id="confirm-pop"></div>
+    <div id="rows"></div>
+  </div>
+  <div class="conv" id="conv"></div>
+  <div id="notes"></div>
+</main>
+
+<main id="taxonomy">
+  <div class="card">
+    <b>Failure modes</b> <span class="muted">binary; a mode becomes “final” when status = confirmed</span>
+    <div id="modes"></div>
+    <button class="small" id="add-mode" style="margin-top:8px">+ add mode</button>
+  </div>
+  <div class="card">
+    <b>Annotations</b> <span class="muted" id="ann-count"></span>
+    <div class="filters" style="border:0; padding:6px 0">
+      <input id="a-text" type="text" placeholder="search notes" size="18">
+      <select id="a-group"><option value="">group: all</option><option>coverage</option><option>challenge</option></select>
+      <select id="a-role"><option value="">role: all</option><option>shopper</option><option>merchant</option><option>support</option></select>
+      <select id="a-mode"><option value="">mode: all</option><option value="__none">unlinked</option></select>
+    </div>
+    <div style="overflow:auto; max-height:70vh"><table id="ann-table"></table></div>
+  </div>
+</main>
+
+<main id="labeling"></main>
+<main id="progress"></main>
+<main id="suggestions"></main>
+
+<div id="popover">
+  <div class="muted" id="pop-quote"></div>
+  <textarea id="pop-note" placeholder="What went wrong here? Describe the failure in your own words."></textarea>
+  <div style="display:flex;gap:6px;margin-top:6px">
+    <button class="small" id="pop-save">save</button>
+    <button class="small" id="pop-copy" title="copy the highlighted text">copy</button>
+    <button class="small" id="pop-cancel">cancel</button>
+    <span class="muted" style="margin-left:auto">first failure only</span>
+  </div>
+</div>
+
+<script>
+const S = { sessions: [], current: null, annotations: [], patterns: {modes: []}, suggestions: [], labels: {}, progress: null, meta: {}, sel: null };
+const $ = sel => document.querySelector(sel);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const api = (path, body) => fetch(path, body ? {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)} : undefined).then(r => r.json());
+
+async function boot() {
+  [S.meta, S.sessions, S.annotations, S.patterns, S.suggestions, S.labels, S.progress] = await Promise.all([
+    api("/api/meta"), api("/api/sessions"), api("/api/annotations").then(d => d.annotations),
+    api("/api/patterns"), api("/api/suggestions"), api("/api/labels"), api("/api/progress")]);
+  $("#meta").textContent = `${S.meta.sessions} sessions · ${S.meta.traces} traces · ${S.meta.source}` + (S.meta.write_scores ? " · scores on" : " · scores off");
+  const intents = [...new Set(S.sessions.map(s => s.intent))].filter(Boolean).sort();
+  $("#f-intent").innerHTML = `<option value="">intent: all</option>` + intents.map(i => `<option>${i}</option>`).join("");
+  await loadSaved();
+  renderRows();
+  if (S.sessions.length) select(S.sessions[0].session_id);
+}
+
+/* ------------------------------------------------------------------ list */
+function annotatedIds() { return new Set(S.annotations.map(a => a.session_id)); }
+function filtered() {
+  const g = $("#f-group").value, r = $("#f-role").value, i = $("#f-intent").value, st = $("#f-state").value, t = $("#f-text").value.toLowerCase();
+  const done = annotatedIds();
+  return S.sessions.filter(s =>
+    (!S.sample || S.sample.ids.has(s.session_id)) &&
+    (!g || s.scenario_group === g) && (!r || s.role === r) && (!i || s.intent === i) &&
+    (!st || (st === "done") === done.has(s.session_id)) &&
+    (!t || (s.opening + " " + s.scenario_id).toLowerCase().includes(t)));
+}
+
+/* ------------------------------------------------------- sampling + copy */
+$("#s-run").onclick = async () => {
+  const strategy = $("#s-strategy").value, k = +$("#s-k").value;
+  $("#s-note").textContent = "sampling…";
+  const res = await api("/api/sample", {strategy, k, exclude_reviewed: true});
+  if (res.error) { $("#s-note").textContent = "sampling failed — see server log"; return; }
+  S.sample = {name: res.batch_name, ids: new Set(res.sessions.map(s => s.session_id)),
+              reasons: Object.fromEntries(res.sessions.map(s => [s.session_id, s.reason]))};
+  await loadSaved(res.batch_name);
+  applyBatch(res.batch_name);
+  refreshProgress();
+};
+$("#s-clear").onclick = () => {
+  S.sample = null; $("#s-clear").hidden = true; $("#s-note").textContent = "";
+  $("#s-saved").value = ""; renderRows();
+};
+/* saved sample sets: read from sample_manifest.json, applied as the sidebar filter */
+function stamp(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return isNaN(d) ? iso : d.toLocaleString(undefined, {month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"});
+}
+async function loadSaved(selectName) {
+  const manifest = await api("/api/manifest");
+  S.batches = manifest.batches || {};
+  const names = Object.keys(S.batches).sort((a, b) =>
+    (S.batches[b].selected_at || "").localeCompare(S.batches[a].selected_at || ""));
+  $("#s-saved").innerHTML = `<option value="">saved samples…</option>` + names.map(n => {
+    const b = S.batches[n];
+    return `<option value="${esc(n)}">${esc(n)} · ${esc(stamp(b.selected_at))} · ${(b.sessions || []).length}</option>`;
+  }).join("");
+  if (selectName && S.batches[selectName]) $("#s-saved").value = selectName;
+}
+function applyBatch(name) {
+  const b = S.batches[name];
+  if (!b) { S.sample = null; $("#s-clear").hidden = true; $("#s-note").textContent = ""; renderRows(); return; }
+  S.sample = {name, ids: new Set(b.sessions.map(s => s.session_id)),
+              reasons: Object.fromEntries(b.sessions.map(s => [s.session_id, s.reason]))};
+  $("#s-note").textContent = `${name}: ${b.sessions.length} sessions · drawn ${stamp(b.selected_at)}`;
+  $("#s-clear").hidden = false;
+  renderRows();
+  const first = filtered()[0];
+  if (first) select(first.session_id);
+}
+$("#s-saved").onchange = () => applyBatch($("#s-saved").value);
+$("#s-trash").onclick = () => {
+  const name = $("#s-saved").value;
+  const pop = $("#confirm-pop");
+  if (!name) { pop.style.display = "none"; return; }
+  const rect = $("#s-trash").getBoundingClientRect();
+  pop.innerHTML = `Delete sample set <b>${esc(name)}</b>?
+    <div class="muted" style="margin-top:4px">Its traces become available to future draws again. Annotations and labels are not affected.</div>
+    <div class="actions"><button class="small" id="confirm-yes">delete</button>
+      <button class="small" id="confirm-no">cancel</button></div>`;
+  pop.style.display = "block";
+  pop.style.top = (window.scrollY + rect.bottom + 4) + "px";
+  pop.style.left = Math.min(window.scrollX + rect.left, window.innerWidth - 260) + "px";
+  $("#confirm-no").onclick = () => { pop.style.display = "none"; };
+  $("#confirm-yes").onclick = async () => {
+    await api("/api/sample/delete", {batch_name: name});
+    pop.style.display = "none";
+    if (S.sample && S.sample.name === name) { S.sample = null; $("#s-clear").hidden = true; $("#s-note").textContent = ""; }
+    await loadSaved();
+    renderRows(); refreshProgress();
+  };
+};
+document.addEventListener("mousedown", e => {
+  const pop = $("#confirm-pop");
+  if (pop.style.display === "block" && !pop.contains(e.target) && e.target.id !== "s-trash") pop.style.display = "none";
+});
+function renderRows() {
+  const done = annotatedIds();
+  $("#rows").innerHTML = filtered().map(s => `
+    <div class="row ${S.current === s.session_id ? "sel" : ""}" data-id="${s.session_id}">
+      <span class="sid">${s.scenario_id}</span><span class="dot">${done.has(s.session_id) ? "●" : "○"}</span>
+      <div class="muted">${s.role} · ${s.intent} · ${s.scenario_group}${s.data_quality_case_id ? " · dq" : ""}</div>
+      ${S.sample && S.sample.reasons[s.session_id] ? `<div class="muted">↳ ${esc(S.sample.reasons[s.session_id])}</div>` : ""}
+      <div class="muted">${esc(s.opening)}</div>
+    </div>`).join("") || `<div class="row muted">no sessions match</div>`;
+  document.querySelectorAll("#rows .row[data-id]").forEach(el => el.onclick = () => select(el.dataset.id));
+}
+["f-group","f-role","f-intent","f-state","f-text"].forEach(id => $("#"+id).oninput = renderRows);
+
+/* ------------------------------------------------------ conversation view */
+async function select(id) {
+  S.current = id;
+  const s = await api("/api/sessions/" + encodeURIComponent(id));
+  S.session = s;
+  renderRows();
+  const exp = s.expected || {};
+  const key = exp.evaluation === "objective" ? exp.outcome : "human judgment";
+  $("#conv").innerHTML = `
+    <h2>${s.scenario_id}</h2>
+    <div>
+      <span class="badge group-${s.scenario_group}">${s.scenario_group}</span>
+      <span class="badge">${s.tuple.role} ${s.tuple.user_id ?? ""}</span>
+      <span class="badge">${s.tuple.intent}</span>
+      <span class="badge">${s.tuple.difficulty}</span>
+      <span class="badge">${s.tuple.user_style}</span>
+      ${s.data_quality_case_id ? `<span class="badge">${s.data_quality_case_id}</span>` : ""}
+      ${(s.flags || []).map(f => `<span class="badge flag">${f}</span>`).join("")}
+    </div>
+    <div class="muted" style="margin-top:4px">session ${s.session_id} · ${s.turns.length} turn(s) · ${s.features.tool_calls} tool calls · ${(s.turns[0].models || []).join(", ")}</div>
+    <details class="exchange" id="toolset"><summary>tools and model settings the agent was built with</summary><div class="step muted">loading…</div></details>
+    <details class="expected" id="expected">
+      <summary>expected result (press <kbd>e</kbd>) — read the trace first</summary>
+      <div class="outcome">${esc(key)}</div>
+      <div style="margin-top:4px">${esc(exp.reason || exp.criterion || "")}</div>
+      <div class="muted" style="margin-top:4px">source: ${esc((exp.source || {}).type)} · ${esc((exp.source || {}).reference)}</div>
+    </details>
+    ${s.turns.map(renderTurn).join("")}`;
+  bindSelection();
+  renderNotes();
+  renderToolset();
+}
+async function renderToolset() {
+  if (!S.toolset) S.toolset = await api("/api/toolset");
+  const t = S.toolset, el = $("#toolset");
+  if (!el) return;
+  el.innerHTML = `<summary>${t.tools.length} tool schemas + model settings <span class="prov from_code">from code</span></summary>
+    <div class="step muted">${esc(t.note)}</div>
+    <div class="step"><b>model settings</b> (${esc(t.model)})<pre>${esc(JSON.stringify(t.model_settings, null, 1))}</pre></div>
+    ${t.tools.map(tool => `<div class="step">
+      <div class="callline">${esc(tool.name)}(${tool.parameters.map(esc).join(", ")})</div>
+      <div class="muted">${esc(tool.description.slice(0, 300))}</div>
+      <details><summary class="muted">json schema</summary><pre>${esc(JSON.stringify(tool.schema, null, 1))}</pre></details>
+    </div>`).join("")}`;
+}
+function renderTurn(t) {
+  return `<div class="turn">
+    <div class="turn-head">turn ${t.turn} · trace ${t.trace_id.slice(0, 12)} · ${(t.timestamp || "").slice(11, 19)} UTC</div>
+    ${t.blocks.map((b, i) => renderBlock(b, t.trace_id, `${t.turn}:${i}`)).join("")}
+    ${renderExchange(t)}
+  </div>`;
+}
+function renderExchange(t) {
+  const ex = t.exchange || {steps: []};
+  if (!ex.steps.length) return "";
+  const secs = ex.steps.reduce((a, s) => a + (s.latency_seconds || 0), 0).toFixed(1);
+  const toks = ex.steps.reduce((a, s) => a + (s.input_tokens || 0), 0);
+  return `<details class="exchange">
+    <summary>model exchange · ${ex.steps.length} step(s) · ${secs}s · ${toks} input tokens</summary>
+    <div class="step">
+      <details><summary class="muted">system prompt (${ex.system_prompt.length} chars)${ex.system_prompt_varies ? " — differs between steps" : ""}</summary>
+        <pre>${esc(ex.system_prompt)}</pre></details>
+    </div>
+    ${ex.steps.map(s => `<div class="step">
+      <div class="hd">step ${s.step} · ${esc(s.model || "")} · ${s.latency_seconds ?? "?"}s · ${s.input_tokens ?? "?"} input tokens · ${s.message_count} messages in context</div>
+      <div class="side req">request<span class="prov">logged</span>
+        ${s.request.added.map(m => `<div style="margin-top:3px"><b>${esc(m.role)}</b>
+          ${m.text ? `<div>${esc(m.text.slice(0, 400))}</div>` : ""}
+          ${(m.tool_calls || []).map(c => `<div class="callline">→ ${esc(c.name)} ${esc(JSON.stringify(c.arguments || {}))}</div>`).join("")}
+          ${(m.tool_responses || []).map(r => `<details><summary class="muted">tool response</summary><pre>${esc(typeof r.response === "string" ? r.response : JSON.stringify(r.response, null, 1))}</pre></details>`).join("")}
+        </div>`).join("") || `<div class="muted">no new messages</div>`}
+      </div>
+      <div class="side res">response<span class="prov ${s.response.provenance}">${s.response.provenance}</span>
+        ${s.response.text ? `<div>${esc(s.response.text.slice(0, 600))}</div>` : `<div class="muted">no text</div>`}
+        ${(s.response.tool_calls || []).map(c => `<div class="callline">→ ${esc(c.name)} ${esc(JSON.stringify(c.arguments || {}))}</div>`).join("")}
+      </div>
+    </div>`).join("")}
+    <div class="step muted">Responses marked <span class="prov reconstructed">reconstructed</span> are recovered from the next step's request; the instrumentation did not store generation outputs. Output tokens and cost were not recorded.</div>
+  </details>`;
+}
+function renderBlock(b, traceId, idx) {
+  if (b.kind === "tool") {
+    const res = b.result === null ? `<div class="result muted">no result recorded</div>` : `
+      <div class="result">
+        <span class="status ${String(b.status).match(/denied|error|not_|invalid|paused/) ? "err" : ""}">${esc(b.status)}</span>
+        <details><summary class="muted">result json</summary><pre class="anno" data-trace="${traceId}" data-idx="${idx}">${esc(JSON.stringify(b.result, null, 1))}</pre></details>
+      </div>`;
+    return `<div class="tool ${b.write ? "write" : ""}">
+      <div class="call"><b>${esc(b.name)}</b><span class="args">${esc(JSON.stringify(b.arguments || {}))}</span>${b.write ? `<span class="badge">write</span>` : ""}</div>
+      ${res}</div>`;
+  }
+  if (b.kind === "user" || b.kind === "assistant") {
+    return `<div class="msg ${b.kind}"><div class="role">${b.kind}</div>
+      <div class="anno" data-trace="${traceId}" data-idx="${idx}">${esc(b.text)}</div></div>`;
+  }
+  return "";
+}
+
+/* -------------------------------------------------------- annotations */
+function bindSelection() {
+  document.querySelectorAll(".anno").forEach(el => {
+    el.onmouseup = () => {
+      const sel = window.getSelection();
+      const text = String(sel).trim();
+      if (!text) return;
+      const range = sel.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      // Keep the selection visible while the textarea has focus (the browser drops the
+      // native highlight), so the quote stays readable and copyable.
+      try {
+        const mark = document.createElement("mark");
+        mark.className = "ann-mark tmp-hl";
+        range.surroundContents(mark);
+        sel.removeAllRanges();
+      } catch (e) { /* selection spans elements; keep the native highlight */ }
+      S.sel = {trace_id: el.dataset.trace, block_index: el.dataset.idx, quote: text};
+      const pop = $("#popover");
+      pop.style.display = "block";
+      pop.style.top = (window.scrollY + rect.bottom + 6) + "px";
+      pop.style.left = Math.min(window.scrollX + rect.left, window.innerWidth - 320) + "px";
+      $("#pop-quote").textContent = text.length > 90 ? text.slice(0, 90) + "…" : text;
+      $("#pop-note").value = "";
+      $("#pop-note").focus();
+    };
+  });
+}
+function closePopover() {
+  $("#popover").style.display = "none";
+  S.sel = null;
+  document.querySelectorAll("mark.tmp-hl").forEach(mark => {
+    const parent = mark.parentNode;
+    while (mark.firstChild) parent.insertBefore(mark.firstChild, mark);
+    parent.removeChild(mark);
+    parent.normalize();
+  });
+}
+$("#pop-cancel").onclick = closePopover;
+$("#pop-copy").onclick = async () => {
+  if (!S.sel) return;
+  try { await navigator.clipboard.writeText(S.sel.quote); } catch (e) { /* clipboard blocked */ }
+  const b = $("#pop-copy"); b.textContent = "copied";
+  setTimeout(() => { b.textContent = "copy"; }, 1000);
+};
+// Click away or press Escape to dismiss, so cancel is never the only way out.
+document.addEventListener("mousedown", e => {
+  const pop = $("#popover");
+  if (pop.style.display === "block" && !pop.contains(e.target)) closePopover();
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && $("#popover").style.display === "block") closePopover();
+  // Cmd/Ctrl+C copies the quoted text while the popover is open. The native selection is
+  // gone by then (focus sits in the textarea), so copy the stored quote instead — unless
+  // the reviewer has selected something inside the textarea itself.
+  if ((e.metaKey || e.ctrlKey) && e.key === "c" && S.sel && $("#popover").style.display === "block") {
+    const ta = $("#pop-note");
+    if (document.activeElement === ta && ta.selectionStart !== ta.selectionEnd) return;
+    e.preventDefault();
+    navigator.clipboard.writeText(S.sel.quote).catch(() => {});
+    const b = $("#pop-copy"); b.textContent = "copied";
+    setTimeout(() => { b.textContent = "copy"; }, 1000);
+  }
+});
+$("#pop-save").onclick = async () => {
+  const note = $("#pop-note").value.trim();
+  if (!note || !S.sel) return;
+  const saved = await api("/api/annotations", {...S.sel, session_id: S.session.session_id, scenario_id: S.session.scenario_id, note});
+  S.annotations.push(saved);
+  closePopover();
+  renderNotes(); renderRows(); refreshProgress();
+};
+function renderNotes() {
+  const mine = S.annotations.filter(a => a.session_id === S.current);
+  const sugg = S.suggestions.filter(s => s.session_id === S.current && !s.decision);
+  $("#notes").innerHTML = `
+    <div class="muted" style="margin-bottom:6px">${mine.length} annotation(s)</div>
+    ${mine.map(a => `<div class="note">
+        ${a.quote ? `<div class="quote">“${esc(a.quote.slice(0, 80))}”</div>` : ""}
+        <div>${esc(a.note)}</div>
+        <div class="actions"><button class="small" data-del="${a.annotation_id}">delete</button></div>
+      </div>`).join("")}
+    ${sugg.map(s => `<div class="note suggestion">
+        <span class="badge">agent suggestion</span>
+        ${s.quote ? `<div class="quote">“${esc(s.quote.slice(0, 80))}”</div>` : ""}
+        <div>${esc(s.note || s.suggested_mode || "")}</div>
+        <div class="actions">
+          <button class="small" data-acc="${s.suggestion_id}">accept</button>
+          <button class="small" data-rej="${s.suggestion_id}">reject</button>
+        </div></div>`).join("")}
+    <button class="small" id="no-failure" style="margin-top:4px">record “no failure observed”</button>`;
+  $("#no-failure").onclick = async () => {
+    const saved = await api("/api/annotations", {session_id: S.session.session_id, scenario_id: S.session.scenario_id,
+      trace_id: S.session.trace_ids[0], quote: "", note: "no failure observed"});
+    S.annotations.push(saved); renderNotes(); renderRows(); refreshProgress();
+  };
+  document.querySelectorAll("[data-del]").forEach(b => b.onclick = async () => {
+    const d = await api("/api/annotations/delete", {annotation_id: b.dataset.del});
+    S.annotations = d.annotations; renderNotes(); renderRows(); refreshProgress();
+  });
+  document.querySelectorAll("[data-acc],[data-rej]").forEach(b => b.onclick = async () => {
+    const accept = b.hasAttribute("data-acc");
+    await api("/api/suggestions/accept", {suggestion_id: accept ? b.dataset.acc : b.dataset.rej, decision: accept ? "accepted" : "rejected"});
+    [S.suggestions, S.annotations] = await Promise.all([api("/api/suggestions"), api("/api/annotations").then(d => d.annotations)]);
+    renderNotes(); renderSuggestions(); renderRows();
+  });
+}
+
+/* ------------------------------------------------------------ taxonomy */
+function renderTaxonomy() {
+  const modes = S.patterns.modes || [];
+  $("#modes").innerHTML = modes.map((m, i) => {
+    const notes = S.annotations.filter(a => (m.annotation_ids || []).includes(a.annotation_id));
+    return `<div class="card">
+      <div class="grid2">
+        <label>name<br><input type="text" data-m="${i}" data-k="name" value="${esc(m.name || "")}" style="width:100%"></label>
+        <label>status<br><select data-m="${i}" data-k="status">${["draft","confirmed","frozen"].map(s => `<option ${m.status === s ? "selected" : ""}>${s}</option>`).join("")}</select></label>
+      </div>
+      <label>binary definition<br><textarea data-m="${i}" data-k="definition" style="width:100%;height:48px">${esc(m.definition || "")}</textarea></label>
+      <div class="grid2">
+        <label>requirement source<br><input type="text" data-m="${i}" data-k="requirement_source" value="${esc(m.requirement_source || "")}" style="width:100%" placeholder="RESP-2 or spec revision"></label>
+        <label>evaluator type<br><select data-m="${i}" data-k="evaluator_type">${["judge","code"].map(s => `<option ${m.evaluator_type === s ? "selected" : ""}>${s}</option>`).join("")}</select></label>
+      </div>
+      <label>boundary vs nearest mode<br><textarea data-m="${i}" data-k="boundary" style="width:100%;height:38px">${esc(m.boundary || "")}</textarea></label>
+      <div class="grid2">
+        <label>positive trace ids (comma separated)<br><input type="text" data-m="${i}" data-k="example_trace_ids" value="${esc((m.example_trace_ids || []).join(", "))}" style="width:100%"></label>
+        <label>close negative trace ids<br><input type="text" data-m="${i}" data-k="close_negative_trace_ids" value="${esc((m.close_negative_trace_ids || []).join(", "))}" style="width:100%"></label>
+      </div>
+      <div class="muted" style="margin-top:6px">supporting annotations: ${notes.length ? notes.map(n => esc(n.note.slice(0, 60))).join(" | ") : "none linked yet — link from the Labeling view"}</div>
+      <button class="small" data-rm="${i}" style="margin-top:6px">remove mode</button>
+    </div>`;
+  }).join("") || `<div class="muted">no modes yet</div>`;
+  document.querySelectorAll("#modes [data-m]").forEach(el => el.onchange = () => {
+    const m = S.patterns.modes[+el.dataset.m], k = el.dataset.k;
+    m[k] = k.endsWith("trace_ids") ? el.value.split(",").map(s => s.trim()).filter(Boolean) : el.value;
+    savePatterns();
+  });
+  document.querySelectorAll("#modes [data-rm]").forEach(el => el.onclick = () => {
+    S.patterns.modes.splice(+el.dataset.rm, 1); savePatterns();
+  });
+}
+/* Supporting annotations: every open code, with the scenario's characteristics, and a
+   control to link it to a mode (patterns.json annotation_ids). */
+function renderAnnotationTable() {
+  const modes = S.patterns.modes || [];
+  const linked = {};
+  modes.forEach(m => (m.annotation_ids || []).forEach(id => (linked[id] = linked[id] || []).push(m.name)));
+  const sessions = Object.fromEntries(S.sessions.map(s => [s.session_id, s]));
+  const q = $("#a-text").value.toLowerCase(), g = $("#a-group").value, r = $("#a-role").value, mf = $("#a-mode").value;
+
+  const rows = S.annotations.filter(a => {
+    const s = sessions[a.session_id] || {};
+    const names = linked[a.annotation_id] || [];
+    return (!q || (a.note + " " + (a.quote || "") + " " + (a.scenario_id || "")).toLowerCase().includes(q))
+      && (!g || s.scenario_group === g) && (!r || s.role === r)
+      && (!mf || (mf === "__none" ? names.length === 0 : names.includes(mf)));
+  });
+
+  $("#ann-count").textContent = `${rows.length} of ${S.annotations.length} shown · ${new Set(S.annotations.map(a => a.session_id)).size} sessions annotated`;
+  $("#a-mode").innerHTML = `<option value="">mode: all</option><option value="__none">unlinked</option>`
+    + modes.map(m => `<option ${mf === m.name ? "selected" : ""}>${esc(m.name)}</option>`).join("");
+
+  $("#ann-table").innerHTML = `
+    <thead><tr><th>scenario</th><th>role / intent</th><th>group</th><th>note</th><th>quote</th><th>mode</th></tr></thead>
+    <tbody>${rows.map(a => {
+      const s = sessions[a.session_id] || {};
+      const names = linked[a.annotation_id] || [];
+      return `<tr>
+        <td><a href="#" data-go="${a.session_id}">${esc(a.scenario_id || "")}</a>
+          <div class="muted">${(a.trace_id || "").slice(0, 8)}</div></td>
+        <td>${esc(s.role || "")}<div class="muted">${esc(s.intent || "")}${s.difficulty ? " · " + esc(s.difficulty) : ""}</div></td>
+        <td>${s.scenario_group ? `<span class="badge group-${s.scenario_group}">${s.scenario_group}</span>` : ""}
+          ${s.data_quality_case_id ? `<div class="muted">${esc(s.data_quality_case_id)}</div>` : ""}</td>
+        <td>${esc(a.note)}</td>
+        <td class="muted">${a.quote ? "“" + esc(a.quote.slice(0, 60)) + "”" : ""}</td>
+        <td>${names.map(n => `<span class="badge">${esc(n)} <a href="#" data-unlink="${a.annotation_id}" data-mode="${esc(n)}">×</a></span>`).join("")}
+          ${modes.length ? `<select data-link="${a.annotation_id}"><option value="">link…</option>${
+            modes.filter(m => !names.includes(m.name)).map(m => `<option>${esc(m.name)}</option>`).join("")}</select>` : ""}</td>
+      </tr>`;
+    }).join("")}</tbody>`;
+
+  document.querySelectorAll("#ann-table [data-go]").forEach(el => el.onclick = e => {
+    e.preventDefault(); show("review"); select(el.dataset.go);
+  });
+  document.querySelectorAll("#ann-table [data-link]").forEach(el => el.onchange = () => {
+    if (!el.value) return;
+    const mode = S.patterns.modes.find(m => m.name === el.value);
+    mode.annotation_ids = [...new Set([...(mode.annotation_ids || []), el.dataset.link])];
+    savePatterns();
+  });
+  document.querySelectorAll("#ann-table [data-unlink]").forEach(el => el.onclick = e => {
+    e.preventDefault();
+    const mode = S.patterns.modes.find(m => m.name === el.dataset.mode);
+    mode.annotation_ids = (mode.annotation_ids || []).filter(id => id !== el.dataset.unlink);
+    savePatterns();
+  });
+}
+["a-text", "a-group", "a-role", "a-mode"].forEach(id => $("#" + id).oninput = renderAnnotationTable);
+
+$("#add-mode").onclick = () => {
+  S.patterns.modes.push({name: "new_mode", status: "draft", definition: "", requirement_source: "", evaluator_type: "judge",
+    boundary: "", example_trace_ids: [], close_negative_trace_ids: [], annotation_ids: []});
+  savePatterns();
+};
+async function savePatterns() { S.patterns = await api("/api/patterns", S.patterns); renderTaxonomy(); renderAnnotationTable(); renderLabeling(); refreshProgress(); }
+
+/* ------------------------------------------------------------ labeling */
+function finalModes() { return (S.patterns.modes || []).filter(m => m.status === "confirmed" || m.status === "frozen"); }
+async function renderLabeling() {
+  const modes = finalModes();
+  if (!S.session) { $("#labeling").innerHTML = `<div class="card muted">pick a session in the Review view first</div>`; return; }
+  if (!modes.length) { $("#labeling").innerHTML = `<div class="card muted">no confirmed modes yet — add them in the Taxonomy view</div>`; return; }
+  const exp = S.session.expected || {};
+  $("#labeling").innerHTML = `
+    <div class="card"><b>${S.session.scenario_id}</b> · ${S.session.tuple.role} · ${S.session.tuple.intent}
+      <div class="muted" style="margin-top:4px">expected: ${esc(exp.outcome || "human judgment")} — ${esc((exp.reason || exp.criterion || "").slice(0, 200))}</div>
+      <div class="muted">annotations: ${S.annotations.filter(a => a.session_id === S.current).map(a => esc(a.note)).join(" | ") || "none"}</div>
+    </div>
+    <table><thead><tr><th>trace</th>${modes.map(m => `<th>${esc(m.name)}</th>`).join("")}</tr></thead><tbody>
+      ${S.session.trace_ids.map((tid, i) => `<tr><td>turn ${i + 1}<br><span class="muted">${tid.slice(0, 12)}</span></td>
+        ${modes.map(m => {
+          const row = (S.labels[m.name] || []).find(r => r.trace_id === tid);
+          const v = row ? row.label : null;
+          return `<td>
+            <button class="pill ${v === 1 ? "on-fail" : ""}" data-t="${tid}" data-m="${esc(m.name)}" data-v="1">Fail</button>
+            <button class="pill ${v === 0 ? "on-pass" : ""}" data-t="${tid}" data-m="${esc(m.name)}" data-v="0">Pass</button>
+          </td>`;
+        }).join("")}</tr>`).join("")}
+    </tbody></table>
+    <div class="muted" style="margin-top:6px">labels save locally and, when scores are on, to Langfuse (1 = failure present)</div>`;
+  document.querySelectorAll("#labeling .pill").forEach(b => b.onclick = async () => {
+    const res = await api("/api/labels", {mode: b.dataset.m, trace_id: b.dataset.t, label: +b.dataset.v});
+    if (res.score_error) alert("saved locally, Langfuse score failed:\n" + res.score_error);
+    S.labels = await api("/api/labels"); renderLabeling(); refreshProgress();
+  });
+}
+
+/* ------------------------------------------------------------ progress */
+async function refreshProgress() { S.progress = await api("/api/progress"); renderProgress(); }
+function renderProgress() {
+  const p = S.progress; if (!p) return;
+  const pct = Math.min(100, Math.round(100 * p.traces_reviewed / p.target_traces));
+  $("#progress").innerHTML = `
+    <div class="card"><b>Review progress</b>
+      <div class="muted">${p.traces_reviewed} of ${p.target_traces} traces reviewed (${p.sessions_reviewed} of ${p.sessions_total} sessions, ${p.annotations} annotations)</div>
+      <div class="bar" style="margin-top:6px"><span style="width:${pct}%"></span></div>
+    </div>
+    <div class="card"><b>Batches</b> <span class="muted">(handout: 15 uniform, 15 cluster, 30 dimension, 25 depth, 15 final)</span>
+      ${Object.keys(p.batches).length ? `<table style="margin-top:6px"><tr><th>batch</th><th>size</th><th>reviewed</th></tr>
+        ${Object.entries(p.batches).map(([k, v]) => `<tr><td>${esc(k)}</td><td>${v.size}</td><td>${v.reviewed}</td></tr>`).join("")}</table>`
+        : `<div class="muted">no sample_manifest.json batches yet</div>`}
+    </div>
+    <div class="card"><b>Modes</b>
+      ${p.final_modes.length ? `<table style="margin-top:6px"><tr><th>mode</th><th>fail</th><th>pass</th><th>labeled</th></tr>
+        ${p.final_modes.map(m => `<tr><td>${esc(m)}</td><td>${p.mode_counts[m].fail}</td><td>${p.mode_counts[m].pass}</td><td>${p.mode_counts[m].labeled}</td></tr>`).join("")}</table>`
+        : `<div class="muted">no confirmed modes yet</div>`}
+      ${p.draft_modes.length ? `<div class="muted" style="margin-top:6px">draft: ${p.draft_modes.map(esc).join(", ")}</div>` : ""}
+    </div>
+    <div class="card"><b>Incomplete judgments</b> <span class="muted">reviewed sessions missing a label for a confirmed mode</span>
+      ${p.incomplete.length ? `<div style="max-height:260px;overflow:auto;margin-top:6px">${p.incomplete.map(i =>
+        `<div style="border-bottom:1px solid var(--line);padding:4px 0"><a href="#" data-go="${i.session_id}">${esc(i.scenario_id)}</a>
+          <span class="muted">${i.missing.map(m => m.trace_id.slice(0, 8) + ": " + m.modes.join(", ")).join(" · ")}</span></div>`).join("")}</div>`
+        : `<div class="muted">none</div>`}
+    </div>`;
+  document.querySelectorAll("#progress [data-go]").forEach(a => a.onclick = e => {
+    e.preventDefault(); show("review"); select(a.dataset.go);
+  });
+}
+
+/* --------------------------------------------------------- suggestions */
+function renderSuggestions() {
+  const pending = S.suggestions.filter(s => !s.decision), decided = S.suggestions.filter(s => s.decision);
+  $("#suggestions").innerHTML = `
+    <div class="card"><b>Agent suggestions</b>
+      <div class="muted">Suggestions are proposals only. Accepting copies one into your annotations, marked as accepted; rejecting keeps the record for the handout’s “rejected suggestion”.</div>
+      ${pending.length ? pending.map(s => `<div class="note suggestion" style="margin-top:8px">
+          <b>${esc(s.suggested_mode || "(no mode)")}</b> · <span class="muted">${esc(s.scenario_id || "")}</span>
+          <div class="quote">“${esc((s.quote || "").slice(0, 120))}”</div>
+          <div>${esc(s.note || "")}</div>
+          <div class="actions"><button class="small" data-acc="${s.suggestion_id}">accept</button>
+            <button class="small" data-rej="${s.suggestion_id}">reject</button></div>
+        </div>`).join("") : `<div class="muted" style="margin-top:8px">none pending</div>`}
+    </div>
+    ${decided.length ? `<div class="card"><b>Decided</b><table style="margin-top:6px"><tr><th>mode</th><th>scenario</th><th>decision</th></tr>
+      ${decided.map(s => `<tr><td>${esc(s.suggested_mode || "")}</td><td>${esc(s.scenario_id || "")}</td><td>${esc(s.decision)}</td></tr>`).join("")}</table></div>` : ""}`;
+  document.querySelectorAll("#suggestions [data-acc],#suggestions [data-rej]").forEach(b => b.onclick = async () => {
+    const accept = b.hasAttribute("data-acc");
+    await api("/api/suggestions/accept", {suggestion_id: accept ? b.dataset.acc : b.dataset.rej, decision: accept ? "accepted" : "rejected"});
+    [S.suggestions, S.annotations] = await Promise.all([api("/api/suggestions"), api("/api/annotations").then(d => d.annotations)]);
+    renderSuggestions(); renderNotes();
+  });
+}
+
+/* -------------------------------------------------------------- views */
+function show(view) {
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("active", b.dataset.view === view));
+  document.querySelectorAll("main").forEach(m => m.classList.toggle("active", m.id === view));
+  if (view === "taxonomy") { renderTaxonomy(); renderAnnotationTable(); }
+  if (view === "labeling") renderLabeling();
+  if (view === "progress") refreshProgress();
+  if (view === "suggestions") renderSuggestions();
+}
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => show(b.dataset.view));
+
+document.addEventListener("keydown", e => {
+  if (["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) return;
+  const rows = filtered(), i = rows.findIndex(r => r.session_id === S.current);
+  if (e.key === "j" && i < rows.length - 1) select(rows[i + 1].session_id);
+  if (e.key === "k" && i > 0) select(rows[i - 1].session_id);
+  if (e.key === "e") { const d = $("#expected"); if (d) d.open = !d.open; }
+});
+
+boot();
+</script>
+</body>
+</html>

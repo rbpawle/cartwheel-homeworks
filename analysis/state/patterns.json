@@ -1,1 +1,15 @@
-{"modes": []}
+{
+  "modes": [
+    {
+      "name": "new_mode",
+      "status": "draft",
+      "definition": "",
+      "requirement_source": "",
+      "evaluator_type": "judge",
+      "boundary": "",
+      "example_trace_ids": [],
+      "close_negative_trace_ids": [],
+      "annotation_ids": []
+    }
+  ]
+}
