@@ -1,19 +1,23 @@
 # Specification addendum: observability and review-app changes
 
-Changes made during Homework 4 preparation that are not covered by `SPEC.md`. Each
-section states why the change exists, what it touches, and how to verify or recreate it.
+Behavior not covered by `SPEC.md`: the observability changes to the Cartwheel application and the
+full specification of the trace review app. Together with `SPEC.md`, the reference interface
+(`analysis/server.py`, `analysis/ui/index.html`), and the Module 2 helpers under
+`analysis/helpers/`, this document is meant to be enough to rebuild the review app from scratch.
 
-Sections 1 to 4 and 7 describe the changes; section 5 records defects found and fixed, and
-section 6 the state of the work at the time of writing.
+Each section states why the behavior exists, what it touches, and how to verify it. Section 5
+records defects to avoid reintroducing.
 
 The changes:
 
 1. **Model-exchange visibility** — capture (or recover) the request/response traffic between
    the application and the model, which the Module 1 instrumentation did not store.
-2. **Review-app favicon** — a small identity change to the Homework 4 review interface.
-3. **Batch sampling and saved sample sets in the review app** — draw a review batch by strategy or
-   stratified across one dimension's values, and return to or delete an earlier batch.
-4. **Review-app quality-of-life changes** — selection, popover dismissal, and tool-argument display.
+2. **Review-app favicon.**
+3. **Batch sampling, filtering, and saved batches in the review app** — draw a batch by strategy or
+   stratified across a dimension, filter by pasted scenario ids, save the current view as a batch,
+   and rename, reapply, or delete a saved one.
+4. **Review-app quality-of-life changes** — selection, popover dismissal, tool-argument display,
+   keyboard saving, and editable annotations.
 5. **Supporting-annotations table** (section 7) — every open code in one table, with mode linking.
 
 ---
@@ -243,7 +247,40 @@ The preview shows counts only — no expected results, no annotations, no failur
 dimension is chosen before outcomes are seen, and the manifest records the dimension, plan, and
 timestamp as evidence of that order.
 
-### 3.5 Behavior worth knowing
+### 3.5 Filtering by scenario id, saving a view as a batch, renaming
+
+**Id filter.** A textarea in the filter section accepts scenario ids separated by commas, tabs,
+semicolons, spaces, or newlines, so a column pasted from a spreadsheet works. Bare numbers are
+padded (`42` becomes `support-0042`). A note under the box reports how many matched and names the
+first few that did not, so typos are visible rather than silent.
+
+**Save what is showing as a batch** (`POST /api/sample/save`). Part B's third batch is a *depth
+search*, not a sample: the reviewer retrieves traces with a query (ids, text, dimension) and keeps
+the result. `save_manual_batch(name, session_ids, note)` records those sessions with
+`strategy: "manual"` and a `note` describing how the view was filtered
+(`role: shopper · text:escalate`), so the manifest documents the retrieval instead of implying a
+random draw.
+
+**Rename** (`POST /api/sample/rename`). Batches are auto-named from their strategy and size
+(`<strategy>_<k>`, `<dimension>_<k>`), which does not survive contact with a real review plan. Rename works from the sidebar and from the
+Progress view's batch table; the endpoint rejects an empty name and refuses to overwrite an existing
+one, rather than silently merging two batches.
+
+### 3.6 Sidebar layout
+
+Three labelled sections, because the controls do three different jobs:
+
+| Section | Contents | Default |
+| --- | --- | --- |
+| **Sessions** | attribute filters, text search, id paste, active-filter chips | open |
+| **Draw a batch** | by strategy, by dimension, from what is showing now | collapsed |
+| **Saved batches** | batch dropdown, rename, delete | collapsed |
+
+The header carries a live `showing N of 250` count. Each active filter appears as a **chip** that
+clears itself on click, with a `clear all` when more than one is active; this replaced a `clear`
+button that was easy to miss, and it makes an applied batch visible rather than mysterious.
+
+### 3.7 Behavior worth knowing
 
 - `outlier` returns only as many traces as the IQR flags; asking for 10 returned 2.
 - `diversity` is two thirds cluster representatives and one third random, by `_diversity_picks`
@@ -282,50 +319,64 @@ string). The row now wraps and `.tool .args` takes a full-width line with `white
 and `overflow-wrap: anywhere`, so the tool name stays on the first line and the arguments are fully
 readable.
 
+**Saving a note with the keyboard.** Enter saves in the annotation popover; Shift+Enter inserts a
+newline. Escape and click-away still cancel.
+
+**Editing a saved note.** Each margin note has an `edit` control that swaps the text for a textarea
+preloaded with the current note (cursor at the end), with the same key bindings. Saving POSTs the
+annotation back with its existing `annotation_id`, so `_save_annotation` replaces the record rather
+than appending a second one; `quote`, `trace_id`, and `block_index` are preserved, and the sidebar,
+annotations table, and progress counts all refresh. Previously a note could only be deleted and
+rewritten, which lost its anchor.
+
 ---
 
-## 5. Defects found and fixed
+## 5. Defects to avoid reintroducing
+
+Each of these was hit during development; the rule after it is what prevents a repeat.
 
 **View switching did nothing (CSS specificity).** The nav buttons toggled `.active` correctly, but
 `#review { display: grid }` is an id selector (specificity 100) and outranked both
 `main { display: none }` and `main.active { display: block }`, so the review pane stayed visible
 under every view. The other views did render, below a full-height review pane, which read as "the
-tabs do nothing". Fixed by moving the layout onto `#review.active` and adding
+tabs do nothing". The layout belongs on `#review.active`, with
 `main:not(.active) { display: none !important; }` so no later id rule can reintroduce it.
 
-Worth noting for future work: this class of defect is invisible to the checks run here
-(`node --check` on the inline script, and curl against the API), because both the markup and the
-JavaScript were correct. Only a browser shows it.
+**Rule:** `#review` may set `display` only under `.active`. This class of defect passes both
+`node --check` on the inline script and any API check, because the markup and the JavaScript are
+both correct; only a browser reveals it.
 
-**Supporting-annotations view was missing (unmet requirement, not an enhancement).** Homework 4
-Part A requires "a view of the current taxonomy and its supporting annotations". The first build
-shipped the mode editor only, and its help text pointed at a linking control in the Labeling view
-that did not exist, so `annotation_ids` stayed empty on every mode. Fixed in section 7.
+**Taxonomy without its supporting annotations.** Homework 4 Part A requires "a view of the current
+taxonomy and its supporting annotations". A mode editor alone does not satisfy it: without a linking
+control, `annotation_ids` stays empty on every mode. **Rule:** ship section 7 with the taxonomy view,
+and do not describe a control that does not exist.
 
-**Saved batches were silently dropped.** `tools.select_traces` rewrites `sample_manifest.json` in
-its own shape, so reading the existing `batches` *after* calling it returned a manifest that no
-longer had them. Fixed by reading before the call; see section 3.2.
+**A removed element takes the whole page down.** A top-level reference to an element that no longer
+exists (`$("#gone").onclick = …`) throws a `TypeError` during script evaluation, so **everything
+below it never runs**: nav bindings, `boot()`, every data load. The symptoms look unrelated to the
+cause — dead tabs and empty dropdowns.
+
+**Rules:** wrap `boot()` in a `catch` that logs and shows `load failed — see console` in the
+sidebar header, so a failure degrades visibly; and after any UI edit, extract every `$("#id")` in
+the script and compare against the ids present in the markup and in the render functions. Every
+referenced id must exist.
+
+**Saved batches silently dropped.** `tools.select_traces` rewrites `sample_manifest.json` in its
+own shape, so reading the existing `batches` *after* calling it returns a manifest that no longer
+has them. **Rule:** read the batches before calling it; see section 3.2.
 
 ---
 
-## 6. State at the time of writing
+## 6. Deliberately not implemented
 
-Review app: live against Langfuse, 250 sessions / 283 traces, expected results joined from
-`scenarios/support_scenarios.jsonl`, model exchange reconstructed per turn, tool schemas from code,
-batch sampling with saved sets.
-
-Review progress (from `GET /api/progress`, 2026-09-20): 17 sessions reviewed, 21 traces,
-22 annotations, 2 sample batches retained (`diversity_15_2`, `random_15_2`), no taxonomy modes yet,
-no labels, no agent suggestions. 220 of 250 sessions remain undrawn and unannotated.
-
-Known gaps, in priority order:
-
-1. **No map or cluster visualization.** Selection is available, coverage is not visible; see
-   `analysis/report/interface_comparison.md`.
-2. **Suggestions plumbing is unused.** The queue, accept/reject, and promotion to annotation all
-   work, but no suggestions have been generated.
-3. **`outlier` under-returns** (IQR-flagged traces only) and **`diversity` mixes** cluster
-   representatives with random picks; there is no pure-cluster strategy.
+- **Map or cluster visualization.** The reference interface has a 2D projection view backed by
+  `/api/graph` and `graph.json`. This app has no projection and no map; batch selection covers the
+  sampling need, but coverage is not visualizable.
+- **Pure-cluster sampling strategy.** `diversity` mixes cluster representatives with random picks
+  (see 3.7); no strategy returns representatives only.
+- **Agent suggestion generation.** The queue, accept/reject, and promotion to annotation are
+  implemented; nothing generates suggestions. They are written to `suggestions.json` by an external
+  process or by hand.
 
 ---
 
@@ -362,8 +413,8 @@ table re-renders after any taxonomy save, so newly created modes appear in the p
 | `observability/instrument.py` | Adds `record_model_exchange` |
 | `analysis/review_app/steps.py` | New: per-step exchange reconstruction |
 | `analysis/review_app/toolset.py` | New: tool schemas and model settings from code |
-| `analysis/review_app/server.py` | Attaches `exchange` per turn; serves `/api/toolset`, `/api/dimensions`, `POST /api/sample`, `POST /api/sample/stratified`, and `POST /api/sample/delete`; batch-aware `progress()` |
-| `analysis/review_app/ui/index.html` | Model-exchange and toolset panels; favicon link; sampling controls, stratified-draw table, and saved-samples dropdown; selection, popover, and tool-argument fixes; supporting-annotations table with mode linking; view-switching CSS fix |
+| `analysis/review_app/server.py` | Attaches `exchange` per turn; serves `/api/toolset`, `/api/dimensions`, `POST /api/sample`, `/api/sample/stratified`, `/api/sample/save`, `/api/sample/rename`, and `/api/sample/delete`; batch-aware `progress()` |
+| `analysis/review_app/ui/index.html` | Model-exchange and toolset panels; favicon link; three-section sidebar (filters with id paste and chips, draw-a-batch, saved batches); stratified-draw table; selection, popover, and tool-argument fixes; Enter-to-save and editable annotations; supporting-annotations table with mode linking; view-switching CSS fix |
 | `analysis/review_app/ui/favicon.svg` | New |
 | `analysis/state/session_map.json` | Scenario-to-session mapping for the backfilled traces |
 

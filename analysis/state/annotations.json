@@ -736,6 +736,17 @@
       "note": "clearly the refund policy is too permissive",
       "ts": "2026-09-20T19:42:38.964636+00:00",
       "author": "human"
+    },
+    {
+      "annotation_id": "80a719846a7a",
+      "session_id": "ee9d57c3119be78226f836ef551910a2",
+      "trace_id": "fec44356a840df843d8ca4ba9b6d741e",
+      "scenario_id": "support-0244",
+      "block_index": "1:3",
+      "quote": "cw-returns",
+      "note": "should not cite policy identifiers to shoppers",
+      "ts": "2026-09-20T19:44:03.120196+00:00",
+      "author": "human"
     }
   ]
 }
