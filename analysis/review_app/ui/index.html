@@ -31,6 +31,12 @@
   #review.active { display: grid; grid-template-columns: 280px minmax(0, 1fr) 280px; gap: 24px; align-items: start; }
   #list { position: sticky; top: 58px; max-height: calc(100vh - 74px); overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
   #list .filters { padding: 8px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 4px; }
+  .sec-head { padding: 7px 9px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); border-bottom: 1px solid var(--line); }
+  details.sec { border-top: 1px solid var(--line); }
+  details.sec > summary { padding: 6px 9px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); cursor: pointer; }
+  .chip { display: inline-block; font-size: 11px; border: 1px solid var(--line); background: #eef1ff; border-radius: 999px; padding: 1px 7px; margin: 2px 3px 0 0; cursor: pointer; }
+  .chip:hover { background: #dde3ff; }
+  .chip.clear-all { background: #f4f2ee; }
   #f-ids { font-size: 12px; padding: 3px; border: 1px solid var(--line); border-radius: 4px; resize: vertical; font-family: ui-monospace, Menlo, monospace; }
   #d-table { font-size: 12px; margin: 4px 0; }
   #d-table th, #d-table td { padding: 2px 5px; }
@@ -115,36 +121,55 @@
 
 <main id="review" class="active">
   <div id="list">
+    <div class="sec-head">sessions <span class="muted" id="showing"></span></div>
     <div class="filters">
       <select id="f-group"><option value="">group: all</option><option>coverage</option><option>challenge</option></select>
       <select id="f-role"><option value="">role: all</option><option>shopper</option><option>merchant</option><option>support</option></select>
       <select id="f-intent"><option value="">intent: all</option></select>
       <select id="f-state"><option value="">reviewed: all</option><option value="todo">unreviewed</option><option value="done">reviewed</option></select>
       <input id="f-text" type="text" placeholder="search text" size="12">
-      <textarea id="f-ids" placeholder="scenario ids (comma, tab, or line separated)" rows="2" style="flex-basis:100%"></textarea>
+      <textarea id="f-ids" placeholder="paste scenario ids (comma, tab, or line separated)" rows="2" style="flex-basis:100%"></textarea>
       <span class="muted" id="f-ids-note" style="flex-basis:100%"></span>
+      <div id="chips" style="flex-basis:100%"></div>
     </div>
-    <div class="filters" style="border-top:0">
-      <select id="s-strategy" title="selection strategy">
-        <option value="diversity">diversity</option>
-        <option value="random">random</option>
-        <option value="outlier">outlier</option>
-      </select>
-      <input id="s-k" type="number" min="1" max="100" value="15" style="width:52px" title="batch size">
-      <button class="small" id="s-run">sample</button>
-      <button class="small" id="s-clear" hidden>clear</button>
-      <span class="muted" id="s-note" style="flex-basis:100%"></span>
-      <select id="s-saved" style="flex:1" title="saved sample sets"><option value="">saved samples…</option></select>
-      <button class="small" id="s-trash" title="delete the selected sample set">🗑</button>
-    </div>
-    <div class="filters" style="border-top:0">
-      <select id="d-dim" style="flex:1" title="stratify a batch across one dimension's values">
-        <option value="">stratify by…</option>
-      </select>
-      <span class="muted" id="d-note" style="flex-basis:100%"></span>
-      <table id="d-table" hidden></table>
-      <button class="small" id="d-draw" hidden style="flex-basis:100%">draw and filter</button>
-    </div>
+
+    <details class="sec">
+      <summary>draw a batch</summary>
+      <div class="filters">
+        <span class="muted" style="flex-basis:100%">by strategy</span>
+        <select id="s-strategy" title="selection strategy">
+          <option value="diversity">diversity</option>
+          <option value="random">random</option>
+          <option value="outlier">outlier</option>
+        </select>
+        <input id="s-k" type="number" min="1" max="100" value="15" style="width:52px" title="batch size">
+        <button class="small" id="s-run">draw</button>
+        <span class="muted" id="s-note" style="flex-basis:100%"></span>
+      </div>
+      <div class="filters" style="border-top:0">
+        <span class="muted" style="flex-basis:100%">by dimension</span>
+        <select id="d-dim" style="flex:1" title="stratify a batch across one dimension's values">
+          <option value="">stratify by…</option>
+        </select>
+        <span class="muted" id="d-note" style="flex-basis:100%"></span>
+        <table id="d-table" hidden></table>
+        <button class="small" id="d-draw" hidden style="flex-basis:100%">draw and filter</button>
+      </div>
+      <div class="filters" style="border-top:0">
+        <span class="muted" style="flex-basis:100%">from what is showing now</span>
+        <input id="b-name" type="text" placeholder="batch name" style="flex:1">
+        <button class="small" id="b-save">save as batch</button>
+      </div>
+    </details>
+
+    <details class="sec">
+      <summary>saved batches</summary>
+      <div class="filters">
+        <select id="s-saved" style="flex:1" title="saved sample sets"><option value="">saved batches…</option></select>
+        <button class="small" id="s-rename" title="rename the selected batch">✎</button>
+        <button class="small" id="s-trash" title="delete the selected batch">🗑</button>
+      </div>
+    </details>
     <div id="confirm-pop"></div>
     <div id="rows"></div>
   </div>
@@ -244,10 +269,6 @@ $("#s-run").onclick = async () => {
   await loadDimensions(); renderDimension();
   refreshProgress();
 };
-$("#s-clear").onclick = () => {
-  S.sample = null; $("#s-clear").hidden = true; $("#s-note").textContent = "";
-  $("#s-saved").value = ""; renderRows();
-};
 /* saved sample sets: read from sample_manifest.json, applied as the sidebar filter */
 function stamp(iso) {
   if (!iso) return "";
@@ -267,16 +288,49 @@ async function loadSaved(selectName) {
 }
 function applyBatch(name) {
   const b = S.batches[name];
-  if (!b) { S.sample = null; $("#s-clear").hidden = true; $("#s-note").textContent = ""; renderRows(); return; }
+  if (!b) { S.sample = null; $("#s-note").textContent = ""; renderRows(); return; }
   S.sample = {name, ids: new Set(b.sessions.map(s => s.session_id)),
               reasons: Object.fromEntries(b.sessions.map(s => [s.session_id, s.reason]))};
   $("#s-note").textContent = `${name}: ${b.sessions.length} sessions · drawn ${stamp(b.selected_at)}`;
-  $("#s-clear").hidden = false;
   renderRows();
   const first = filtered()[0];
   if (first) select(first.session_id);
 }
 $("#s-saved").onchange = () => applyBatch($("#s-saved").value);
+
+$("#b-save").onclick = async () => {
+  const rows = filtered();
+  if (!rows.length) { $("#s-note").textContent = "nothing to save"; return; }
+  const note = [$("#f-group").value, $("#f-role").value, $("#f-intent").value,
+                $("#f-text").value.trim() ? `text:${$("#f-text").value.trim()}` : "",
+                $("#f-ids").value.trim() ? "pasted ids" : ""].filter(Boolean).join(" · ") || "saved from the current view";
+  const res = await api("/api/sample/save", {
+    name: $("#b-name").value.trim() || "saved", note,
+    session_ids: rows.map(r => r.session_id)});
+  if (res.error) { $("#s-note").textContent = res.error; return; }
+  $("#b-name").value = "";
+  $("#s-note").textContent = `saved ${res.batch_name}: ${res.sessions.length} sessions`;
+  await loadSaved(res.batch_name);
+  applyBatch(res.batch_name);
+  refreshProgress();
+};
+
+async function renameBatch(name, next) {
+  const res = await api("/api/sample/rename", {batch_name: name, new_name: next});
+  if (res.error) return res.error;
+  if (S.sample && S.sample.name === name) S.sample.name = res.to;
+  await loadSaved(res.to);
+  renderRows(); refreshProgress();
+  return null;
+}
+$("#s-rename").onclick = async () => {
+  const name = $("#s-saved").value;
+  if (!name) return;
+  const next = prompt("Rename batch", name);
+  if (!next || next === name) return;
+  const err = await renameBatch(name, next);
+  if (err) $("#s-note").textContent = err;
+};
 
 /* Stratified batch: pick one dimension, see what each value still has available, edit the
    per-value draw, then commit. Counts only — no outcomes — so the dimension is chosen first. */
@@ -338,7 +392,7 @@ $("#s-trash").onclick = () => {
   $("#confirm-yes").onclick = async () => {
     await api("/api/sample/delete", {batch_name: name});
     pop.style.display = "none";
-    if (S.sample && S.sample.name === name) { S.sample = null; $("#s-clear").hidden = true; $("#s-note").textContent = ""; }
+    if (S.sample && S.sample.name === name) { S.sample = null; $("#s-note").textContent = ""; }
     await loadSaved();
     await loadDimensions(); renderDimension();
     renderRows(); refreshProgress();
@@ -348,6 +402,24 @@ document.addEventListener("mousedown", e => {
   const pop = $("#confirm-pop");
   if (pop.style.display === "block" && !pop.contains(e.target) && e.target.id !== "s-trash") pop.style.display = "none";
 });
+function renderChips() {
+  const bits = [];
+  const add = (label, reset) => bits.push({label, reset});
+  if ($("#f-group").value) add(`group: ${$("#f-group").value}`, () => $("#f-group").value = "");
+  if ($("#f-role").value) add(`role: ${$("#f-role").value}`, () => $("#f-role").value = "");
+  if ($("#f-intent").value) add(`intent: ${$("#f-intent").value}`, () => $("#f-intent").value = "");
+  if ($("#f-state").value) add(`${$("#f-state").value}`, () => $("#f-state").value = "");
+  if ($("#f-text").value.trim()) add(`text: ${$("#f-text").value.trim().slice(0, 14)}`, () => $("#f-text").value = "");
+  if ($("#f-ids").value.trim()) add(`ids pasted`, () => $("#f-ids").value = "");
+  if (S.sample) add(`batch: ${S.sample.name}`, () => { S.sample = null; $("#s-saved").value = ""; });
+  $("#chips").innerHTML = bits.map((b, i) => `<span class="chip" data-chip="${i}">${esc(b.label)} ×</span>`).join("")
+    + (bits.length > 1 ? `<span class="chip clear-all" data-clear-all="1">clear all ×</span>` : "");
+  document.querySelectorAll("#chips [data-chip]").forEach(el => el.onclick = () => {
+    bits[+el.dataset.chip].reset(); renderRows();
+  });
+  const all = document.querySelector("#chips [data-clear-all]");
+  if (all) all.onclick = () => { bits.forEach(b => b.reset()); renderRows(); };
+}
 function renderRows() {
   const done = annotatedIds();
   $("#rows").innerHTML = filtered().map(s => `
@@ -358,6 +430,8 @@ function renderRows() {
       <div class="muted">${esc(s.opening)}</div>
     </div>`).join("") || `<div class="row muted">no sessions match</div>`;
   document.querySelectorAll("#rows .row[data-id]").forEach(el => el.onclick = () => select(el.dataset.id));
+  $("#showing").textContent = `showing ${filtered().length} of ${S.sessions.length}`;
+  renderChips();
 }
 ["f-group","f-role","f-intent","f-state","f-text","f-ids"].forEach(id => $("#"+id).oninput = renderRows);
 
@@ -498,6 +572,9 @@ function closePopover() {
   });
 }
 $("#pop-cancel").onclick = closePopover;
+$("#pop-note").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("#pop-save").click(); }
+});
 $("#pop-copy").onclick = async () => {
   if (!S.sel) return;
   try { await navigator.clipboard.writeText(S.sel.quote); } catch (e) { /* clipboard blocked */ }
@@ -538,8 +615,11 @@ function renderNotes() {
     <div class="muted" style="margin-bottom:6px">${mine.length} annotation(s)</div>
     ${mine.map(a => `<div class="note">
         ${a.quote ? `<div class="quote">“${esc(a.quote.slice(0, 80))}”</div>` : ""}
-        <div>${esc(a.note)}</div>
-        <div class="actions"><button class="small" data-del="${a.annotation_id}">delete</button></div>
+        <div data-note="${a.annotation_id}">${esc(a.note)}</div>
+        <div class="actions">
+          <button class="small" data-edit="${a.annotation_id}">edit</button>
+          <button class="small" data-del="${a.annotation_id}">delete</button>
+        </div>
       </div>`).join("")}
     ${sugg.map(s => `<div class="note suggestion">
         <span class="badge">agent suggestion</span>
@@ -555,6 +635,31 @@ function renderNotes() {
       trace_id: S.session.trace_ids[0], quote: "", note: "no failure observed"});
     S.annotations.push(saved); renderNotes(); renderRows(); refreshProgress();
   };
+  document.querySelectorAll("[data-edit]").forEach(b => b.onclick = () => {
+    const id = b.dataset.edit;
+    const target = document.querySelector(`[data-note="${id}"]`);
+    const current = S.annotations.find(a => a.annotation_id === id);
+    if (!target || !current || target.querySelector("textarea")) return;
+    target.innerHTML = `<textarea style="width:100%;height:60px">${esc(current.note)}</textarea>
+      <div class="actions"><button class="small" data-save="${id}">save</button>
+        <button class="small" data-cancel="${id}">cancel</button></div>
+      <div class="muted">enter saves · shift+enter for a new line · esc cancels</div>`;
+    const box = target.querySelector("textarea");
+    box.focus(); box.selectionStart = box.value.length;
+    const save = async () => {
+      const note = box.value.trim();
+      if (!note) return;
+      const saved = await api("/api/annotations", {...current, note});
+      S.annotations = S.annotations.map(a => a.annotation_id === id ? saved : a);
+      renderNotes(); renderRows(); renderAnnotationTable(); refreshProgress();
+    };
+    box.onkeydown = e => {
+      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); save(); }
+      if (e.key === "Escape") { e.preventDefault(); renderNotes(); }
+    };
+    target.querySelector("[data-save]").onclick = save;
+    target.querySelector("[data-cancel]").onclick = () => renderNotes();
+  });
   document.querySelectorAll("[data-del]").forEach(b => b.onclick = async () => {
     const d = await api("/api/annotations/delete", {annotation_id: b.dataset.del});
     S.annotations = d.annotations; renderNotes(); renderRows(); refreshProgress();
@@ -708,7 +813,9 @@ function renderProgress() {
     </div>
     <div class="card"><b>Batches</b> <span class="muted">(handout: 15 uniform, 15 cluster, 30 dimension, 25 depth, 15 final)</span>
       ${Object.keys(p.batches).length ? `<table style="margin-top:6px"><tr><th>batch</th><th>size</th><th>reviewed</th></tr>
-        ${Object.entries(p.batches).map(([k, v]) => `<tr><td>${esc(k)}</td><td>${v.size}</td><td>${v.reviewed}</td></tr>`).join("")}</table>`
+        ${Object.entries(p.batches).map(([k, v]) => `<tr>
+          <td>${esc(k)} <button class="small" data-rn="${esc(k)}" title="rename">✎</button></td>
+          <td>${v.size}</td><td>${v.reviewed}</td></tr>`).join("")}</table>`
         : `<div class="muted">no sample_manifest.json batches yet</div>`}
     </div>
     <div class="card"><b>Modes</b>
@@ -725,6 +832,12 @@ function renderProgress() {
     </div>`;
   document.querySelectorAll("#progress [data-go]").forEach(a => a.onclick = e => {
     e.preventDefault(); show("review"); select(a.dataset.go);
+  });
+  document.querySelectorAll("#progress [data-rn]").forEach(b => b.onclick = async () => {
+    const name = b.dataset.rn, next = prompt("Rename batch", name);
+    if (!next || next === name) return;
+    const err = await renameBatch(name, next);
+    if (err) alert(err);
   });
 }
 
@@ -771,7 +884,11 @@ document.addEventListener("keydown", e => {
   if (e.key === "e") { const d = $("#expected"); if (d) d.open = !d.open; }
 });
 
-boot();
+boot().catch(err => {
+  const el = $("#showing");
+  if (el) el.textContent = "load failed — see console";
+  console.error("boot failed:", err);
+});
 </script>
 </body>
 </html>

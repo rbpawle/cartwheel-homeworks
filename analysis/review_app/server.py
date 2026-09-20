@@ -386,6 +386,50 @@ def sample_stratified(dimension: str, per_value: dict[str, int], exclude_reviewe
     return {"batch_name": name, "shortfalls": shortfalls, **batch}
 
 
+def save_manual_batch(name: str, session_ids: list[str], note: str) -> dict[str, Any]:
+    """Record whatever the reviewer is currently looking at as a batch.
+
+    Depth searches (Part B's third batch) are retrieval, not sampling: the reviewer filters
+    by ids, text, or dimension and then keeps the result. Those sessions become a batch so the
+    manifest records how they were chosen.
+    """
+    manifest = read_state("sample_manifest.json")
+    batches = manifest.get("batches") if isinstance(manifest.get("batches"), dict) else {}
+    wanted = set(session_ids)
+    sessions = [
+        {"session_id": s["session_id"], "scenario_id": s["scenario_id"],
+         "trace_ids": s["trace_ids"], "reason": note or "saved from the current view"}
+        for s in State.sessions if s["session_id"] in wanted
+    ]
+    if not sessions:
+        return {"error": "no matching sessions"}
+    base = (name or "saved").strip() or "saved"
+    final, suffix = base, 2
+    while final in batches:
+        final, suffix = f"{base}_{suffix}", suffix + 1
+    batches[final] = {"strategy": "manual", "k": len(sessions), "selected_at": _utcnow(),
+                      "note": note, "sessions": sessions}
+    manifest["batches"] = batches
+    write_state("sample_manifest.json", manifest)
+    return {"batch_name": final, **batches[final]}
+
+
+def rename_batch(old: str, new: str) -> dict[str, Any]:
+    """Rename a batch, keeping its position and contents."""
+    manifest = read_state("sample_manifest.json")
+    batches = manifest.get("batches") if isinstance(manifest.get("batches"), dict) else {}
+    new = (new or "").strip()
+    if old not in batches:
+        return {"error": f"no batch named {old!r}"}
+    if not new:
+        return {"error": "a batch needs a name"}
+    if new in batches and new != old:
+        return {"error": f"{new!r} already exists"}
+    manifest["batches"] = {(new if key == old else key): value for key, value in batches.items()}
+    write_state("sample_manifest.json", manifest)
+    return {"renamed": old, "to": new, "batches": manifest["batches"]}
+
+
 def sample_batch(strategy: str, k: int, exclude_reviewed: bool) -> dict[str, Any]:
     """Draw a review batch with ``analysis.helpers.tools.select_traces``.
 
@@ -631,6 +675,11 @@ class Handler(BaseHTTPRequestHandler):
                     return self._json(sample_stratified(
                         body.get("dimension", "role"), body.get("per_value") or {},
                         bool(body.get("exclude_reviewed", True))))
+                if path == "/api/sample/save":
+                    return self._json(save_manual_batch(
+                        body.get("name", ""), body.get("session_ids") or [], body.get("note", "")))
+                if path == "/api/sample/rename":
+                    return self._json(rename_batch(body.get("batch_name", ""), body.get("new_name", "")))
                 if path == "/api/sample/delete":
                     manifest = read_state("sample_manifest.json")
                     batches = manifest.get("batches") or {}
