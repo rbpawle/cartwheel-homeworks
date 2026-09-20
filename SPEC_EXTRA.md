@@ -11,8 +11,8 @@ The changes:
 1. **Model-exchange visibility** — capture (or recover) the request/response traffic between
    the application and the model, which the Module 1 instrumentation did not store.
 2. **Review-app favicon** — a small identity change to the Homework 4 review interface.
-3. **Batch sampling and saved sample sets in the review app** — draw a review batch by strategy,
-   and return to or delete an earlier batch.
+3. **Batch sampling and saved sample sets in the review app** — draw a review batch by strategy or
+   stratified across one dimension's values, and return to or delete an earlier batch.
 4. **Review-app quality-of-life changes** — selection, popover dismissal, and tool-argument display.
 5. **Supporting-annotations table** (section 7) — every open code in one table, with mode linking.
 
@@ -216,13 +216,43 @@ Storing the sets server-side rather than client-side is deliberate:
 `analysis/state/sample_manifest.json` is a required Homework 4 artifact, batch membership is what
 keeps draws disjoint, and cookies would cap out around 4KB and stay on one browser.
 
-### 3.4 Behavior worth knowing
+### 3.4 Stratified batches (`GET /api/dimensions`, `POST /api/sample/stratified`)
+
+Homework 4 Part B asks for "one product dimension before looking at the outcomes, e.g., user role,
+then add 30 traces distributed across its values". Neither `select_traces` strategy does that, so
+this is a separate draw.
+
+`GET /api/dimensions` returns, for each dimension, every value with `available` and `total` session
+counts. `available` excludes sessions already committed to a batch and (by default) already
+annotated, so the table reflects what a new batch could still draw. The dimensions come from the
+scenario tuple: `role`, `intent`, `difficulty`, `applicable_policy`, `record_state`, `user_style`,
+`scenario_group`, and `turn_count` bucketed as `1 turn` / `2+ turns`.
+
+`POST /api/sample/stratified` takes `{"dimension": "role", "per_value": {"shopper": 10, …}}`. It
+samples within each value with a fixed seed, caps each request at what is available and reports the
+difference in `shortfalls` rather than failing, and saves the batch in the usual shape with
+`strategy: "stratified:<dimension>"`, the `dimension`, the requested `plan`, and a per-session
+`reason` of `stratified by <dimension> = <value>`.
+
+UI: a dimension dropdown; on selection, a table of values with `available / total` and an editable
+draw count per value, pre-filled with an even split (`floor(30 / number of values)`, capped at
+availability); then a button labelled with the running total that draws, saves, applies the batch as
+the sidebar filter, and refreshes availability.
+
+The preview shows counts only — no expected results, no annotations, no failure counts — so the
+dimension is chosen before outcomes are seen, and the manifest records the dimension, plan, and
+timestamp as evidence of that order.
+
+### 3.5 Behavior worth knowing
 
 - `outlier` returns only as many traces as the IQR flags; asking for 10 returned 2.
 - `diversity` is two thirds cluster representatives and one third random, by `_diversity_picks`
   design. For a strict uniform-versus-cluster split, use `random` for the uniform batch.
 - Selection runs on the export's structural features (`turn_count`, `tool_call_count`,
   `distinct_tools`, `has_retrieval`, `tokens`), not on scenario metadata such as role or intent.
+  The stratified draw is the opposite: it works entirely from scenario metadata.
+- Even splits are deliberate for stratified draws. Proportional allocation would mirror the
+  dataset (145 shopper / 60 merchant / 45 support sessions) and add little over a random sample.
 
 ---
 
@@ -284,8 +314,9 @@ Review app: live against Langfuse, 250 sessions / 283 traces, expected results j
 `scenarios/support_scenarios.jsonl`, model exchange reconstructed per turn, tool schemas from code,
 batch sampling with saved sets.
 
-Review progress (from `GET /api/progress`): 17 sessions reviewed, 21 traces, 22 annotations,
-5 sample batches recorded, no taxonomy modes yet, no labels, no agent suggestions.
+Review progress (from `GET /api/progress`, 2026-09-20): 17 sessions reviewed, 21 traces,
+22 annotations, 2 sample batches retained (`diversity_15_2`, `random_15_2`), no taxonomy modes yet,
+no labels, no agent suggestions. 220 of 250 sessions remain undrawn and unannotated.
 
 Known gaps, in priority order:
 
@@ -331,8 +362,8 @@ table re-renders after any taxonomy save, so newly created modes appear in the p
 | `observability/instrument.py` | Adds `record_model_exchange` |
 | `analysis/review_app/steps.py` | New: per-step exchange reconstruction |
 | `analysis/review_app/toolset.py` | New: tool schemas and model settings from code |
-| `analysis/review_app/server.py` | Attaches `exchange` per turn; serves `/api/toolset`, `POST /api/sample`, and `POST /api/sample/delete`; batch-aware `progress()` |
-| `analysis/review_app/ui/index.html` | Model-exchange and toolset panels; favicon link; sampling controls and saved-samples dropdown; selection, popover, and tool-argument fixes; supporting-annotations table with mode linking; view-switching CSS fix |
+| `analysis/review_app/server.py` | Attaches `exchange` per turn; serves `/api/toolset`, `/api/dimensions`, `POST /api/sample`, `POST /api/sample/stratified`, and `POST /api/sample/delete`; batch-aware `progress()` |
+| `analysis/review_app/ui/index.html` | Model-exchange and toolset panels; favicon link; sampling controls, stratified-draw table, and saved-samples dropdown; selection, popover, and tool-argument fixes; supporting-annotations table with mode linking; view-switching CSS fix |
 | `analysis/review_app/ui/favicon.svg` | New |
 | `analysis/state/session_map.json` | Scenario-to-session mapping for the backfilled traces |
 

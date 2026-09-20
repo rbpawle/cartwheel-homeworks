@@ -31,6 +31,9 @@
   #review.active { display: grid; grid-template-columns: 280px minmax(0, 1fr) 280px; gap: 24px; align-items: start; }
   #list { position: sticky; top: 58px; max-height: calc(100vh - 74px); overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
   #list .filters { padding: 8px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 4px; }
+  #f-ids { font-size: 12px; padding: 3px; border: 1px solid var(--line); border-radius: 4px; resize: vertical; font-family: ui-monospace, Menlo, monospace; }
+  #d-table { font-size: 12px; margin: 4px 0; }
+  #d-table th, #d-table td { padding: 2px 5px; }
   #list .filters select, #list .filters input { font-size: 12px; padding: 3px; border: 1px solid var(--line); border-radius: 4px; background: #fff; }
   .row { padding: 7px 9px; border-bottom: 1px solid var(--line); cursor: pointer; font-size: 12px; }
   .row:hover { background: #f4f2ee; }
@@ -118,6 +121,8 @@
       <select id="f-intent"><option value="">intent: all</option></select>
       <select id="f-state"><option value="">reviewed: all</option><option value="todo">unreviewed</option><option value="done">reviewed</option></select>
       <input id="f-text" type="text" placeholder="search text" size="12">
+      <textarea id="f-ids" placeholder="scenario ids (comma, tab, or line separated)" rows="2" style="flex-basis:100%"></textarea>
+      <span class="muted" id="f-ids-note" style="flex-basis:100%"></span>
     </div>
     <div class="filters" style="border-top:0">
       <select id="s-strategy" title="selection strategy">
@@ -131,6 +136,14 @@
       <span class="muted" id="s-note" style="flex-basis:100%"></span>
       <select id="s-saved" style="flex:1" title="saved sample sets"><option value="">saved samples…</option></select>
       <button class="small" id="s-trash" title="delete the selected sample set">🗑</button>
+    </div>
+    <div class="filters" style="border-top:0">
+      <select id="d-dim" style="flex:1" title="stratify a batch across one dimension's values">
+        <option value="">stratify by…</option>
+      </select>
+      <span class="muted" id="d-note" style="flex-basis:100%"></span>
+      <table id="d-table" hidden></table>
+      <button class="small" id="d-draw" hidden style="flex-basis:100%">draw and filter</button>
     </div>
     <div id="confirm-pop"></div>
     <div id="rows"></div>
@@ -186,16 +199,32 @@ async function boot() {
   const intents = [...new Set(S.sessions.map(s => s.intent))].filter(Boolean).sort();
   $("#f-intent").innerHTML = `<option value="">intent: all</option>` + intents.map(i => `<option>${i}</option>`).join("");
   await loadSaved();
+  await loadDimensions();
   renderRows();
   if (S.sessions.length) select(S.sessions[0].session_id);
 }
 
 /* ------------------------------------------------------------------ list */
 function annotatedIds() { return new Set(S.annotations.map(a => a.session_id)); }
+/* Accepts "support-0123", bare numbers, and any mix of commas, tabs, spaces, newlines. */
+function idFilter() {
+  const raw = $("#f-ids").value.trim();
+  if (!raw) { $("#f-ids-note").textContent = ""; return null; }
+  const known = new Set(S.sessions.map(s => s.scenario_id));
+  const wanted = new Set(), missing = [];
+  raw.split(/[\s,;]+/).filter(Boolean).forEach(token => {
+    const id = /^\d+$/.test(token) ? "support-" + token.padStart(4, "0") : token;
+    if (known.has(id)) wanted.add(id); else missing.push(token);
+  });
+  $("#f-ids-note").textContent = `${wanted.size} matched` + (missing.length ? ` · not found: ${missing.slice(0, 5).join(", ")}${missing.length > 5 ? "…" : ""}` : "");
+  return wanted;
+}
 function filtered() {
   const g = $("#f-group").value, r = $("#f-role").value, i = $("#f-intent").value, st = $("#f-state").value, t = $("#f-text").value.toLowerCase();
+  const ids = idFilter();
   const done = annotatedIds();
   return S.sessions.filter(s =>
+    (!ids || ids.has(s.scenario_id)) &&
     (!S.sample || S.sample.ids.has(s.session_id)) &&
     (!g || s.scenario_group === g) && (!r || s.role === r) && (!i || s.intent === i) &&
     (!st || (st === "done") === done.has(s.session_id)) &&
@@ -212,6 +241,7 @@ $("#s-run").onclick = async () => {
               reasons: Object.fromEntries(res.sessions.map(s => [s.session_id, s.reason]))};
   await loadSaved(res.batch_name);
   applyBatch(res.batch_name);
+  await loadDimensions(); renderDimension();
   refreshProgress();
 };
 $("#s-clear").onclick = () => {
@@ -247,6 +277,51 @@ function applyBatch(name) {
   if (first) select(first.session_id);
 }
 $("#s-saved").onchange = () => applyBatch($("#s-saved").value);
+
+/* Stratified batch: pick one dimension, see what each value still has available, edit the
+   per-value draw, then commit. Counts only — no outcomes — so the dimension is chosen first. */
+async function loadDimensions() {
+  S.dims = await api("/api/dimensions");
+  $("#d-dim").innerHTML = `<option value="">stratify by…</option>` +
+    Object.keys(S.dims.dimensions).map(d => `<option>${esc(d)}</option>`).join("");
+}
+function renderDimension() {
+  const dim = $("#d-dim").value, table = $("#d-table"), draw = $("#d-draw");
+  if (!dim) { table.hidden = draw.hidden = true; $("#d-note").textContent = ""; return; }
+  const values = S.dims.dimensions[dim];
+  const names = Object.keys(values).filter(v => values[v].available > 0);
+  const each = Math.floor(30 / Math.max(names.length, 1));
+  table.hidden = draw.hidden = false;
+  $("#d-note").textContent = `${S.dims.available_sessions} sessions not yet drawn or annotated`;
+  table.innerHTML = `<thead><tr><th>value</th><th>avail</th><th>draw</th></tr></thead><tbody>${
+    Object.entries(values).map(([v, c]) => `<tr>
+      <td>${esc(v)}</td>
+      <td class="muted">${c.available}<span class="muted"> / ${c.total}</span></td>
+      <td><input type="number" min="0" max="${c.available}" value="${Math.min(each, c.available)}"
+           data-val="${esc(v)}" style="width:52px"></td></tr>`).join("")}</tbody>`;
+  table.querySelectorAll("input").forEach(i => i.oninput = updateDrawTotal);
+  updateDrawTotal();
+}
+function updateDrawTotal() {
+  const total = [...$("#d-table").querySelectorAll("input")].reduce((a, i) => a + (+i.value || 0), 0);
+  $("#d-draw").textContent = `draw ${total} and filter`;
+}
+$("#d-dim").onchange = renderDimension;
+$("#d-draw").onclick = async () => {
+  const dim = $("#d-dim").value;
+  const per_value = {};
+  $("#d-table").querySelectorAll("input").forEach(i => { if (+i.value > 0) per_value[i.dataset.val] = +i.value; });
+  const res = await api("/api/sample/stratified", {dimension: dim, per_value});
+  if (res.error) { $("#d-note").textContent = res.error; return; }
+  const short = Object.entries(res.shortfalls || {});
+  $("#d-note").textContent = `${res.batch_name}: ${res.sessions.length} sessions`
+    + (short.length ? ` · short: ${short.map(([v, n]) => `${v} −${n}`).join(", ")}` : "");
+  await loadSaved(res.batch_name);
+  applyBatch(res.batch_name);
+  await loadDimensions();
+  renderDimension();
+  refreshProgress();
+};
 $("#s-trash").onclick = () => {
   const name = $("#s-saved").value;
   const pop = $("#confirm-pop");
@@ -265,6 +340,7 @@ $("#s-trash").onclick = () => {
     pop.style.display = "none";
     if (S.sample && S.sample.name === name) { S.sample = null; $("#s-clear").hidden = true; $("#s-note").textContent = ""; }
     await loadSaved();
+    await loadDimensions(); renderDimension();
     renderRows(); refreshProgress();
   };
 };
@@ -283,7 +359,7 @@ function renderRows() {
     </div>`).join("") || `<div class="row muted">no sessions match</div>`;
   document.querySelectorAll("#rows .row[data-id]").forEach(el => el.onclick = () => select(el.dataset.id));
 }
-["f-group","f-role","f-intent","f-state","f-text"].forEach(id => $("#"+id).oninput = renderRows);
+["f-group","f-role","f-intent","f-state","f-text","f-ids"].forEach(id => $("#"+id).oninput = renderRows);
 
 /* ------------------------------------------------------ conversation view */
 async function select(id) {

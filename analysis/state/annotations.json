@@ -384,6 +384,94 @@
       "note": "spec-gap: policy identifier should not be cited",
       "ts": "2026-09-19T14:20:04.965970+00:00",
       "author": "human"
+    },
+    {
+      "annotation_id": "075cbc762dbd",
+      "session_id": "01e37274b483304e157a9fa5bbfb2b0d",
+      "trace_id": "4d7b0e643c309ae5d8bf76b2cc7140e0",
+      "scenario_id": "support-0003",
+      "block_index": null,
+      "quote": "",
+      "note": "no failure observed",
+      "ts": "2026-09-20T15:25:43.135996+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "e1d745bab984",
+      "session_id": "70466b13e3c18bb629c595c6bbbb9881",
+      "trace_id": "1256d01d7b25a5b51b54ba648c3e6a42",
+      "scenario_id": "support-0026",
+      "block_index": "1:2",
+      "quote": "order #6358,",
+      "note": "should not display order number",
+      "ts": "2026-09-20T15:26:04.647992+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "46edf61f4557",
+      "session_id": "ec27103ec7e7f391bf8fded2756dd66a",
+      "trace_id": "ba20a8ff9740a9f4efa5ea387d52d326",
+      "scenario_id": "support-0037",
+      "block_index": "1:2",
+      "quote": "order 5884",
+      "note": "should not show order number",
+      "ts": "2026-09-20T15:26:19.667056+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "a746315de7e4",
+      "session_id": "f94fbfd49f3ddc5e75e9fdf4ecde18d8",
+      "trace_id": "c8c1c4b829b3851394e144620e504ca6",
+      "scenario_id": "support-0042",
+      "block_index": "2:2",
+      "quote": "cw-escalations",
+      "note": "agent should not give policy identifier",
+      "ts": "2026-09-20T15:27:00.787411+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "6fefec8d178c",
+      "session_id": "6599ef0fcdf85c9688bdbf539b434a87",
+      "trace_id": "16df93477f8086ed796c8dea047d4be0",
+      "scenario_id": "support-0058",
+      "block_index": "1:6",
+      "quote": "cw-returns",
+      "note": "should not cite policy identifier",
+      "ts": "2026-09-20T15:28:29.907459+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "f1f18ded69b2",
+      "session_id": "ce497275e3bafa9e11660686c67eb540",
+      "trace_id": "ecb9e36a461516c5536bc6f3e6d759c2",
+      "scenario_id": "support-0063",
+      "block_index": "1:4",
+      "quote": "per cw-refunds",
+      "note": "should not print policy identifier",
+      "ts": "2026-09-20T15:28:53.627418+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "b418357715df",
+      "session_id": "ce497275e3bafa9e11660686c67eb540",
+      "trace_id": "ecb9e36a461516c5536bc6f3e6d759c2",
+      "scenario_id": "support-0063",
+      "block_index": "1:0",
+      "quote": "order 9152",
+      "note": "user would not have order number, scenario issue",
+      "ts": "2026-09-20T15:29:39.105204+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "03885c950193",
+      "session_id": "f794ccdb685fbfa73c750d3fd0671f8b",
+      "trace_id": "26f24ccb5e94923621c97933cdec8eb5",
+      "scenario_id": "support-0065",
+      "block_index": "1:7",
+      "quote": "cw-store-overrides",
+      "note": "should not cite policy identifier",
+      "ts": "2026-09-20T15:41:30.830073+00:00",
+      "author": "human"
     }
   ]
 }

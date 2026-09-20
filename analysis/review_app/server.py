@@ -32,6 +32,7 @@ import re
 import threading
 import traceback
 import uuid
+from collections import Counter
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -281,6 +282,110 @@ def save_label(mode: str, trace_id: str, label: int, comment: str | None, write_
 # ---------------------------------------------------------------------------
 
 
+DIMENSIONS = ("role", "intent", "difficulty", "applicable_policy", "record_state",
+              "user_style", "scenario_group", "turn_count")
+
+
+def _dimension_value(session: dict[str, Any], dimension: str) -> str:
+    if dimension == "scenario_group":
+        return str(session.get("scenario_group") or "unknown")
+    if dimension == "turn_count":
+        return "1 turn" if session["features"]["turn_count"] == 1 else "2+ turns"
+    return str(session["tuple"].get(dimension) or "none")
+
+
+def _drawn_trace_ids() -> set[str]:
+    """Trace ids already committed to a batch."""
+    batches = read_state("sample_manifest.json").get("batches") or {}
+    return {
+        tid
+        for batch in batches.values()
+        for entry in (batch.get("sessions", []) if isinstance(batch, dict) else [])
+        for tid in entry.get("trace_ids", [])
+    }
+
+
+def available_sessions(exclude_reviewed: bool = True) -> list[dict[str, Any]]:
+    """Sessions not already drawn into a batch (and, by default, not yet annotated)."""
+    drawn = _drawn_trace_ids()
+    annotated = set()
+    if exclude_reviewed:
+        annotated = {a.get("session_id") for a in read_state("annotations.json")["annotations"]}
+    return [
+        s for s in State.sessions
+        if not (drawn & set(s["trace_ids"])) and s["session_id"] not in annotated
+    ]
+
+
+def dimension_counts(exclude_reviewed: bool = True) -> dict[str, Any]:
+    """Per dimension, how many sessions each value still has available."""
+    pool = available_sessions(exclude_reviewed)
+    out: dict[str, Any] = {}
+    for dimension in DIMENSIONS:
+        counts: Counter[str] = Counter(_dimension_value(s, dimension) for s in pool)
+        totals: Counter[str] = Counter(_dimension_value(s, dimension) for s in State.sessions)
+        out[dimension] = {
+            value: {"available": counts.get(value, 0), "total": totals[value]}
+            for value in sorted(totals)
+        }
+    return {"available_sessions": len(pool), "dimensions": out}
+
+
+def sample_stratified(dimension: str, per_value: dict[str, int], exclude_reviewed: bool) -> dict[str, Any]:
+    """Draw N sessions from each value of one dimension and save the batch.
+
+    Part B asks for a product dimension chosen before the outcomes are seen, then traces
+    distributed across its values, so the plan is recorded alongside the picks.
+    """
+    import random
+
+    if dimension not in DIMENSIONS:
+        return {"error": f"unknown dimension {dimension!r}"}
+    prior = read_state("sample_manifest.json")
+    prior_batches = prior.get("batches") if isinstance(prior.get("batches"), dict) else {}
+
+    pool = available_sessions(exclude_reviewed)
+    by_value: dict[str, list[dict[str, Any]]] = {}
+    for session in pool:
+        by_value.setdefault(_dimension_value(session, dimension), []).append(session)
+
+    rng = random.Random(20260920)
+    chosen: list[dict[str, Any]] = []
+    shortfalls: dict[str, int] = {}
+    for value, wanted in per_value.items():
+        candidates = by_value.get(value, [])
+        take = min(int(wanted), len(candidates))
+        if take < int(wanted):
+            shortfalls[value] = int(wanted) - take
+        for session in rng.sample(candidates, take):
+            chosen.append({
+                "session_id": session["session_id"],
+                "scenario_id": session["scenario_id"],
+                "trace_ids": session["trace_ids"],
+                "reason": f"stratified by {dimension} = {value}",
+            })
+
+    chosen.sort(key=lambda entry: entry["scenario_id"])
+    batch = {
+        "strategy": f"stratified:{dimension}",
+        "dimension": dimension,
+        "plan": {value: int(count) for value, count in per_value.items()},
+        "k": len(chosen),
+        "selected_at": _utcnow(),
+        "sessions": chosen,
+    }
+    batches = dict(prior_batches)
+    name = f"{dimension}_{len(chosen)}"
+    suffix = 2
+    while name in batches:
+        name, suffix = f"{dimension}_{len(chosen)}_{suffix}", suffix + 1
+    batches[name] = batch
+    manifest = read_state("sample_manifest.json")
+    manifest["batches"] = batches
+    write_state("sample_manifest.json", manifest)
+    return {"batch_name": name, "shortfalls": shortfalls, **batch}
+
+
 def sample_batch(strategy: str, k: int, exclude_reviewed: bool) -> dict[str, Any]:
     """Draw a review batch with ``analysis.helpers.tools.select_traces``.
 
@@ -483,6 +588,8 @@ class Handler(BaseHTTPRequestHandler):
                     "tools": tool_schemas(),
                     "model_settings": model_settings(model),
                 })
+            if path == "/api/dimensions":
+                return self._json(dimension_counts())
             if path == "/api/progress":
                 return self._json(progress(State.sessions))
             return self._json({"error": "not found"}, 404)
@@ -519,6 +626,10 @@ class Handler(BaseHTTPRequestHandler):
                 if path == "/api/sample":
                     return self._json(sample_batch(
                         body.get("strategy", "diversity"), int(body.get("k", 15)),
+                        bool(body.get("exclude_reviewed", True))))
+                if path == "/api/sample/stratified":
+                    return self._json(sample_stratified(
+                        body.get("dimension", "role"), body.get("per_value") or {},
                         bool(body.get("exclude_reviewed", True))))
                 if path == "/api/sample/delete":
                     manifest = read_state("sample_manifest.json")
