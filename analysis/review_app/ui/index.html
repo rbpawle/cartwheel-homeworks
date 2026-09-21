@@ -131,7 +131,7 @@
       <select id="f-group"><option value="">group: all</option><option>coverage</option><option>challenge</option></select>
       <select id="f-role"><option value="">role: all</option><option>shopper</option><option>merchant</option><option>support</option></select>
       <select id="f-intent"><option value="">intent: all</option></select>
-      <select id="f-state"><option value="">reviewed: all</option><option value="todo">unreviewed</option><option value="done">reviewed</option></select>
+      <select id="f-state"><option value="">reviewed: all</option><option value="todo">unreviewed</option><option value="done">reviewed</option><option value="unlabeled">needs labels</option></select>
       <input id="f-text" type="text" placeholder="search text" size="12">
       <textarea id="f-ids" placeholder="paste scenario ids (comma, tab, or line separated)" rows="2" style="flex-basis:100%"></textarea>
       <span class="muted" id="f-ids-note" style="flex-basis:100%"></span>
@@ -203,7 +203,6 @@
   </div>
 </main>
 
-<main id="labeling"></main>
 <main id="progress"></main>
 <main id="suggestions"></main>
 
@@ -278,7 +277,8 @@ function filtered() {
     (!ids || ids.has(s.scenario_id)) &&
     (!S.sample || S.sample.ids.has(s.session_id)) &&
     (!g || s.scenario_group === g) && (!r || s.role === r) && (!i || s.intent === i) &&
-    (!st || (st === "done") === done.has(s.session_id)) &&
+    (!st || (st === "unlabeled" ? labelProgress(s).done < labelProgress(s).total
+                                 : (st === "done") === done.has(s.session_id))) &&
     (!t || (s.opening + " " + s.scenario_id).toLowerCase().includes(t)));
 }
 
@@ -446,11 +446,24 @@ function renderChips() {
   const all = document.querySelector("#chips [data-clear-all]");
   if (all) all.onclick = () => { bits.forEach(b => b.reset()); renderRows(); };
 }
+function finalModes() { return (S.patterns.modes || []).filter(m => m.status === "confirmed" || m.status === "frozen"); }
+function labelProgress(session) {
+  const modes = finalModes();
+  const total = modes.length * session.features.turn_count;
+  let done = 0;
+  modes.forEach(m => (S.labels[m.name] || []).forEach(r => {
+    if (session.trace_ids.includes(r.trace_id)) done += 1;
+  }));
+  return {done, total};
+}
 function renderRows() {
   const done = annotatedIds();
   $("#rows").innerHTML = filtered().map(s => `
     <div class="row ${S.current === s.session_id ? "sel" : ""}" data-id="${s.session_id}">
-      <span class="sid">${s.scenario_id}</span><span class="dot">${done.has(s.session_id) ? "●" : "○"}</span>
+      <span class="sid">${s.scenario_id}</span><span class="dot">${
+        S.view === "labeling"
+          ? (() => { const p = labelProgress(s); return `${p.done}/${p.total}`; })()
+          : (done.has(s.session_id) ? "●" : "○")}</span>
       <div class="muted">${s.role} · ${s.intent} · ${s.scenario_group}${s.data_quality_case_id ? " · dq" : ""}</div>
       ${S.sample && S.sample.reasons[s.session_id] ? `<div class="muted">↳ ${esc(S.sample.reasons[s.session_id])}</div>` : ""}
       <div class="muted">${esc(s.opening)}</div>
@@ -490,8 +503,8 @@ async function select(id) {
       <div class="muted" style="margin-top:4px">source: ${esc((exp.source || {}).type)} · ${esc((exp.source || {}).reference)}</div>
     </details>
     ${s.turns.map(renderTurn).join("")}`;
-  bindSelection();
-  renderNotes();
+  if (S.view !== "labeling") bindSelection();
+  renderRail();
   renderToolset();
 }
 async function renderToolset() {
@@ -647,6 +660,10 @@ $("#pop-save").onclick = async () => {
   closePopover();
   renderNotes(); renderRows(); refreshProgress();
 };
+function renderRail() {
+  if (S.view === "labeling") return renderLabelRail();
+  return renderNotes();
+}
 function renderNotes() {
   const mine = S.annotations.filter(a => a.session_id === S.current);
   const sugg = S.suggestions.filter(s => s.session_id === S.current && !s.decision);
@@ -929,37 +946,44 @@ function reconcileAll() {
 async function savePatterns() {
   reconcileAll();
   S.patterns = await api("/api/patterns", S.patterns);
-  renderTaxonomy(); renderAnnotationTable(); renderLabeling(); refreshProgress();
+  renderTaxonomy(); renderAnnotationTable(); renderRail(); renderRows(); refreshProgress();
 }
 
 /* ------------------------------------------------------------ labeling */
-function finalModes() { return (S.patterns.modes || []).filter(m => m.status === "confirmed" || m.status === "frozen"); }
-async function renderLabeling() {
-  const modes = finalModes();
-  if (!S.session) { $("#labeling").innerHTML = `<div class="card muted">pick a session in the Review view first</div>`; return; }
-  if (!modes.length) { $("#labeling").innerHTML = `<div class="card muted">no confirmed modes yet — add them in the Taxonomy view</div>`; return; }
-  const exp = S.session.expected || {};
-  $("#labeling").innerHTML = `
-    <div class="card"><b>${S.session.scenario_id}</b> · ${S.session.tuple.role} · ${S.session.tuple.intent}
-      <div class="muted" style="margin-top:4px">expected: ${esc(exp.outcome || "human judgment")} — ${esc((exp.reason || exp.criterion || "").slice(0, 200))}</div>
-      <div class="muted">annotations: ${S.annotations.filter(a => a.session_id === S.current).map(a => esc(a.note)).join(" | ") || "none"}</div>
-    </div>
-    <table><thead><tr><th>trace</th>${modes.map(m => `<th>${esc(m.name)}</th>`).join("")}</tr></thead><tbody>
-      ${S.session.trace_ids.map((tid, i) => `<tr><td>turn ${i + 1}<br><span class="muted">${tid.slice(0, 12)}</span></td>
+function renderLabelRail() {
+  const modes = finalModes(), s = S.session;
+  if (!s) { $("#notes").innerHTML = `<div class="muted">pick a session</div>`; return; }
+  if (!modes.length) {
+    $("#notes").innerHTML = `<div class="muted">no confirmed modes yet — add them in the Taxonomy view,
+      then set a mode's status to <b>confirmed</b> to label against it.</div>`;
+    return;
+  }
+  const notes = S.annotations.filter(a => a.session_id === S.current);
+  const p = labelProgress(s);
+  $("#notes").innerHTML = `
+    <div class="muted" style="margin-bottom:6px">${p.done} of ${p.total} judgments · ${modes.length} mode(s)</div>
+    ${s.trace_ids.map((tid, i) => `<div class="note" style="border-left-color:var(--tool)">
+        <div class="muted">turn ${i + 1} · <span class="copyid" data-copy="${tid}" title="click to copy">${tid.slice(0, 12)}…</span></div>
         ${modes.map(m => {
           const row = (S.labels[m.name] || []).find(r => r.trace_id === tid);
           const v = row ? row.label : null;
-          return `<td>
+          return `<div style="margin-top:5px">
+            <div>${esc(m.name)}</div>
             <button class="pill ${v === 1 ? "on-fail" : ""}" data-t="${tid}" data-m="${esc(m.name)}" data-v="1">Fail</button>
             <button class="pill ${v === 0 ? "on-pass" : ""}" data-t="${tid}" data-m="${esc(m.name)}" data-v="0">Pass</button>
-          </td>`;
-        }).join("")}</tr>`).join("")}
-    </tbody></table>
-    <div class="muted" style="margin-top:6px">labels save locally and, when scores are on, to Langfuse (1 = failure present)</div>`;
-  document.querySelectorAll("#labeling .pill").forEach(b => b.onclick = async () => {
+          </div>`;
+        }).join("")}
+      </div>`).join("")}
+    <details style="margin-top:8px"><summary class="muted">my annotations (${notes.length})</summary>
+      ${notes.map(a => `<div class="note" style="margin-top:6px">${esc(a.note)}</div>`).join("") || `<div class="muted">none</div>`}
+    </details>
+    <div class="muted" style="margin-top:8px">press <kbd>e</kbd> for the expected result · <kbd>j</kbd>/<kbd>k</kbd> to move on</div>`;
+
+  $("#notes").querySelectorAll(".pill").forEach(b => b.onclick = async () => {
     const res = await api("/api/labels", {mode: b.dataset.m, trace_id: b.dataset.t, label: +b.dataset.v});
     if (res.score_error) alert("saved locally, Langfuse score failed:\n" + res.score_error);
-    S.labels = await api("/api/labels"); renderLabeling(); refreshProgress();
+    S.labels = await api("/api/labels");
+    renderLabelRail(); renderRows(); refreshProgress();
   });
 }
 
@@ -1041,10 +1065,17 @@ function syncUrl() {
 }
 function show(view) {
   S.view = view;
+  // Review and Labeling share one workspace: same session list, same conversation
+  // renderer, different right rail and different default filter.
+  const workspace = view === "review" || view === "labeling" ? "review" : view;
   document.querySelectorAll("nav button").forEach(b => b.classList.toggle("active", b.dataset.view === view));
-  document.querySelectorAll("main").forEach(m => m.classList.toggle("active", m.id === view));
+  document.querySelectorAll("main").forEach(m => m.classList.toggle("active", m.id === workspace));
+  if (view === "labeling" || view === "review") {
+    $("#f-state").value = view === "labeling" ? "unlabeled" : $("#f-state").value === "unlabeled" ? "" : $("#f-state").value;
+    renderRows();
+    renderRail();
+  }
   if (view === "taxonomy") { renderTaxonomy(); renderAnnotationTable(); }
-  if (view === "labeling") renderLabeling();
   if (view === "progress") refreshProgress();
   if (view === "suggestions") renderSuggestions();
   syncUrl();

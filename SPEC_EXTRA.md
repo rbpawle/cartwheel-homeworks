@@ -551,6 +551,46 @@ The server needs no route for any of this: it strips the query string when routi
 
 ---
 
+## 8. Labeling view (review app)
+
+Homework 4 Part E needs one present/absent judgment per trace **and** per final mode, which means
+reading the conversation while labeling. An earlier build showed only a metadata table for whichever
+session the Review view happened to have selected; it could not work through a set.
+
+**Review and Labeling share one workspace.** `show(view)` maps both to the same pane, so there is a
+single session list, a single `renderRows`, and a single conversation renderer. What differs:
+
+| | Review | Labeling |
+| --- | --- | --- |
+| Right rail | margin notes, text-selection annotation | Fail/Pass per trace × mode |
+| Default filter | as set by the reviewer | `needs labels` |
+| Sidebar marker | `●` reviewed / `○` not | `done/total` judgments |
+| Text selection | opens the annotation popover | inactive, so text can be selected freely |
+
+`renderRail()` dispatches on `S.view` to `renderNotes()` or `renderLabelRail()`; `bindSelection()`
+is skipped while labeling. Keep this dispatch rather than duplicating the pane: the duplicate-view
+version drifted immediately.
+
+**The rail** renders one block per trace in the session: the trace id (click to copy) and a Fail/Pass
+pair per confirmed mode. Only modes with status `confirmed` or `frozen` appear, via the shared
+`finalModes()`. The reviewer's own annotations for the session sit below in a collapsed `<details>`,
+because the open code is the evidence the judgment rests on. A click writes the label immediately —
+local `labels/<mode>.jsonl` plus a Langfuse score — then refreshes the rail, the sidebar counts and
+the progress view.
+
+**`labelProgress(session)`** counts recorded judgments against `modes × turns`; it drives both the
+sidebar marker and the `needs labels` filter (`done < total`). `needs labels` is offered in Review
+too.
+
+**The expected result stays collapsed behind `e` in both views.** During open coding it would anchor
+the reading; during labeling the judgment should follow the mode's definition, not the Homework 3
+answer key.
+
+**Not implemented:** digit-key shortcuts for fast labeling. With several traces per session it is
+ambiguous which trace a digit should apply to.
+
+---
+
 ## Files touched
 
 | File | Change |
