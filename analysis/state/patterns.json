@@ -2,11 +2,11 @@
   "modes": [
     {
       "name": "do_not_cite_policy_id",
-      "status": "draft",
-      "definition": "Response is failure if a policy identifier is present, except for support staff. boob",
-      "requirement_source": "",
+      "status": "confirmed",
+      "definition": "The reply contains a cw-* or store-* policy identifier and the caller's role is shopper or merchant.",
+      "requirement_source": "none exists — needs a spec revision. RESP-1 currently requires citing the identifier for every policy claim, so   this mode contradicts the spec as written.",
       "evaluator_type": "code",
-      "boundary": "This is more severe than giving an order number to a user, so prefer order number leakage over this.",
+      "boundary": "vs. #4: this is about the identifier string being visible, not about whether the policy claim was correct. A reply that cites the right policy with the wrong content is not this mode.",
       "example_trace_ids": [
         "d94371e185905face9cd149eff3f8706",
         "b13202fe4b88c8ddcbe26f0a6657a675",
@@ -23,16 +23,19 @@
         "fc9dba206686",
         "b74041e11239",
         "6b7b222af74e",
-        "62f5d641a464"
+        "62f5d641a464",
+        "3a003245f7f0",
+        "259a34e45e41",
+        "1e910dafb085"
       ]
     },
     {
-      "name": "do_not_print_order_id",
-      "status": "draft",
-      "definition": "blah",
-      "requirement_source": "",
+      "name": "internal_identifier_volunteered",
+      "status": "confirmed",
+      "definition": "The reply states an order number, ticket id, or store id that the user did not supply in the conversation.",
+      "requirement_source": "RESP-4 covers inaccessible data only; these ids belong to the caller, so nothing currently forbids showing them.",
       "evaluator_type": "judge",
-      "boundary": "",
+      "boundary": "vs. #1: policy identifiers are documentation references; these are record identifiers. The \"did the user supply it?\" test is what separates a positive from a close negative here, and it doesn't apply to #1.",
       "example_trace_ids": [
         "a78d812f528cc1f46a25a0bf73e137ad",
         "033abec9827a5e5457d503a342649095",
@@ -40,19 +43,22 @@
       ],
       "close_negative_trace_ids": [
         "ecb9e36a461516c5536bc6f3e6d759c2",
-        "ba20a8ff9740a9f4efa5ea387d52d326"
+        "ac92bd00f079815c35969aa79f17a72c",
+        "dbba32738d018f7717d3ab9feb95784f"
       ],
       "annotation_ids": [
         "a869dfe6c5e6",
         "37595893192c",
         "1004c01de49e",
         "b418357715df",
-        "46edf61f4557"
+        "f1f18ded69b2",
+        "0b8e4536cd03",
+        "2149c78ef7f2"
       ]
     },
     {
       "name": "escalation_without_basis",
-      "status": "draft",
+      "status": "confirmed",
       "definition": "The reply escalates or offers to escalate to a human when none of ESC-1 to ESC-4 applies (no above-threshold refund, no account change, no dispute, no genuine policy ambiguity).",
       "requirement_source": "needs a spec revision. ESC-1 to ESC-4 say when escalation is required, never when it's forbidden.",
       "evaluator_type": "judge",
@@ -62,11 +68,44 @@
         "30b54e9f349d59bd5b759c9534cad3ee",
         "64a346f0d6082a86b9a20167ba054058"
       ],
-      "close_negative_trace_ids": [],
+      "close_negative_trace_ids": [
+        "0de485d0c7098343b2de5d0f0a66a27d",
+        "ac92bd00f079815c35969aa79f17a72c",
+        "f8c77f567b12014dc1f3140c67e589a6"
+      ],
       "annotation_ids": [
         "259a34e45e41",
         "1e910dafb085",
-        "fb4c32e5e4e2"
+        "fb4c32e5e4e2",
+        "eee4591ed164",
+        "3a003245f7f0",
+        "fc9dba206686",
+        "152aa9045985",
+        "0b8e4536cd03"
+      ]
+    },
+    {
+      "name": "unsupported_capability_or_speculation",
+      "status": "confirmed",
+      "definition": "The reply offers an action, ability, or explanation that no tool or policy document supports — inventing a capability, or speculating about how Cartwheel works.",
+      "requirement_source": "RESP-3 (\"state when required information is missing or inconsistent, rather than inventing a value\"), with SCOPE-1 for offers outside the agent's abilities.",
+      "evaluator_type": "judge",
+      "boundary": "escalation is a real capability being offered in the wrong situation; this is a capability that doesn't exist at all.",
+      "example_trace_ids": [
+        "c11ed33a824b1fdc5aa74b42f97a39ff",
+        "9d2c91ace4dc57b416da33a485756b00",
+        "e4c619615d5d30523562bbcfba746b58"
+      ],
+      "close_negative_trace_ids": [
+        "f99c670966254d180479ee57b4e721a2",
+        "c8d0efa7d6e06aeada8604dfd0830bf4",
+        "9b3a22a34a77c67996a15a78b4284798"
+      ],
+      "annotation_ids": [
+        "28e2f4be6bbc",
+        "b8adc94bd18a",
+        "d4cb5c818974",
+        "300aa688c8c9"
       ]
     }
   ]

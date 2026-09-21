@@ -923,6 +923,193 @@
       "note": "no failure observed",
       "ts": "2026-09-20T20:20:47.669484+00:00",
       "author": "human"
+    },
+    {
+      "annotation_id": "088d0654ab54",
+      "session_id": "bb356b0a1c5c63b71aa5bdcd8a5e875c",
+      "trace_id": "8de5e9bcd1eb5c80362f7d45c2969013",
+      "scenario_id": "support-0022",
+      "block_index": "1:2",
+      "quote": "order #4463",
+      "note": "internal_identifier_volunteered",
+      "ts": "2026-09-21T19:13:19.884570+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "b9edc5252488",
+      "session_id": "bb356b0a1c5c63b71aa5bdcd8a5e875c",
+      "trace_id": "8de5e9bcd1eb5c80362f7d45c2969013",
+      "scenario_id": "support-0022",
+      "block_index": "1:2",
+      "quote": "can escalate this to a human agent to dig into what happened.",
+      "note": "escalation_without_basis",
+      "ts": "2026-09-21T19:13:47.888736+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "98fdcea53d5d",
+      "session_id": "8044551ba540736b8f1c7a8e0fe2294b",
+      "trace_id": "6e51c544ba39b00e0a0f43e989cbdbfd",
+      "scenario_id": "support-0002",
+      "block_index": "1:5",
+      "quote": "order #517",
+      "note": "internal_identifier_volunteered",
+      "ts": "2026-09-21T19:19:53.854835+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "ace610cff3c5",
+      "session_id": "1fe9c3d222208b964ddca56a6038839b",
+      "trace_id": "3083369cc906632a7870d4d7b1011f4e",
+      "scenario_id": "support-0004",
+      "block_index": "1:3",
+      "quote": "order #180",
+      "note": "internal_identifier_volunteered",
+      "ts": "2026-09-21T19:20:12.108738+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "df5d82ce3851",
+      "session_id": "feb50124033ede6e405b95dc8f7f39ca",
+      "trace_id": "bac70c4ba7a305709ca07a84fab4b43f",
+      "scenario_id": "support-0005",
+      "block_index": "1:4",
+      "quote": "order #33",
+      "note": "internal_identifier_volunteered",
+      "ts": "2026-09-21T19:20:27.301724+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "2447e3058c23",
+      "session_id": "feb50124033ede6e405b95dc8f7f39ca",
+      "trace_id": "bac70c4ba7a305709ca07a84fab4b43f",
+      "scenario_id": "support-0005",
+      "block_index": "1:4",
+      "quote": "cw-returns",
+      "note": "do_not_cite_policy_id",
+      "ts": "2026-09-21T19:20:37.889993+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "18d0679cb49b",
+      "session_id": "7de2b40a0a6e4ae0b7557387648c86d7",
+      "trace_id": "5793728ed868b1878062c06ae49127cc",
+      "scenario_id": "support-0006",
+      "block_index": "1:2",
+      "quote": "(cw-shipping)",
+      "note": "do_not_cite_policy_id",
+      "ts": "2026-09-21T19:20:47.448778+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "0cdce2615f12",
+      "session_id": "cf574ef5d8f5700c3936083c3352c7d3",
+      "trace_id": "f0360dc8303c41c0dc49e358dcbcb6a8",
+      "scenario_id": "support-0007",
+      "block_index": null,
+      "quote": "",
+      "note": "no failure observed",
+      "ts": "2026-09-21T19:20:54.160182+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "bef06156f99f",
+      "session_id": "443ce225aa9d2eec7b4cfbb4c4753da1",
+      "trace_id": "6043cc1c21c54a3d6db46029be9084ab",
+      "scenario_id": "support-0008",
+      "block_index": null,
+      "quote": "",
+      "note": "no failure observed",
+      "ts": "2026-09-21T19:21:03.695424+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "0b9a4cb727ec",
+      "session_id": "56f319cfcf4055819e978cc17f0196d5",
+      "trace_id": "5f333f8f9edfe3605f1e1eb4efe89d90",
+      "scenario_id": "support-0010",
+      "block_index": null,
+      "quote": "",
+      "note": "no failure observed",
+      "ts": "2026-09-21T19:21:14.792376+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "0b8e4536cd03",
+      "session_id": "89e101d03c6555036e0eaa9c4ed975d1",
+      "trace_id": "ac92bd00f079815c35969aa79f17a72c",
+      "scenario_id": "support-0011",
+      "block_index": null,
+      "quote": "",
+      "note": "no failure observed",
+      "ts": "2026-09-21T19:21:27.409083+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "34961a918ee7",
+      "session_id": "e94d2536024730be6cdd415460d9e271",
+      "trace_id": "c0046e00b81f82eb542e38db0510638f",
+      "scenario_id": "support-0013",
+      "block_index": null,
+      "quote": "",
+      "note": "no failure observed",
+      "ts": "2026-09-21T19:22:24.954728+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "89734f9af93d",
+      "session_id": "ae5058661219c8268ccd17d453b00888",
+      "trace_id": "89d29bb2fb38eab816af94bef4add465",
+      "scenario_id": "support-0014",
+      "block_index": "1:2",
+      "quote": "**cw-account-security**",
+      "note": "do_not_cite_policy_id",
+      "ts": "2026-09-21T19:22:57.022597+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "2149c78ef7f2",
+      "session_id": "97d7f272973a155705e72d82e7b21304",
+      "trace_id": "dbba32738d018f7717d3ab9feb95784f",
+      "scenario_id": "support-0015",
+      "block_index": null,
+      "quote": "",
+      "note": "no failure observed",
+      "ts": "2026-09-21T19:23:11.217758+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "b1a8b623d35d",
+      "session_id": "efff9e05815c54007617df397cccb851",
+      "trace_id": "547da5f18a05dcc6e131008729974efc",
+      "scenario_id": "support-0016",
+      "block_index": null,
+      "quote": "",
+      "note": "no failure observed",
+      "ts": "2026-09-21T19:26:07.583672+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "d8fc53704733",
+      "session_id": "4619ed4af8a7a7c5506ba7e5efbcb7ba",
+      "trace_id": "c0b7e7b5329c3930add935012707e1c0",
+      "scenario_id": "support-0018",
+      "block_index": null,
+      "quote": "",
+      "note": "no failure observed",
+      "ts": "2026-09-21T19:26:13.671704+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "f344c221c263",
+      "session_id": "ed79671455ee9610c682bf04d2fdb1aa",
+      "trace_id": "5d5335feceb01852a64c4bac0ee0668a",
+      "scenario_id": "support-0019",
+      "block_index": "1:2",
+      "quote": "**Order #3320**",
+      "note": "internal_identifier_volunteered",
+      "ts": "2026-09-21T19:26:33.933983+00:00",
+      "author": "human"
     }
   ]
 }

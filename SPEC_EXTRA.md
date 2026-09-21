@@ -411,6 +411,13 @@ card and greyed out their buttons. **Rule:** any control that re-renders a list 
 must stage unsaved field values outside the DOM and restore them after the render, together with
 their dirty state; alternatively, label the control so it clearly saves everything at once.
 
+**A fix placed behind a disabled control.** Trace-id-to-annotation reconciliation was first called
+only from the **update mode** click handler. A card whose trace ids were already saved is clean, so
+its button is disabled and the reconcile could never run for exactly the state that needed it; the
+saved file showed `example_trace_ids` populated with `annotation_ids` empty, and reloading did not
+help. **Rule:** when a behavior repairs or derives state, run it where state is written (and once at
+startup), not only from a control that may be disabled in the state that needs repairing.
+
 **Saved batches silently dropped.** `tools.select_traces` rewrites `sample_manifest.json` in its
 own shape, so reading the existing `batches` *after* calling it returns a manifest that no longer
 has them. **Rule:** read the batches before calling it; see section 3.2.
@@ -488,6 +495,30 @@ annotation to the mode's `annotation_ids` and the annotation's `trace_id` to eit
 `example_trace_ids` or `close_negative_trace_ids`, removing it from the opposite list so a trace
 cannot sit on both sides. The badge shows which side was recorded; its `×` removes the annotation
 and its trace id from both lists.
+
+Trace ids are shown in full and are click-to-copy, in the annotations table (under the scenario
+link) and in each turn header in the Review pane; clicking copies the id and flashes `copied`. A
+single delegated handler serves every view, so any element carrying `data-copy` works. Ids are
+per turn, and an annotation carries the id of the turn it was written on — the same id the mode
+card's positive and close-negative fields expect. Copying needs a secure context, which `localhost`
+satisfies; the text stays selectable regardless.
+
+**Both directions stay in step.** The dropdown writes the annotation link and the trace id at once.
+The reverse is `reconcileAnnotationLinks(mode)`: every trace id in the positive or close-negative
+box links *all* annotations written on that trace, and any linked annotation whose trace id is in
+neither box is unlinked, so deleting an id from a box also clears the badge in the table. Trace ids
+with no annotation are left untouched, because those fields are also meant for traces that were
+never annotated.
+
+Reconcile must not be tied to the **update mode** click. It runs over every mode inside
+`savePatterns()`, and once at startup after annotations and the taxonomy have loaded, saving only
+when something changed. The reason is in section 5: a card whose ids are already saved is clean, so
+its button is disabled and the click path is unreachable.
+
+Because the unit is the trace, a trace carrying several notes links all of them. That is usually
+correct — they are evidence about the same trace — but the supporting-annotations line can grow
+faster than the positive count. Linking a single note out of several is only possible from the
+dropdown.
 
 Consequence: close negatives are linked through annotations, so a trace used as a close negative
 needs a note on it. That matches the handout's treatment of close negatives as reviewed evidence.

@@ -100,6 +100,8 @@
   .prov { font-size: 10px; text-transform: uppercase; letter-spacing: .04em; border: 1px solid var(--line); border-radius: 3px; padding: 0 4px; margin-left: 5px; background: #fff; }
   .prov.reconstructed { border-color: #c9b27a; color: #8a6d3b; background: #fdf8ec; }
   .prov.from_code { border-color: #a9a2d6; color: #5b53a0; background: #f4f2fb; }
+  .copyid { font-family: ui-monospace, Menlo, monospace; font-size: 11px; cursor: pointer; border-bottom: 1px dotted var(--line); }
+  .copyid:hover { background: #f4f2ee; }
   .callline { font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: var(--tool); }
   #confirm-pop { display: none; position: absolute; z-index: 40; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 6px 20px rgba(0,0,0,.12); padding: 8px; width: 240px; font-size: 12px; }
   #confirm-pop .actions { display: flex; gap: 6px; margin-top: 6px; }
@@ -242,6 +244,15 @@ async function boot() {
   }
   const view = params.get("view");
   show(["taxonomy", "labeling", "progress", "suggestions"].includes(view) ? view : "review");
+
+  // Trace ids can arrive by editing a mode's boxes, so bring annotation links up to date
+  // at startup too; a card that is already saved has no enabled button to click.
+  const before = JSON.stringify((S.patterns.modes || []).map(m => m.annotation_ids || []));
+  reconcileAll();
+  if (JSON.stringify((S.patterns.modes || []).map(m => m.annotation_ids || [])) !== before) {
+    S.patterns = await api("/api/patterns", S.patterns);
+    renderAnnotationTable();
+  }
 }
 
 /* ------------------------------------------------------------------ list */
@@ -498,7 +509,9 @@ async function renderToolset() {
 }
 function renderTurn(t) {
   return `<div class="turn">
-    <div class="turn-head">turn ${t.turn} · trace ${t.trace_id.slice(0, 12)} · ${(t.timestamp || "").slice(11, 19)} UTC</div>
+    <div class="turn-head">turn ${t.turn} · trace
+      <span class="copyid" data-copy="${t.trace_id}" title="click to copy">${t.trace_id}</span>
+      · ${(t.timestamp || "").slice(11, 19)} UTC</div>
     ${t.blocks.map((b, i) => renderBlock(b, t.trace_id, `${t.turn}:${i}`)).join("")}
     ${renderExchange(t)}
   </div>`;
@@ -598,6 +611,16 @@ $("#pop-copy").onclick = async () => {
   setTimeout(() => { b.textContent = "copy"; }, 1000);
 };
 // Click away or press Escape to dismiss, so cancel is never the only way out.
+document.addEventListener("click", async e => {
+  const el = e.target.closest("[data-copy]");
+  if (!el) return;
+  e.preventDefault();
+  const value = el.dataset.copy, shown = el.textContent;
+  try { await navigator.clipboard.writeText(value); } catch (err) { /* clipboard blocked */ }
+  el.textContent = "copied";
+  setTimeout(() => { el.textContent = shown; }, 900);
+});
+
 document.addEventListener("mousedown", e => {
   const pop = $("#popover");
   if (pop.style.display === "block" && !pop.contains(e.target)) closePopover();
@@ -701,6 +724,20 @@ function modeSummary(m) {
     <span class="muted">${pos} positive · ${neg} close neg · ${notes} notes</span>
     ${warn.length ? `<span class="badge flag">${esc(warn.join(" · "))}</span>` : ""}`;
 }
+function reconcileAnnotationLinks(mode) {
+  /* Keep the two directions in step: a trace id typed into the positive or close-negative
+     box links every annotation written on that trace, and a trace id removed from both
+     boxes unlinks them. Trace ids with no annotation stay in the list untouched, since the
+     fields are also meant for traces that were never annotated. */
+  const ids = new Set([...(mode.example_trace_ids || []), ...(mode.close_negative_trace_ids || [])]);
+  const linked = new Set(mode.annotation_ids || []);
+  S.annotations.forEach(a => {
+    if (!a.trace_id) return;
+    if (ids.has(a.trace_id)) linked.add(a.annotation_id);
+    else linked.delete(a.annotation_id);
+  });
+  mode.annotation_ids = [...linked];
+}
 function renderTaxonomy() {
   const modes = S.patterns.modes || [];
   S.openModes = S.openModes || new Set();
@@ -779,6 +816,7 @@ function renderTaxonomy() {
       const k = el.dataset.k;
       mode[k] = k.endsWith("trace_ids") ? el.value.split(/[\s,;]+/).filter(Boolean) : el.value;
     });
+    reconcileAnnotationLinks(mode);
     delete S.pending[was];           // this card is saved; others keep their staged edits
     S.openModes.delete(was);
     S.openModes.add(mode.name);
@@ -828,7 +866,7 @@ function renderAnnotationTable() {
       return `<tr>
         <td><a href="/?scenario=${encodeURIComponent(a.scenario_id || "")}" target="_blank" rel="noopener"
               title="open this conversation in a new tab">${esc(a.scenario_id || "")}</a>
-          <div class="muted">${(a.trace_id || "").slice(0, 8)}</div></td>
+          ${a.trace_id ? `<div><span class="copyid" data-copy="${a.trace_id}" title="click to copy">${a.trace_id}</span></div>` : ""}</td>
         <td>${esc(s.role || "")}<div class="muted">${esc(s.intent || "")}${s.difficulty ? " · " + esc(s.difficulty) : ""}</div></td>
         <td>${s.scenario_group ? `<span class="badge group-${s.scenario_group}">${s.scenario_group}</span>` : ""}
           ${s.data_quality_case_id ? `<div class="muted">${esc(s.data_quality_case_id)}</div>` : ""}</td>
@@ -885,7 +923,14 @@ $("#add-mode").onclick = () => {
   savePatterns();
 };
 $("#new-mode").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); $("#add-mode").click(); } });
-async function savePatterns() { S.patterns = await api("/api/patterns", S.patterns); renderTaxonomy(); renderAnnotationTable(); renderLabeling(); refreshProgress(); }
+function reconcileAll() {
+  (S.patterns.modes || []).forEach(reconcileAnnotationLinks);
+}
+async function savePatterns() {
+  reconcileAll();
+  S.patterns = await api("/api/patterns", S.patterns);
+  renderTaxonomy(); renderAnnotationTable(); renderLabeling(); refreshProgress();
+}
 
 /* ------------------------------------------------------------ labeling */
 function finalModes() { return (S.patterns.modes || []).filter(m => m.status === "confirmed" || m.status === "frozen"); }
