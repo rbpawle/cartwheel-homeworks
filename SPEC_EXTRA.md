@@ -11,7 +11,8 @@ records defects to avoid reintroducing.
 The changes:
 
 1. **Model-exchange visibility** — capture (or recover) the request/response traffic between
-   the application and the model, which the Module 1 instrumentation did not store.
+   the application and the model, which the Module 1 instrumentation did not store, plus the
+   opt-in Raindrop Workshop capture (1.7).
 2. **Review-app favicon.**
 3. **Batch sampling, filtering, and saved batches in the review app** — draw a batch by strategy or
    stratified across a dimension, filter by pasted scenario ids, save the current view as a batch,
@@ -151,6 +152,49 @@ prompt once (badged when it differs between steps), then each step with its requ
 latency, input tokens, and message count, with `logged` / `reconstructed` / `from_code` badges,
 plus a footer noting that output tokens were not recorded for these runs. A session-level panel
 lists the tool schemas and model settings.
+
+### 1.7 Optional Raindrop Workshop capture (`observability/raindrop_trace.py`)
+
+Homework 4 Part C inspects runs in Raindrop Workshop, a local trace debugger, while requiring the
+existing OpenTelemetry and Langfuse instrumentation to be preserved.
+
+**Opt-in by environment variable**, because `uvicorn` passes no flags to the app:
+
+```bash
+uv run uvicorn server.app:app --port 8010                       # unchanged
+CARTWHEEL_RAINDROP=1 uv run uvicorn server.app:app --port 8010  # captured
+```
+
+`enabled()` reads `CARTWHEEL_RAINDROP`; when unset, `raindrop.analytics` is never imported, `capture()`
+yields `None`, and `finish()` is a no-op. The cost when off is one call and a dict literal per turn.
+
+**Call site.** `post_message` wraps `Runner.run` in `raindrop_trace.capture(...)`, passing the user
+message as input, the reply as output, and role, store id, scenario id, prompt version, and session id
+as properties. The context manager finishes the interaction on the way out, including on an exception,
+so failed turns appear in Workshop rather than vanishing.
+
+**Init settings that matter:**
+
+| Setting | Why |
+| --- | --- |
+| `endpoint=<local workshop url>` | **Span export has its own endpoint.** Without it, interaction events reach local Workshop while spans go to the Raindrop cloud API and fail `401 Unauthorized` — tool spans silently disappear while runs still appear. |
+| `local_workshop_url=<same url>` | Event endpoint. `RAINDROP_LOCAL_DEBUGGER`, default `http://localhost:5899/v1/`. |
+| `tracing_enabled=True` | `Interaction.track_tool` and span helpers return early without it, so no tool spans. |
+| `auto_instrument=False` | OpenLLMetry keeps ownership of agent/LLM/tool instrumentation. |
+
+No write key is needed for local capture; a placeholder is passed.
+
+**Do not also record tools by hand.** With tracing on, Raindrop attaches a span processor to the
+existing provider, so the OpenLLMetry spans (`cartwheel.session_message`, `Agent Workflow`, the
+generations, and each tool) reach Workshop as well. An earlier build additionally called
+`track_tool` from `record_tool_result`, which produced every tool twice (`find_order` and
+`find_order.tool`). The manual path was removed.
+
+**Verified:** a captured turn shows the full tree — request span, agent, generations, and tool calls
+with durations and status — and the same turn still lands in Langfuse, so the two sinks coexist.
+
+**Limitation:** Workshop's spans carry names, types, timings, and status, but not payloads
+(`input_chars` is 0 on tool spans), so tool arguments and results must be read from Langfuse.
 
 ---
 
@@ -361,6 +405,12 @@ sidebar header, so a failure degrades visibly; and after any UI edit, extract ev
 the script and compare against the ids present in the markup and in the render functions. Every
 referenced id must exist.
 
+**A save wiped other cards' unsaved edits.** `savePatterns()` re-renders the whole taxonomy from
+saved state, so pressing **update mode** on one card discarded in-progress typing in every other
+card and greyed out their buttons. **Rule:** any control that re-renders a list of editable cards
+must stage unsaved field values outside the DOM and restore them after the render, together with
+their dirty state; alternatively, label the control so it clearly saves everything at once.
+
 **Saved batches silently dropped.** `tools.select_traces` rewrites `sample_manifest.json` in its
 own shape, so reading the existing `batches` *after* calling it returns a manifest that no longer
 has them. **Rule:** read the batches before calling it; see section 3.2.
@@ -403,14 +453,81 @@ Linking writes `annotation_ids` on the mode in `patterns.json`, which is what Ho
 means by "the human annotations from which the mode originated". Unlinking removes the id. The
 table re-renders after any taxonomy save, so newly created modes appear in the picker immediately.
 
+### 7.1 Taxonomy editor
+
+Modes are edited in the Taxonomy view, above the annotations table. Each mode is a collapsed
+`<details>` card whose summary carries `name · status · N positive · N close neg · N notes`, plus an
+amber badge naming what Part D still requires (missing definition, missing requirement source, fewer
+than three positives). Open cards are remembered across re-renders, so saving one does not collapse
+the rest.
+
+Card fields map to the Part D list: name, status (`draft` / `confirmed` / `frozen`), binary
+definition, requirement source, evaluator type (`judge` / `code`), boundary, positive trace ids,
+close negative trace ids, and a read-only line listing the linked annotations.
+
+Three controls, none of which save silently:
+
+- **create mode** — a name field plus a button. Enter submits, whitespace becomes underscores,
+  duplicate names are refused, and the new card opens ready to edit.
+- **update mode** — edits are staged, not written per keystroke. Any change enables the button and
+  shows `unsaved changes`; clicking it collects that card's fields into the mode and PUTs the whole
+  taxonomy. Trace-id fields split on commas, semicolons, or whitespace.
+  Saving re-renders every card, so unsaved edits are staged in `S.pending`, keyed by the mode's
+  saved name, and written back into the inputs afterwards: the other cards keep their text, stay
+  open, keep their enabled button and their `unsaved changes` note. The saved card clears its own
+  staging; deleting a mode clears it too, so stale text cannot reappear on a mode that later takes
+  the same name.
+- **remove mode** — replaces the action row with an inline confirmation naming the mode and stating
+  that its annotations survive, with delete and cancel.
+
+### 7.2 Linking annotations to modes
+
+The `mode` column in the annotations table lists every mode twice, as `<name> — positive` and
+`<name> — close negative`. One selection records both halves Part D asks for: it appends the
+annotation to the mode's `annotation_ids` and the annotation's `trace_id` to either
+`example_trace_ids` or `close_negative_trace_ids`, removing it from the opposite list so a trace
+cannot sit on both sides. The badge shows which side was recorded; its `×` removes the annotation
+and its trace id from both lists.
+
+Consequence: close negatives are linked through annotations, so a trace used as a close negative
+needs a note on it. That matches the handout's treatment of close negatives as reviewed evidence.
+The trace-id fields on the card remain editable for traces that were never annotated.
+
+### 7.3 Addressable state: view and conversation in the URL
+
+The URL names both the active view and the open conversation, so a refresh or a copied link returns
+to the same place:
+
+```
+/                                       review, first session
+/?scenario=support-0123                 review, that conversation
+/?view=taxonomy&scenario=support-0123   taxonomy, that conversation still in context
+/?view=progress                         progress
+```
+
+One function, `syncUrl()`, writes the address bar via `history.replaceState`; it is called when the
+view changes and when a session is selected. `review` is the default and is omitted from the query.
+
+On load the app **restores the session first, then the view**, so Labeling and Taxonomy come back
+with the right conversation in context rather than the first in the list. An unknown `view` value
+falls back to Review; an unknown or absent `scenario` falls back to the first session.
+
+The scenario id in the annotations table is a real link, `/?scenario=<id>` with `target="_blank"`,
+so evidence opens in a second tab while the taxonomy stays open in the first.
+
+The server needs no route for any of this: it strips the query string when routing, so
+`/?view=taxonomy&scenario=support-0123` serves the same page as `/`.
+
 ---
 
 ## Files touched
 
 | File | Change |
 | --- | --- |
-| `server/app.py` | Sets `cartwheel.session_id`; calls `record_model_exchange` after `Runner.run` |
+| `server/app.py` | Sets `cartwheel.session_id`; calls `record_model_exchange` after `Runner.run`; wraps the run in `raindrop_trace.capture` |
 | `observability/instrument.py` | Adds `record_model_exchange` |
+| `observability/raindrop_trace.py` | New: opt-in Raindrop Workshop capture |
+| `pyproject.toml` / `uv.lock` | Adds `raindrop-ai` |
 | `analysis/review_app/steps.py` | New: per-step exchange reconstruction |
 | `analysis/review_app/toolset.py` | New: tool schemas and model settings from code |
 | `analysis/review_app/server.py` | Attaches `exchange` per turn; serves `/api/toolset`, `/api/dimensions`, `POST /api/sample`, `/api/sample/stratified`, `/api/sample/save`, `/api/sample/rename`, and `/api/sample/delete`; batch-aware `progress()` |

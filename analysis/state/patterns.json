@@ -1,15 +1,73 @@
 {
   "modes": [
     {
-      "name": "new_mode",
+      "name": "do_not_cite_policy_id",
       "status": "draft",
-      "definition": "",
+      "definition": "Response is failure if a policy identifier is present, except for support staff. boob",
+      "requirement_source": "",
+      "evaluator_type": "code",
+      "boundary": "This is more severe than giving an order number to a user, so prefer order number leakage over this.",
+      "example_trace_ids": [
+        "d94371e185905face9cd149eff3f8706",
+        "b13202fe4b88c8ddcbe26f0a6657a675",
+        "30b54e9f349d59bd5b759c9534cad3ee"
+      ],
+      "close_negative_trace_ids": [
+        "c1f880cd582bae5757c6fe468f45ca27",
+        "489a3c92689270fb98118cf1e05d6604",
+        "6b9f6cb641d683a320eb2d4250502b4f"
+      ],
+      "annotation_ids": [
+        "8043e27cd00f",
+        "eee4591ed164",
+        "fc9dba206686",
+        "b74041e11239",
+        "6b7b222af74e",
+        "62f5d641a464"
+      ]
+    },
+    {
+      "name": "do_not_print_order_id",
+      "status": "draft",
+      "definition": "blah",
       "requirement_source": "",
       "evaluator_type": "judge",
       "boundary": "",
-      "example_trace_ids": [],
+      "example_trace_ids": [
+        "a78d812f528cc1f46a25a0bf73e137ad",
+        "033abec9827a5e5457d503a342649095",
+        "eb184c7b5688bc212791672d7a4e889f"
+      ],
+      "close_negative_trace_ids": [
+        "ecb9e36a461516c5536bc6f3e6d759c2",
+        "ba20a8ff9740a9f4efa5ea387d52d326"
+      ],
+      "annotation_ids": [
+        "a869dfe6c5e6",
+        "37595893192c",
+        "1004c01de49e",
+        "b418357715df",
+        "46edf61f4557"
+      ]
+    },
+    {
+      "name": "escalation_without_basis",
+      "status": "draft",
+      "definition": "The reply escalates or offers to escalate to a human when none of ESC-1 to ESC-4 applies (no above-threshold refund, no account change, no dispute, no genuine policy ambiguity).",
+      "requirement_source": "needs a spec revision. ESC-1 to ESC-4 say when escalation is required, never when it's forbidden.",
+      "evaluator_type": "judge",
+      "boundary": "This covers a handoff the agent could perform but shouldn't; #4 covers a capability the agent claims but doesn't have.",
+      "example_trace_ids": [
+        "b13202fe4b88c8ddcbe26f0a6657a675",
+        "30b54e9f349d59bd5b759c9534cad3ee",
+        "64a346f0d6082a86b9a20167ba054058"
+      ],
       "close_negative_trace_ids": [],
-      "annotation_ids": []
+      "annotation_ids": [
+        "259a34e45e41",
+        "1e910dafb085",
+        "fb4c32e5e4e2"
+      ]
     }
   ]
 }

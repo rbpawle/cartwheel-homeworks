@@ -747,6 +747,182 @@
       "note": "should not cite policy identifiers to shoppers",
       "ts": "2026-09-20T19:44:03.120196+00:00",
       "author": "human"
+    },
+    {
+      "annotation_id": "d090997af98c",
+      "session_id": "7975bd78fa1975e3bfc6dc672388ef7e",
+      "trace_id": "48820dfd2becc1c8db57e3addfd49e92",
+      "scenario_id": "support-0001",
+      "block_index": "1:4",
+      "quote": "I can escalate this to a human agent to look into it further.",
+      "note": "agent should not offer escalation here",
+      "ts": "2026-09-20T19:54:53.804241+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "e47ef3a07a08",
+      "session_id": "719f8f1efb9c311c9c2c6d83dd28786a",
+      "trace_id": "2969c6fa3a69bc402650788e164da739",
+      "scenario_id": "support-0009",
+      "block_index": "2:1",
+      "quote": "Ticket #151",
+      "note": "agent should not give escalation ticket identifier",
+      "ts": "2026-09-20T19:55:52.148204+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "2da8767ee5a8",
+      "session_id": "5ae418fc26e488a2a8606569f5437c1b",
+      "trace_id": "8de5d1a8c9d784576541bc437cb9ea54",
+      "scenario_id": "support-0012",
+      "block_index": "1:3",
+      "quote": "cw-disputes",
+      "note": "only cite policy identifiers to support users",
+      "ts": "2026-09-20T20:05:30.849225+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "300aa688c8c9",
+      "session_id": "a69266eea3a29a1c166445ba84f7c354",
+      "trace_id": "c11ed33a824b1fdc5aa74b42f97a39ff",
+      "scenario_id": "support-0017",
+      "block_index": "1:3",
+      "quote": "Want me to escalate this to a human for a shipment-intercept request, or should we wait for delivery to process a return?",
+      "note": "unnecessary escalation, too verbose, also making up abilities it doesn't have",
+      "ts": "2026-09-20T20:06:26.156467+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "8eb910899631",
+      "session_id": "4a8c0dd9d466ec12e73e2c065df58adc",
+      "trace_id": "0b7b3e27bf09a0e6d5eba8c13536016a",
+      "scenario_id": "support-0028",
+      "block_index": "1:2",
+      "quote": "I can escalate it to a human agent to dig into what happened with the delivery/refund timeline.",
+      "note": "unnecessary escalation",
+      "ts": "2026-09-20T20:13:45.864343+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "28d5e42449ae",
+      "session_id": "d30d64bfdf1de8e5e2c26deb102c523c",
+      "trace_id": "355775e4396feea07d8bac2e3ed13e37",
+      "scenario_id": "support-0031",
+      "block_index": "1:2",
+      "quote": "I can escalate this to a human agent to chase down more details.",
+      "note": "unnecessary escalation",
+      "ts": "2026-09-20T20:14:07.445499+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "241dad9d148c",
+      "session_id": "0b95a6f98d6753896412a59bf9eecc74",
+      "trace_id": "b7f93ca6ca5b871bc4645efeb44594f5",
+      "scenario_id": "support-0046",
+      "block_index": "1:4",
+      "quote": "cw-refunds",
+      "note": "shouldn't cite policy identifiers",
+      "ts": "2026-09-20T20:15:49.775607+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "23d86ecc6f83",
+      "session_id": "789a895e35d55f0da433bb0e7eab3619",
+      "trace_id": "db2a9648a3823bc9274183e6aca1dfaa",
+      "scenario_id": "support-0047",
+      "block_index": "2:1",
+      "quote": "cw-refunds*",
+      "note": "should not cite policy identifier",
+      "ts": "2026-09-20T20:16:56.498058+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "1ecedae9a200",
+      "session_id": "ab7652121a666d9e3ae3ef29be8d80b4",
+      "trace_id": "22e1a7a3d8d6796d85acba8b8e644d51",
+      "scenario_id": "support-0077",
+      "block_index": "1:3",
+      "quote": "cw-cancellations",
+      "note": "should not cite policy identifier",
+      "ts": "2026-09-20T20:17:16.791187+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "1d0d5975efb1",
+      "session_id": "ab7652121a666d9e3ae3ef29be8d80b4",
+      "trace_id": "22e1a7a3d8d6796d85acba8b8e644d51",
+      "scenario_id": "support-0077",
+      "block_index": "1:3",
+      "quote": "would you like me to escalate this now in case you'd rather not wait",
+      "note": "inappropriate offer to escalate",
+      "ts": "2026-09-20T20:17:38.333795+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "6bef5e6f556b",
+      "session_id": "5f24a5aacd2b414625617a91ddeb0a87",
+      "trace_id": "01d1da0f66f8093b4f9c123b478a16db",
+      "scenario_id": "support-0099",
+      "block_index": "1:6",
+      "quote": "cw-returns",
+      "note": "shoul dnot city policy identifier",
+      "ts": "2026-09-20T20:18:16.717074+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "2765894f3360",
+      "session_id": "cae317ef215a0cb37474bf1fc2821853",
+      "trace_id": "4b5256b67dc2f2acae3b2f9bc2b4b7f2",
+      "scenario_id": "support-0113",
+      "block_index": "1:2",
+      "quote": "cw-disputes",
+      "note": "should not cite policy identifier",
+      "ts": "2026-09-20T20:18:45.540024+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "6f9903632db2",
+      "session_id": "97bbee5fe97e5f8b97b5f92e2312e152",
+      "trace_id": "ab64e5b11ade4251992232ffe5aeb50e",
+      "scenario_id": "support-0127",
+      "block_index": null,
+      "quote": "",
+      "note": "no failure observed",
+      "ts": "2026-09-20T20:19:16.998472+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "152aa9045985",
+      "session_id": "d38414c88cbf359a6923745fa36a9def",
+      "trace_id": "0de485d0c7098343b2de5d0f0a66a27d",
+      "scenario_id": "support-0155",
+      "block_index": null,
+      "quote": "",
+      "note": "no failure observed",
+      "ts": "2026-09-20T20:19:59.540465+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "40b6a6b2b470",
+      "session_id": "f4b4895ae8cb9972af8bb18201b97268",
+      "trace_id": "35b3352e2707ce9086033e4a4959bdee",
+      "scenario_id": "support-0156",
+      "block_index": null,
+      "quote": "",
+      "note": "no failure observed",
+      "ts": "2026-09-20T20:20:21.914567+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "3ad3384bbb71",
+      "session_id": "6d7a19dec9a44c1d55e90d2b123c6906",
+      "trace_id": "5209aaecd6229f1ac6a6c3edbdfdc942",
+      "scenario_id": "support-0157",
+      "block_index": null,
+      "quote": "",
+      "note": "no failure observed",
+      "ts": "2026-09-20T20:20:47.669484+00:00",
+      "author": "human"
     }
   ]
 }

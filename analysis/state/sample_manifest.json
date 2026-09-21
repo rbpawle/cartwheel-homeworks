@@ -536,6 +536,209 @@
           "reason": "stratified by role = shopper"
         }
       ]
+    },
+    "escalation_maybe": {
+      "strategy": "manual",
+      "k": 24,
+      "selected_at": "2026-09-20T19:54:29.925699+00:00",
+      "note": "pasted ids",
+      "sessions": [
+        {
+          "session_id": "7975bd78fa1975e3bfc6dc672388ef7e",
+          "scenario_id": "support-0001",
+          "trace_ids": [
+            "48820dfd2becc1c8db57e3addfd49e92"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "719f8f1efb9c311c9c2c6d83dd28786a",
+          "scenario_id": "support-0009",
+          "trace_ids": [
+            "b6723dfb15699084f6e337dc61b03db4",
+            "2969c6fa3a69bc402650788e164da739"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "5ae418fc26e488a2a8606569f5437c1b",
+          "scenario_id": "support-0012",
+          "trace_ids": [
+            "8de5d1a8c9d784576541bc437cb9ea54"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "a69266eea3a29a1c166445ba84f7c354",
+          "scenario_id": "support-0017",
+          "trace_ids": [
+            "c11ed33a824b1fdc5aa74b42f97a39ff"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "4a8c0dd9d466ec12e73e2c065df58adc",
+          "scenario_id": "support-0028",
+          "trace_ids": [
+            "0b7b3e27bf09a0e6d5eba8c13536016a"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "d30d64bfdf1de8e5e2c26deb102c523c",
+          "scenario_id": "support-0031",
+          "trace_ids": [
+            "355775e4396feea07d8bac2e3ed13e37"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "0b95a6f98d6753896412a59bf9eecc74",
+          "scenario_id": "support-0046",
+          "trace_ids": [
+            "b7f93ca6ca5b871bc4645efeb44594f5"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "789a895e35d55f0da433bb0e7eab3619",
+          "scenario_id": "support-0047",
+          "trace_ids": [
+            "e96ee191c9e31771080d33b0e8b49076",
+            "db2a9648a3823bc9274183e6aca1dfaa"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "ab7652121a666d9e3ae3ef29be8d80b4",
+          "scenario_id": "support-0077",
+          "trace_ids": [
+            "22e1a7a3d8d6796d85acba8b8e644d51"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "5f24a5aacd2b414625617a91ddeb0a87",
+          "scenario_id": "support-0099",
+          "trace_ids": [
+            "01d1da0f66f8093b4f9c123b478a16db"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "cae317ef215a0cb37474bf1fc2821853",
+          "scenario_id": "support-0113",
+          "trace_ids": [
+            "4b5256b67dc2f2acae3b2f9bc2b4b7f2"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "97bbee5fe97e5f8b97b5f92e2312e152",
+          "scenario_id": "support-0127",
+          "trace_ids": [
+            "ab64e5b11ade4251992232ffe5aeb50e"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "d38414c88cbf359a6923745fa36a9def",
+          "scenario_id": "support-0155",
+          "trace_ids": [
+            "0de485d0c7098343b2de5d0f0a66a27d"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "f4b4895ae8cb9972af8bb18201b97268",
+          "scenario_id": "support-0156",
+          "trace_ids": [
+            "35b3352e2707ce9086033e4a4959bdee"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "6d7a19dec9a44c1d55e90d2b123c6906",
+          "scenario_id": "support-0157",
+          "trace_ids": [
+            "5209aaecd6229f1ac6a6c3edbdfdc942"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "bb86ae9bf17a3e235d21511fe991a4e8",
+          "scenario_id": "support-0161",
+          "trace_ids": [
+            "f8c77f567b12014dc1f3140c67e589a6"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "58fc90abf0d965d76299e128eea3e2eb",
+          "scenario_id": "support-0166",
+          "trace_ids": [
+            "bde852339c4e1bcd4951d480dfb597c1"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "cdb6a1f5d49859c0894d0654f2008f85",
+          "scenario_id": "support-0168",
+          "trace_ids": [
+            "23a6dc0ad8dea9a86a1d58410c4eda38"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "f54a0404083bab9a62d7eb78bd5b6a80",
+          "scenario_id": "support-0169",
+          "trace_ids": [
+            "3723333170ffeaf6caeec67f252e8846"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "0712f2829c2be361e541f3a8b509e416",
+          "scenario_id": "support-0173",
+          "trace_ids": [
+            "dffa6a59ed981e9f422c3f74bb99793f"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "2950a1fc1c51e1cee11701cdb0c758b5",
+          "scenario_id": "support-0200",
+          "trace_ids": [
+            "f4c7fda05a39f9b25a5d15a263067b00"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "1f2c0cbb8f6d493b270d08a03676e026",
+          "scenario_id": "support-0205",
+          "trace_ids": [
+            "b287e9426ff02a0039aefb1fe504ef30"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "90fb7aeb38f1de5a2e0095dc36fb3ace",
+          "scenario_id": "support-0227",
+          "trace_ids": [
+            "614797c487df5872516f6f90a0104a93"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "e584fc1a4bb0b27256a2fa64c43c0ee3",
+          "scenario_id": "support-0245",
+          "trace_ids": [
+            "9ccbd6ffbde8b6694b51249cdba93d00",
+            "1d32c0fd4af5be7965e97d7f1ee9ad09"
+          ],
+          "reason": "pasted ids"
+        }
+      ]
     }
   }
 }

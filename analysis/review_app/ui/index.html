@@ -34,6 +34,9 @@
   .sec-head { padding: 7px 9px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); border-bottom: 1px solid var(--line); }
   details.sec { border-top: 1px solid var(--line); }
   details.sec > summary { padding: 6px 9px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); cursor: pointer; }
+  details.mode > summary { cursor: pointer; list-style: revert; }
+  details.mode[open] > summary { border-bottom: 1px solid var(--line); padding-bottom: 6px; margin-bottom: 4px; }
+  details.mode .actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
   .chip { display: inline-block; font-size: 11px; border: 1px solid var(--line); background: #eef1ff; border-radius: 999px; padding: 1px 7px; margin: 2px 3px 0 0; cursor: pointer; }
   .chip:hover { background: #dde3ff; }
   .chip.clear-all { background: #f4f2ee; }
@@ -181,7 +184,10 @@
   <div class="card">
     <b>Failure modes</b> <span class="muted">binary; a mode becomes “final” when status = confirmed</span>
     <div id="modes"></div>
-    <button class="small" id="add-mode" style="margin-top:8px">+ add mode</button>
+    <div class="actions" style="margin-top:8px">
+      <input id="new-mode" type="text" placeholder="new mode name, e.g. unnecessary_escalation" style="flex:1">
+      <button class="small" id="add-mode">create mode</button>
+    </div>
   </div>
   <div class="card">
     <b>Annotations</b> <span class="muted" id="ann-count"></span>
@@ -226,7 +232,16 @@ async function boot() {
   await loadSaved();
   await loadDimensions();
   renderRows();
-  if (S.sessions.length) select(S.sessions[0].session_id);
+  const params = new URLSearchParams(location.search);
+  const wanted = params.get("session")
+    || (params.get("scenario") && (S.sessions.find(s => s.scenario_id === params.get("scenario")) || {}).session_id);
+  if (wanted && S.sessions.some(s => s.session_id === wanted)) {
+    select(wanted);
+  } else if (S.sessions.length) {
+    select(S.sessions[0].session_id);
+  }
+  const view = params.get("view");
+  show(["taxonomy", "labeling", "progress", "suggestions"].includes(view) ? view : "review");
 }
 
 /* ------------------------------------------------------------------ list */
@@ -441,6 +456,7 @@ async function select(id) {
   const s = await api("/api/sessions/" + encodeURIComponent(id));
   S.session = s;
   renderRows();
+  syncUrl();
   const exp = s.expected || {};
   const key = exp.evaluation === "objective" ? exp.outcome : "human judgment";
   $("#conv").innerHTML = `
@@ -673,36 +689,114 @@ function renderNotes() {
 }
 
 /* ------------------------------------------------------------ taxonomy */
+function modeSummary(m) {
+  const pos = (m.example_trace_ids || []).length, neg = (m.close_negative_trace_ids || []).length;
+  const notes = (m.annotation_ids || []).length;
+  const warn = [];
+  if (!m.definition) warn.push("no definition");
+  if (!m.requirement_source) warn.push("no requirement");
+  if (pos < 3) warn.push(`${pos}/3 positives`);
+  return `<b>${esc(m.name || "(unnamed)")}</b>
+    <span class="badge">${esc(m.status || "draft")}</span>
+    <span class="muted">${pos} positive · ${neg} close neg · ${notes} notes</span>
+    ${warn.length ? `<span class="badge flag">${esc(warn.join(" · "))}</span>` : ""}`;
+}
 function renderTaxonomy() {
   const modes = S.patterns.modes || [];
-  $("#modes").innerHTML = modes.map((m, i) => {
-    const notes = S.annotations.filter(a => (m.annotation_ids || []).includes(a.annotation_id));
-    return `<div class="card">
-      <div class="grid2">
+  S.openModes = S.openModes || new Set();
+  // Unsaved edits live here, keyed by the mode's saved name, so re-rendering after a
+  // save on one card restores the others' in-progress text instead of wiping it.
+  S.pending = S.pending || {};
+  $("#modes").innerHTML = modes.map((m, i) => `
+    <details class="mode card" data-mode-card="${i}" ${S.openModes.has(m.name) ? "open" : ""}>
+      <summary>${modeSummary(m)}</summary>
+      <div class="grid2" style="margin-top:8px">
         <label>name<br><input type="text" data-m="${i}" data-k="name" value="${esc(m.name || "")}" style="width:100%"></label>
-        <label>status<br><select data-m="${i}" data-k="status">${["draft","confirmed","frozen"].map(s => `<option ${m.status === s ? "selected" : ""}>${s}</option>`).join("")}</select></label>
+        <label>status<br><select data-m="${i}" data-k="status">${["draft","confirmed","frozen"].map(x => `<option ${m.status === x ? "selected" : ""}>${x}</option>`).join("")}</select></label>
       </div>
       <label>binary definition<br><textarea data-m="${i}" data-k="definition" style="width:100%;height:48px">${esc(m.definition || "")}</textarea></label>
       <div class="grid2">
-        <label>requirement source<br><input type="text" data-m="${i}" data-k="requirement_source" value="${esc(m.requirement_source || "")}" style="width:100%" placeholder="RESP-2 or spec revision"></label>
-        <label>evaluator type<br><select data-m="${i}" data-k="evaluator_type">${["judge","code"].map(s => `<option ${m.evaluator_type === s ? "selected" : ""}>${s}</option>`).join("")}</select></label>
+        <label>requirement source<br><input type="text" data-m="${i}" data-k="requirement_source" value="${esc(m.requirement_source || "")}" style="width:100%" placeholder="RESP-2, or a recorded spec revision"></label>
+        <label>evaluator type<br><select data-m="${i}" data-k="evaluator_type">${["judge","code"].map(x => `<option ${m.evaluator_type === x ? "selected" : ""}>${x}</option>`).join("")}</select></label>
       </div>
       <label>boundary vs nearest mode<br><textarea data-m="${i}" data-k="boundary" style="width:100%;height:38px">${esc(m.boundary || "")}</textarea></label>
       <div class="grid2">
-        <label>positive trace ids (comma separated)<br><input type="text" data-m="${i}" data-k="example_trace_ids" value="${esc((m.example_trace_ids || []).join(", "))}" style="width:100%"></label>
+        <label>positive trace ids<br><input type="text" data-m="${i}" data-k="example_trace_ids" value="${esc((m.example_trace_ids || []).join(", "))}" style="width:100%"></label>
         <label>close negative trace ids<br><input type="text" data-m="${i}" data-k="close_negative_trace_ids" value="${esc((m.close_negative_trace_ids || []).join(", "))}" style="width:100%"></label>
       </div>
-      <div class="muted" style="margin-top:6px">supporting annotations: ${notes.length ? notes.map(n => esc(n.note.slice(0, 60))).join(" | ") : "none linked yet — link from the Labeling view"}</div>
-      <button class="small" data-rm="${i}" style="margin-top:6px">remove mode</button>
-    </div>`;
-  }).join("") || `<div class="muted">no modes yet</div>`;
-  document.querySelectorAll("#modes [data-m]").forEach(el => el.onchange = () => {
-    const m = S.patterns.modes[+el.dataset.m], k = el.dataset.k;
-    m[k] = k.endsWith("trace_ids") ? el.value.split(",").map(s => s.trim()).filter(Boolean) : el.value;
+      <div class="muted" style="margin-top:6px">supporting annotations: ${
+        (() => { const n = S.annotations.filter(a => (m.annotation_ids || []).includes(a.annotation_id));
+                 return n.length ? n.map(x => esc(x.note.slice(0, 60))).join(" | ")
+                                 : "none yet — link them in the annotations table below"; })()}</div>
+      <div class="actions" style="margin-top:8px">
+        <button class="small" data-update="${i}" disabled>update mode</button>
+        <span class="muted" data-dirty="${i}"></span>
+        <span style="margin-left:auto"></span>
+        <button class="small" data-rm="${i}">remove mode</button>
+      </div>
+    </details>`).join("") || `<div class="muted">no modes yet</div>`;
+
+  // restore staged edits and their dirty state after the re-render
+  modes.forEach((m, i) => {
+    const pending = S.pending[m.name];
+    if (!pending) return;
+    Object.entries(pending).forEach(([k, v]) => {
+      const el = document.querySelector(`#modes [data-m="${i}"][data-k="${k}"]`);
+      if (el) el.value = v;
+    });
+    const btn = document.querySelector(`#modes [data-update="${i}"]`);
+    if (btn) btn.disabled = false;
+    const note = document.querySelector(`#modes [data-dirty="${i}"]`);
+    if (note) note.textContent = "unsaved changes";
+    S.openModes.add(m.name);
+    const card = document.querySelector(`#modes [data-mode-card="${i}"]`);
+    if (card) card.open = true;
+  });
+
+  // remember which cards are open across re-renders
+  document.querySelectorAll("#modes details").forEach((d, i) => d.ontoggle = () => {
+    const name = (S.patterns.modes[i] || {}).name;
+    if (!name) return;
+    d.open ? S.openModes.add(name) : S.openModes.delete(name);
+  });
+
+  // edits are staged; "update mode" commits them
+  document.querySelectorAll("#modes [data-m]").forEach(el => el.oninput = () => {
+    const i = el.dataset.m, name = (S.patterns.modes[+i] || {}).name;
+    if (name) {
+      S.pending[name] = S.pending[name] || {};
+      S.pending[name][el.dataset.k] = el.value;
+    }
+    const btn = document.querySelector(`#modes [data-update="${i}"]`);
+    if (btn) btn.disabled = false;
+    const note = document.querySelector(`#modes [data-dirty="${i}"]`);
+    if (note) note.textContent = "unsaved changes";
+  });
+
+  document.querySelectorAll("#modes [data-update]").forEach(btn => btn.onclick = () => {
+    const i = +btn.dataset.update, mode = S.patterns.modes[i], was = mode.name;
+    document.querySelectorAll(`#modes [data-m="${i}"]`).forEach(el => {
+      const k = el.dataset.k;
+      mode[k] = k.endsWith("trace_ids") ? el.value.split(/[\s,;]+/).filter(Boolean) : el.value;
+    });
+    delete S.pending[was];           // this card is saved; others keep their staged edits
+    S.openModes.delete(was);
+    S.openModes.add(mode.name);
     savePatterns();
   });
-  document.querySelectorAll("#modes [data-rm]").forEach(el => el.onclick = () => {
-    S.patterns.modes.splice(+el.dataset.rm, 1); savePatterns();
+
+  document.querySelectorAll("#modes [data-rm]").forEach(btn => btn.onclick = () => {
+    const i = +btn.dataset.rm, mode = S.patterns.modes[i];
+    const row = btn.closest(".actions");
+    row.innerHTML = `<span>Delete <b>${esc(mode.name || "(unnamed)")}</b>? Its annotations stay; only the mode is removed.</span>
+      <button class="small" data-yes="1">delete</button><button class="small" data-no="1">cancel</button>`;
+    row.querySelector("[data-no]").onclick = () => renderTaxonomy();
+    row.querySelector("[data-yes]").onclick = () => {
+      S.openModes.delete(mode.name);
+      delete S.pending[mode.name];
+      S.patterns.modes.splice(i, 1);
+      savePatterns();
+    };
   });
 }
 /* Supporting annotations: every open code, with the scenario's characteristics, and a
@@ -732,42 +826,65 @@ function renderAnnotationTable() {
       const s = sessions[a.session_id] || {};
       const names = linked[a.annotation_id] || [];
       return `<tr>
-        <td><a href="#" data-go="${a.session_id}">${esc(a.scenario_id || "")}</a>
+        <td><a href="/?scenario=${encodeURIComponent(a.scenario_id || "")}" target="_blank" rel="noopener"
+              title="open this conversation in a new tab">${esc(a.scenario_id || "")}</a>
           <div class="muted">${(a.trace_id || "").slice(0, 8)}</div></td>
         <td>${esc(s.role || "")}<div class="muted">${esc(s.intent || "")}${s.difficulty ? " · " + esc(s.difficulty) : ""}</div></td>
         <td>${s.scenario_group ? `<span class="badge group-${s.scenario_group}">${s.scenario_group}</span>` : ""}
           ${s.data_quality_case_id ? `<div class="muted">${esc(s.data_quality_case_id)}</div>` : ""}</td>
         <td>${esc(a.note)}</td>
         <td class="muted">${a.quote ? "“" + esc(a.quote.slice(0, 60)) + "”" : ""}</td>
-        <td>${names.map(n => `<span class="badge">${esc(n)} <a href="#" data-unlink="${a.annotation_id}" data-mode="${esc(n)}">×</a></span>`).join("")}
+        <td>${names.map(n => {
+            const m = modes.find(x => x.name === n) || {};
+            const side = (m.close_negative_trace_ids || []).includes(a.trace_id) ? "close neg" : "positive";
+            return `<span class="badge">${esc(n)} · ${side} <a href="#" data-unlink="${a.annotation_id}" data-mode="${esc(n)}">×</a></span>`;
+          }).join("")}
           ${modes.length ? `<select data-link="${a.annotation_id}"><option value="">link…</option>${
-            modes.filter(m => !names.includes(m.name)).map(m => `<option>${esc(m.name)}</option>`).join("")}</select>` : ""}</td>
+            modes.map(m => `<option value="${esc(m.name)}|pos">${esc(m.name)} — positive</option>
+                            <option value="${esc(m.name)}|neg">${esc(m.name)} — close negative</option>`).join("")}</select>` : ""}</td>
       </tr>`;
     }).join("")}</tbody>`;
 
-  document.querySelectorAll("#ann-table [data-go]").forEach(el => el.onclick = e => {
-    e.preventDefault(); show("review"); select(el.dataset.go);
-  });
   document.querySelectorAll("#ann-table [data-link]").forEach(el => el.onchange = () => {
     if (!el.value) return;
-    const mode = S.patterns.modes.find(m => m.name === el.value);
-    mode.annotation_ids = [...new Set([...(mode.annotation_ids || []), el.dataset.link])];
+    const [name, kind] = el.value.split("|");
+    const mode = S.patterns.modes.find(m => m.name === name);
+    const ann = S.annotations.find(a => a.annotation_id === el.dataset.link);
+    if (!mode || !ann) return;
+    // one action records both halves Part D asks for: the supporting annotation and the trace id
+    mode.annotation_ids = [...new Set([...(mode.annotation_ids || []), ann.annotation_id])];
+    const field = kind === "neg" ? "close_negative_trace_ids" : "example_trace_ids";
+    const other = kind === "neg" ? "example_trace_ids" : "close_negative_trace_ids";
+    mode[field] = [...new Set([...(mode[field] || []), ann.trace_id])];
+    mode[other] = (mode[other] || []).filter(id => id !== ann.trace_id);
     savePatterns();
   });
   document.querySelectorAll("#ann-table [data-unlink]").forEach(el => el.onclick = e => {
     e.preventDefault();
     const mode = S.patterns.modes.find(m => m.name === el.dataset.mode);
+    const ann = S.annotations.find(a => a.annotation_id === el.dataset.unlink);
     mode.annotation_ids = (mode.annotation_ids || []).filter(id => id !== el.dataset.unlink);
+    if (ann) {
+      mode.example_trace_ids = (mode.example_trace_ids || []).filter(id => id !== ann.trace_id);
+      mode.close_negative_trace_ids = (mode.close_negative_trace_ids || []).filter(id => id !== ann.trace_id);
+    }
     savePatterns();
   });
 }
 ["a-text", "a-group", "a-role", "a-mode"].forEach(id => $("#" + id).oninput = renderAnnotationTable);
 
 $("#add-mode").onclick = () => {
-  S.patterns.modes.push({name: "new_mode", status: "draft", definition: "", requirement_source: "", evaluator_type: "judge",
+  const name = ($("#new-mode").value || "").trim().replace(/\s+/g, "_");
+  if (!name) { $("#new-mode").focus(); return; }
+  if ((S.patterns.modes || []).some(m => m.name === name)) { alert(`${name} already exists`); return; }
+  S.patterns.modes.push({name, status: "draft", definition: "", requirement_source: "", evaluator_type: "judge",
     boundary: "", example_trace_ids: [], close_negative_trace_ids: [], annotation_ids: []});
+  S.openModes = S.openModes || new Set();
+  S.openModes.add(name);
+  $("#new-mode").value = "";
   savePatterns();
 };
+$("#new-mode").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); $("#add-mode").click(); } });
 async function savePatterns() { S.patterns = await api("/api/patterns", S.patterns); renderTaxonomy(); renderAnnotationTable(); renderLabeling(); refreshProgress(); }
 
 /* ------------------------------------------------------------ labeling */
@@ -866,13 +983,26 @@ function renderSuggestions() {
 }
 
 /* -------------------------------------------------------------- views */
+function syncUrl() {
+  // Keep the address bar naming both the view and the conversation, so a refresh
+  // (or a copied link) returns to the same place.
+  try {
+    const params = new URLSearchParams();
+    if (S.view && S.view !== "review") params.set("view", S.view);
+    if (S.session && S.session.scenario_id) params.set("scenario", S.session.scenario_id);
+    const query = params.toString();
+    history.replaceState(null, "", query ? `?${query}` : location.pathname);
+  } catch (e) { /* sandboxed: the app still works, the URL just does not update */ }
+}
 function show(view) {
+  S.view = view;
   document.querySelectorAll("nav button").forEach(b => b.classList.toggle("active", b.dataset.view === view));
   document.querySelectorAll("main").forEach(m => m.classList.toggle("active", m.id === view));
   if (view === "taxonomy") { renderTaxonomy(); renderAnnotationTable(); }
   if (view === "labeling") renderLabeling();
   if (view === "progress") refreshProgress();
   if (view === "suggestions") renderSuggestions();
+  syncUrl();
 }
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => show(b.dataset.view));
 
