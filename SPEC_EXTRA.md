@@ -255,6 +255,15 @@ reviewer can return to a set from an earlier session; the batch is the single so
 kept in a cookie or in browser storage. (An earlier build had a "copy scenario ids" button here; the
 dropdown replaced it.)
 
+Two pseudo-batches head the list whenever any batch exists:
+
+- **all batches** — the union of every batch's sessions. Each row's reason is prefixed with the batch
+  it came from (`role_30: stratified by role = support`), so membership stays visible while scrolling.
+- **not in any batch** — the remainder, for finding material no batch has claimed.
+
+Both are computed in `applyBatch()` from the manifest rather than stored, and both compose with the
+other filters: *all batches* plus `needs labels` in the Labeling view is the labeling queue.
+
 The **trash button** deletes the selected set after an inline confirmation that names the set and
 states the consequence: its traces become available to future draws again, while annotations and
 labels are untouched. Confirming calls `POST /api/sample/delete` with `{"batch_name": ...}`, which
@@ -418,6 +427,15 @@ saved file showed `example_trace_ids` populated with `annotation_ids` empty, and
 help. **Rule:** when a behavior repairs or derives state, run it where state is written (and once at
 startup), not only from a control that may be disabled in the state that needs repairing.
 
+**A field missing from the list payload broke the sidebar.** `labelProgress` read
+`session.trace_ids`, which `GET /api/sessions` omitted from its per-row summary. The call threw only
+once labels existed to iterate, so the view worked until the first label was recorded and then
+stopped: rows stopped responding to clicks (the handlers are bound at the end of `renderRows`, after
+the throw) and counters froze. The symptom, "clicking is broken", pointed nowhere near the cause.
+**Rules:** a render helper used by the list must only touch fields the list payload actually carries,
+and must tolerate a missing field rather than throwing; when a whole pane stops responding, suspect an
+exception in its render function before its event wiring.
+
 **Saved batches silently dropped.** `tools.select_traces` rewrites `sample_manifest.json` in its
 own shape, so reading the existing `batches` *after* calling it returns a manifest that no longer
 has them. **Rule:** read the batches before calling it; see section 3.2.
@@ -563,9 +581,16 @@ single session list, a single `renderRows`, and a single conversation renderer. 
 | | Review | Labeling |
 | --- | --- | --- |
 | Right rail | margin notes, text-selection annotation | Fail/Pass per trace × mode |
-| Default filter | as set by the reviewer | `needs labels` |
-| Sidebar marker | `●` reviewed / `○` not | `done/total` judgments |
+| Default filter | as set by the reviewer | as set by the reviewer |
+| Sidebar marker | `●` reviewed / `○` not | `done/total` chip, grey → amber → green |
 | Text selection | opens the annotation popover | inactive, so text can be selected freely |
+
+Switching to Labeling does **not** change the filter: a session that reaches `4/4` stays in the list,
+the way an annotated session stays in Review. `needs labels` (`done < total`) is available in the
+reviewed filter for both views when hiding finished sessions is wanted.
+
+The sidebar marker is a chip rather than a bare count: grey at `0/total`, amber part-way, green when
+complete, with tabular figures so the column does not shift as counts fill in.
 
 `renderRail()` dispatches on `S.view` to `renderNotes()` or `renderLabelRail()`; `bindSelection()`
 is skipped while labeling. Keep this dispatch rather than duplicating the pane: the duplicate-view
@@ -580,7 +605,14 @@ the progress view.
 
 **`labelProgress(session)`** counts recorded judgments against `modes × turns`; it drives both the
 sidebar marker and the `needs labels` filter (`done < total`). `needs labels` is offered in Review
-too.
+too. It therefore needs `trace_ids` on the **list** payload from `GET /api/sessions`, not only on the
+per-session response, and it must tolerate missing fields (see section 5).
+
+**Scoring is asynchronous.** `save_label` writes `labels/<mode>.jsonl` synchronously — that file is
+the source of truth — and sends the Langfuse score from a worker thread. A synchronous score cost
+about one second per click, which is unusable for per-trace-per-mode labeling; the local write is
+about 9 ms. Score failures are printed to the server log instead of surfacing in the UI, which is
+the deliberate tradeoff for not blocking.
 
 **The expected result stays collapsed behind `e` in both views.** During open coding it would anchor
 the reading; during labeling the judgment should follow the mode's definition, not the Homework 3

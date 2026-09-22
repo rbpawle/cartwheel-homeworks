@@ -265,16 +265,21 @@ def save_label(mode: str, trace_id: str, label: int, comment: str | None, write_
     rows.sort(key=lambda r: r["trace_id"])
     _state.write_jsonl(_state.state_path("labels", f"{mode}.jsonl"), rows)
 
-    scored, error = False, None
+    # The local write is the source of truth and is synchronous; the Langfuse score
+    # goes out on a worker thread so a click does not wait on the network.
     if write_score:
-        try:
-            from analysis.helpers import langfuse_io
+        threading.Thread(target=_score_to_langfuse, args=(trace_id, mode, int(label), comment),
+                         daemon=True).start()
+    return {"saved": row, "scored": bool(write_score), "score_error": None}
 
-            langfuse_io.write_label_score(trace_id, mode, int(label), comment)
-            scored = True
-        except Exception as exc:  # keep labeling usable when Langfuse is down
-            error = f"{type(exc).__name__}: {exc}"
-    return {"saved": row, "scored": scored, "score_error": error}
+
+def _score_to_langfuse(trace_id: str, mode: str, label: int, comment: str | None) -> None:
+    try:
+        from analysis.helpers import langfuse_io
+
+        langfuse_io.write_label_score(trace_id, mode, label, comment)
+    except Exception as exc:  # labeling stays usable when Langfuse is down
+        print(f"[labels] Langfuse score failed for {mode}/{trace_id[:8]}: {exc}")
 
 
 # ---------------------------------------------------------------------------
@@ -604,7 +609,7 @@ class Handler(BaseHTTPRequestHandler):
                 })
             if path == "/api/sessions":
                 brief = [
-                    {k: session[k] for k in ("session_id", "scenario_id", "scenario_group", "data_quality_case_id", "features", "flags", "run_status")}
+                    {k: session[k] for k in ("session_id", "scenario_id", "scenario_group", "data_quality_case_id", "features", "flags", "run_status", "trace_ids")}
                     | {"role": session["tuple"].get("role"), "intent": session["tuple"].get("intent"),
                        "difficulty": session["tuple"].get("difficulty"), "user_style": session["tuple"].get("user_style"),
                        "opening": next((b.get("text", "") for turn in session["turns"] for b in turn["blocks"] if b["kind"] == "user"), "")[:140]}

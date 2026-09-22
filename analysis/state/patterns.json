@@ -32,7 +32,7 @@
     {
       "name": "internal_identifier_volunteered",
       "status": "confirmed",
-      "definition": "The reply states an order number, ticket id, or store id that the user did not supply in the conversation.",
+      "definition": "The reply states an order number, store id, or other identifier that the user did not supply in the conversation, if the user is a shopper. Ticket IDs are ok for everyone. Support can see all identifiers. Merchants can see store ID and order IDs.",
       "requirement_source": "RESP-4 covers inaccessible data only; these ids belong to the caller, so nothing currently forbids showing them.",
       "evaluator_type": "judge",
       "boundary": "vs. #1: policy identifiers are documentation references; these are record identifiers. The \"did the user supply it?\" test is what separates a positive from a close negative here, and it doesn't apply to #1.",

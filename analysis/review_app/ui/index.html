@@ -37,6 +37,10 @@
   details.mode > summary { cursor: pointer; list-style: revert; }
   details.mode[open] > summary { border-bottom: 1px solid var(--line); padding-bottom: 6px; margin-bottom: 4px; }
   details.mode .actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .lp { display: inline-block; font-size: 11px; font-variant-numeric: tabular-nums; padding: 0 5px; border-radius: 4px; border: 1px solid; }
+  .lp-none { background: #f4f2ee; border-color: #d8d4cc; color: var(--muted); }
+  .lp-part { background: #fdf3da; border-color: #e0c169; color: #7a5c12; }
+  .lp-done { background: #e6f1e9; border-color: #9cc4ab; color: #2e7d5b; }
   .chip { display: inline-block; font-size: 11px; border: 1px solid var(--line); background: #eef1ff; border-radius: 999px; padding: 1px 7px; margin: 2px 3px 0 0; cursor: pointer; }
   .chip:hover { background: #dde3ff; }
   .chip.clear-all { background: #f4f2ee; }
@@ -306,13 +310,36 @@ async function loadSaved(selectName) {
   S.batches = manifest.batches || {};
   const names = Object.keys(S.batches).sort((a, b) =>
     (S.batches[b].selected_at || "").localeCompare(S.batches[a].selected_at || ""));
-  $("#s-saved").innerHTML = `<option value="">saved samples…</option>` + names.map(n => {
-    const b = S.batches[n];
-    return `<option value="${esc(n)}">${esc(n)} · ${esc(stamp(b.selected_at))} · ${(b.sessions || []).length}</option>`;
-  }).join("");
+  const inAny = new Set();
+  names.forEach(n => (S.batches[n].sessions || []).forEach(x => inAny.add(x.session_id)));
+  $("#s-saved").innerHTML = `<option value="">saved batches…</option>`
+    + (names.length ? `<option value="__all">all batches · ${inAny.size} sessions</option>
+                       <option value="__none">not in any batch · ${S.sessions.length - inAny.size}</option>` : "")
+    + names.map(n => {
+        const b = S.batches[n];
+        return `<option value="${esc(n)}">${esc(n)} · ${esc(stamp(b.selected_at))} · ${(b.sessions || []).length}</option>`;
+      }).join("");
   if (selectName && S.batches[selectName]) $("#s-saved").value = selectName;
 }
 function applyBatch(name) {
+  // pseudo-batches: every session that belongs to some batch, or none of them
+  if (name === "__all" || name === "__none") {
+    const inAny = new Set();
+    Object.values(S.batches).forEach(b => (b.sessions || []).forEach(x => inAny.add(x.session_id)));
+    const wanted = S.sessions.filter(s => inAny.has(s.session_id) === (name === "__all"));
+    const reasons = {};
+    Object.entries(S.batches).forEach(([n, b]) => (b.sessions || []).forEach(x => {
+      reasons[x.session_id] = `${n}: ${x.reason || ""}`;
+    }));
+    S.sample = {name: name === "__all" ? "all batches" : "not in any batch",
+                ids: new Set(wanted.map(s => s.session_id)),
+                reasons: name === "__all" ? reasons : {}};
+    $("#s-note").textContent = `${S.sample.name}: ${wanted.length} sessions`;
+    renderRows();
+    const first = filtered()[0];
+    if (first) select(first.session_id);
+    return;
+  }
   const b = S.batches[name];
   if (!b) { S.sample = null; $("#s-note").textContent = ""; renderRows(); return; }
   S.sample = {name, ids: new Set(b.sessions.map(s => s.session_id)),
@@ -449,10 +476,11 @@ function renderChips() {
 function finalModes() { return (S.patterns.modes || []).filter(m => m.status === "confirmed" || m.status === "frozen"); }
 function labelProgress(session) {
   const modes = finalModes();
-  const total = modes.length * session.features.turn_count;
+  const traces = session.trace_ids || [];
+  const total = modes.length * (session.features ? session.features.turn_count : 1);
   let done = 0;
-  modes.forEach(m => (S.labels[m.name] || []).forEach(r => {
-    if (session.trace_ids.includes(r.trace_id)) done += 1;
+  modes.forEach(m => ((S.labels || {})[m.name] || []).forEach(r => {
+    if (traces.includes(r.trace_id)) done += 1;
   }));
   return {done, total};
 }
@@ -462,7 +490,11 @@ function renderRows() {
     <div class="row ${S.current === s.session_id ? "sel" : ""}" data-id="${s.session_id}">
       <span class="sid">${s.scenario_id}</span><span class="dot">${
         S.view === "labeling"
-          ? (() => { const p = labelProgress(s); return `${p.done}/${p.total}`; })()
+          ? (() => {
+              const p = labelProgress(s);
+              const state = p.total && p.done >= p.total ? "done" : p.done ? "part" : "none";
+              return `<span class="lp lp-${state}">${p.done}/${p.total}</span>`;
+            })()
           : (done.has(s.session_id) ? "●" : "○")}</span>
       <div class="muted">${s.role} · ${s.intent} · ${s.scenario_group}${s.data_quality_case_id ? " · dq" : ""}</div>
       ${S.sample && S.sample.reasons[s.session_id] ? `<div class="muted">↳ ${esc(S.sample.reasons[s.session_id])}</div>` : ""}
@@ -1071,7 +1103,8 @@ function show(view) {
   document.querySelectorAll("nav button").forEach(b => b.classList.toggle("active", b.dataset.view === view));
   document.querySelectorAll("main").forEach(m => m.classList.toggle("active", m.id === workspace));
   if (view === "labeling" || view === "review") {
-    $("#f-state").value = view === "labeling" ? "unlabeled" : $("#f-state").value === "unlabeled" ? "" : $("#f-state").value;
+    // The filter is the reviewer's choice; a completed session stays in the list, the
+    // way an annotated one does in Review.
     renderRows();
     renderRail();
   }
