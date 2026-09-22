@@ -1,0 +1,912 @@
+{
+  "source": "/Users/reginaldpawle/workspace/cartwheel-homeworks/traces/support_traces.json",
+  "k": 15,
+  "strategy": "random",
+  "selected_at": "2026-09-21T19:12:44.598926+00:00",
+  "picks": [
+    {
+      "trace_id": "5256a5f0f5ceeeeb8e9f028fd5da0d63",
+      "reason": "random pick"
+    },
+    {
+      "trace_id": "48a7bae636b73f169156434fdaaac5d2",
+      "reason": "random pick"
+    },
+    {
+      "trace_id": "919526df29a4fa9cfea825232d4e528d",
+      "reason": "random pick"
+    },
+    {
+      "trace_id": "195e57d1f60d59d7ea252848084e7e6d",
+      "reason": "random pick"
+    },
+    {
+      "trace_id": "e7ae09ad99c9619a53296e1fe18cb699",
+      "reason": "random pick"
+    },
+    {
+      "trace_id": "c757daa2c1cd1af5da72fa0aedcf9869",
+      "reason": "random pick"
+    },
+    {
+      "trace_id": "14894efec1f9afd657c9cc90384b3873",
+      "reason": "random pick"
+    },
+    {
+      "trace_id": "e71e571d03b1afa821a0b60c41a306d5",
+      "reason": "random pick"
+    },
+    {
+      "trace_id": "8de5e9bcd1eb5c80362f7d45c2969013",
+      "reason": "random pick"
+    },
+    {
+      "trace_id": "cbb93dcdd819d5ec8445d382fa1518ac",
+      "reason": "random pick"
+    },
+    {
+      "trace_id": "ce312eac5a5a8891b55595e2c8b9185c",
+      "reason": "random pick"
+    },
+    {
+      "trace_id": "62ab3f37c87f6be65b1ead9eafcef7b2",
+      "reason": "random pick"
+    },
+    {
+      "trace_id": "d8c655722286f423c29048db529ca173",
+      "reason": "random pick"
+    },
+    {
+      "trace_id": "1d292e19de4209dbfea2e7b8881d2b7c",
+      "reason": "random pick"
+    },
+    {
+      "trace_id": "7f9c1b7aad3ac2535975dfe5575aca19",
+      "reason": "random pick"
+    }
+  ],
+  "batches": {
+    "diversity_15_2": {
+      "strategy": "diversity",
+      "k": 15,
+      "selected_at": "2026-09-18T18:42:38.010754+00:00",
+      "sessions": [
+        {
+          "session_id": "62f63512b526920afc5a4fc4a14a0741",
+          "scenario_id": "support-0123",
+          "trace_ids": [
+            "9d2c91ace4dc57b416da33a485756b00"
+          ],
+          "reason": "random pick"
+        },
+        {
+          "session_id": "50b44616dc16f0163a5add019ef76ee7",
+          "scenario_id": "support-0125",
+          "trace_ids": [
+            "d94371e185905face9cd149eff3f8706"
+          ],
+          "reason": "random pick"
+        },
+        {
+          "session_id": "5406f86cee685af46d5745fed2f7607f",
+          "scenario_id": "support-0177",
+          "trace_ids": [
+            "a185183d328a89aabc3729155c9a46a6"
+          ],
+          "reason": "random pick"
+        },
+        {
+          "session_id": "860fd6297e0cef2ea9847ca49e8c5c7e",
+          "scenario_id": "support-0213",
+          "trace_ids": [
+            "b13202fe4b88c8ddcbe26f0a6657a675"
+          ],
+          "reason": "random pick"
+        },
+        {
+          "session_id": "75b974d2efd385934d4cd6fad0530746",
+          "scenario_id": "support-0215",
+          "trace_ids": [
+            "30b54e9f349d59bd5b759c9534cad3ee"
+          ],
+          "reason": "cluster 2 representative"
+        },
+        {
+          "session_id": "923b64b330c3fe14bbdf842e3de29bf6",
+          "scenario_id": "support-0218",
+          "trace_ids": [
+            "7350bcd249c907dd0cead3e68576f344"
+          ],
+          "reason": "cluster 2 representative"
+        },
+        {
+          "session_id": "8af216467b4275f38545b39f16bfdc8c",
+          "scenario_id": "support-0228",
+          "trace_ids": [
+            "3c5ac5ee18ab42cd8680e56c96dcbc28"
+          ],
+          "reason": "cluster 4 representative"
+        },
+        {
+          "session_id": "b35c2ded71a8c7601991471faeadbe97",
+          "scenario_id": "support-0230",
+          "trace_ids": [
+            "114a5d4b06124dd08f24c382c7ba272a"
+          ],
+          "reason": "random pick"
+        },
+        {
+          "session_id": "85a37a84aae9b99e1c27fd36a11856e1",
+          "scenario_id": "support-0234",
+          "trace_ids": [
+            "64a346f0d6082a86b9a20167ba054058"
+          ],
+          "reason": "cluster 1 representative"
+        },
+        {
+          "session_id": "538b24245ca277ab581c060454771ae6",
+          "scenario_id": "support-0236",
+          "trace_ids": [
+            "af0b3550e4b1dc54390ea18df7efd396"
+          ],
+          "reason": "cluster 0 representative"
+        },
+        {
+          "session_id": "0b953f94918d29c9653091257e6bf006",
+          "scenario_id": "support-0237",
+          "trace_ids": [
+            "30ebdd846d9c56ce6dcaef179179b693"
+          ],
+          "reason": "cluster 4 representative"
+        },
+        {
+          "session_id": "c1ff2146d0398d1f1bb825a30de565eb",
+          "scenario_id": "support-0238",
+          "trace_ids": [
+            "2bf3487b81bbe35ec2023091992eb39b"
+          ],
+          "reason": "cluster 0 representative"
+        },
+        {
+          "session_id": "f1716019206fbdd8c6f61a141f897a94",
+          "scenario_id": "support-0239",
+          "trace_ids": [
+            "a78d812f528cc1f46a25a0bf73e137ad"
+          ],
+          "reason": "cluster 1 representative"
+        },
+        {
+          "session_id": "98be1df5cfc092d8a133f655fd3f2777",
+          "scenario_id": "support-0247",
+          "trace_ids": [
+            "033abec9827a5e5457d503a342649095"
+          ],
+          "reason": "cluster 3 representative"
+        },
+        {
+          "session_id": "0bd7aa8dfac8798e2bd9ecab10d19f1b",
+          "scenario_id": "support-0248",
+          "trace_ids": [
+            "eb184c7b5688bc212791672d7a4e889f"
+          ],
+          "reason": "cluster 3 representative"
+        }
+      ]
+    },
+    "random_15_2": {
+      "strategy": "random",
+      "k": 15,
+      "selected_at": "2026-09-18T20:25:12.651162+00:00",
+      "sessions": [
+        {
+          "session_id": "2f2aa0a75d3aac0b5975aa8e4176d9ff",
+          "scenario_id": "support-0041",
+          "trace_ids": [
+            "efc4a9215828de5ec73679f403b2c2ef"
+          ],
+          "reason": "random pick"
+        },
+        {
+          "session_id": "aacddce87b7d53e0b33e04809c1a0d51",
+          "scenario_id": "support-0059",
+          "trace_ids": [
+            "c1792ce10a864387bcb4896709faa1e4"
+          ],
+          "reason": "random pick"
+        },
+        {
+          "session_id": "5e0d0056edbc5c73f0f9c07cae4a2c95",
+          "scenario_id": "support-0072",
+          "trace_ids": [
+            "da156af416d9abb1b0ed48663355be19"
+          ],
+          "reason": "random pick"
+        },
+        {
+          "session_id": "1cc3de6ff04fae33653d94bda1345fc8",
+          "scenario_id": "support-0080",
+          "trace_ids": [
+            "7c9ab4416a262ecb63530989f7665bf2"
+          ],
+          "reason": "random pick"
+        },
+        {
+          "session_id": "613c94c9c0bf84c36486a33eec0c49bc",
+          "scenario_id": "support-0112",
+          "trace_ids": [
+            "e7f49155d4f4a23224fc342aadd2463f"
+          ],
+          "reason": "random pick"
+        },
+        {
+          "session_id": "2032528df0fbbe6832e670d9629bb621",
+          "scenario_id": "support-0121",
+          "trace_ids": [
+            "4957c2a675a252c31753f449d9046503"
+          ],
+          "reason": "random pick"
+        },
+        {
+          "session_id": "f8d748fd648ffe5ada9f42305c85dc34",
+          "scenario_id": "support-0135",
+          "trace_ids": [
+            "3202e66ede8a44d1009882663342b5f0"
+          ],
+          "reason": "random pick"
+        },
+        {
+          "session_id": "27936b1a88215b1fc430b769fa1fdb4d",
+          "scenario_id": "support-0167",
+          "trace_ids": [
+            "4c32f422444e7cc009dab75c210ef8ee"
+          ],
+          "reason": "random pick"
+        },
+        {
+          "session_id": "5efceb179527a5ee2ae80e878741e16e",
+          "scenario_id": "support-0184",
+          "trace_ids": [
+            "d391b3ac320a9298aa69c966058559ff"
+          ],
+          "reason": "random pick"
+        },
+        {
+          "session_id": "8739b4937e62e1865c151544b62cdd9b",
+          "scenario_id": "support-0199",
+          "trace_ids": [
+            "ca78a1816c7835a8b75e16e33fdb4920"
+          ],
+          "reason": "random pick"
+        },
+        {
+          "session_id": "bec56e1e69ee32a003b67d022aa515d7",
+          "scenario_id": "support-0201",
+          "trace_ids": [
+            "1dea752b704d6ede0dcd1b7929134c98"
+          ],
+          "reason": "random pick"
+        },
+        {
+          "session_id": "96442eebf700f055c619dbf76498145e",
+          "scenario_id": "support-0206",
+          "trace_ids": [
+            "7d7bc91abc131ffa6169042e6b1cbe77"
+          ],
+          "reason": "random pick"
+        },
+        {
+          "session_id": "1d0cca37ebcee5ea293bd05530e2671a",
+          "scenario_id": "support-0210",
+          "trace_ids": [
+            "638d2b6fdba856ae7538445e631f99e6"
+          ],
+          "reason": "random pick"
+        },
+        {
+          "session_id": "05d317fc6a83a96a5b5d94bc2800ec99",
+          "scenario_id": "support-0212",
+          "trace_ids": [
+            "9066f009d02a21c23892f646d2394f79"
+          ],
+          "reason": "random pick"
+        },
+        {
+          "session_id": "651792535cbe2aa244943a5f4c3f3f0b",
+          "scenario_id": "support-0219",
+          "trace_ids": [
+            "9cbd8c348ed00b8581bce7a663d44e97"
+          ],
+          "reason": "random pick"
+        }
+      ]
+    },
+    "role_30": {
+      "strategy": "stratified:role",
+      "dimension": "role",
+      "plan": {
+        "merchant": 10,
+        "shopper": 10,
+        "support": 10
+      },
+      "k": 30,
+      "selected_at": "2026-09-20T15:25:12.414945+00:00",
+      "sessions": [
+        {
+          "session_id": "01e37274b483304e157a9fa5bbfb2b0d",
+          "scenario_id": "support-0003",
+          "trace_ids": [
+            "4d7b0e643c309ae5d8bf76b2cc7140e0"
+          ],
+          "reason": "stratified by role = shopper"
+        },
+        {
+          "session_id": "70466b13e3c18bb629c595c6bbbb9881",
+          "scenario_id": "support-0026",
+          "trace_ids": [
+            "1256d01d7b25a5b51b54ba648c3e6a42"
+          ],
+          "reason": "stratified by role = shopper"
+        },
+        {
+          "session_id": "ec27103ec7e7f391bf8fded2756dd66a",
+          "scenario_id": "support-0037",
+          "trace_ids": [
+            "ba20a8ff9740a9f4efa5ea387d52d326"
+          ],
+          "reason": "stratified by role = merchant"
+        },
+        {
+          "session_id": "f94fbfd49f3ddc5e75e9fdf4ecde18d8",
+          "scenario_id": "support-0042",
+          "trace_ids": [
+            "4c174549d3e5fa7df5626d0e54a0d14b",
+            "c8c1c4b829b3851394e144620e504ca6"
+          ],
+          "reason": "stratified by role = support"
+        },
+        {
+          "session_id": "6599ef0fcdf85c9688bdbf539b434a87",
+          "scenario_id": "support-0058",
+          "trace_ids": [
+            "16df93477f8086ed796c8dea047d4be0"
+          ],
+          "reason": "stratified by role = shopper"
+        },
+        {
+          "session_id": "ce497275e3bafa9e11660686c67eb540",
+          "scenario_id": "support-0063",
+          "trace_ids": [
+            "ecb9e36a461516c5536bc6f3e6d759c2"
+          ],
+          "reason": "stratified by role = merchant"
+        },
+        {
+          "session_id": "f794ccdb685fbfa73c750d3fd0671f8b",
+          "scenario_id": "support-0065",
+          "trace_ids": [
+            "26f24ccb5e94923621c97933cdec8eb5",
+            "c0630a391c22d379357c2a086c2d89d5"
+          ],
+          "reason": "stratified by role = merchant"
+        },
+        {
+          "session_id": "8263a513910c7d40a030441d95e11d7f",
+          "scenario_id": "support-0066",
+          "trace_ids": [
+            "2a9344fcf649c2e4f3166f145868a261"
+          ],
+          "reason": "stratified by role = support"
+        },
+        {
+          "session_id": "98c22d9b2208273748003d821b9542cb",
+          "scenario_id": "support-0070",
+          "trace_ids": [
+            "8bf914cb679d7c2306e66c9266531e6e"
+          ],
+          "reason": "stratified by role = support"
+        },
+        {
+          "session_id": "6922e2166256b3fe1a12f10fbacf578b",
+          "scenario_id": "support-0071",
+          "trace_ids": [
+            "c1f880cd582bae5757c6fe468f45ca27",
+            "6987f2f2c44cf371cf4bedd1b5aa3497"
+          ],
+          "reason": "stratified by role = support"
+        },
+        {
+          "session_id": "c42e36464ec4cbec904f436df1688e9a",
+          "scenario_id": "support-0079",
+          "trace_ids": [
+            "fee38bb6593144b70a3bb0cd3fd701e4"
+          ],
+          "reason": "stratified by role = shopper"
+        },
+        {
+          "session_id": "a46af4fcba96679dcf2884670fcfcc79",
+          "scenario_id": "support-0085",
+          "trace_ids": [
+            "e816376e451cba6398c725af2e83b544"
+          ],
+          "reason": "stratified by role = merchant"
+        },
+        {
+          "session_id": "71986069320781cecb7de7c3e099032e",
+          "scenario_id": "support-0089",
+          "trace_ids": [
+            "489a3c92689270fb98118cf1e05d6604"
+          ],
+          "reason": "stratified by role = support"
+        },
+        {
+          "session_id": "43afc5823cd3d8b608d7a64f9d445988",
+          "scenario_id": "support-0104",
+          "trace_ids": [
+            "046f378a10fb1482527d0bc79af4260e"
+          ],
+          "reason": "stratified by role = merchant"
+        },
+        {
+          "session_id": "d5712f7fe4d3cc0396263c6ae721f8c1",
+          "scenario_id": "support-0114",
+          "trace_ids": [
+            "44c6043bb84883d3400025c3e89e9934",
+            "24df8583878010f9cdef3fafebd8a4ab"
+          ],
+          "reason": "stratified by role = shopper"
+        },
+        {
+          "session_id": "0e9481d2e79eed46f188bd8f9371d3cc",
+          "scenario_id": "support-0119",
+          "trace_ids": [
+            "e8968b536ea6e2099f3124119031e990"
+          ],
+          "reason": "stratified by role = shopper"
+        },
+        {
+          "session_id": "08a5dab46f0c7d1481f02131c39c28ec",
+          "scenario_id": "support-0124",
+          "trace_ids": [
+            "72fb9cd4028c1cf11d27c03a5773c820"
+          ],
+          "reason": "stratified by role = merchant"
+        },
+        {
+          "session_id": "d7db412e43baef9996af9dd3d2cf6e2e",
+          "scenario_id": "support-0130",
+          "trace_ids": [
+            "6b9f6cb641d683a320eb2d4250502b4f"
+          ],
+          "reason": "stratified by role = support"
+        },
+        {
+          "session_id": "abd24bf186c408df480bd06e98f8f1bc",
+          "scenario_id": "support-0131",
+          "trace_ids": [
+            "2109b37e37c7b17be1c266132c377779"
+          ],
+          "reason": "stratified by role = support"
+        },
+        {
+          "session_id": "1546caa856f816a937a50a3ca09d06aa",
+          "scenario_id": "support-0149",
+          "trace_ids": [
+            "a2a54564b8680fae7b3038522287efee"
+          ],
+          "reason": "stratified by role = support"
+        },
+        {
+          "session_id": "dc07d3e997ed65690faa0be2c4027905",
+          "scenario_id": "support-0158",
+          "trace_ids": [
+            "e4c619615d5d30523562bbcfba746b58"
+          ],
+          "reason": "stratified by role = support"
+        },
+        {
+          "session_id": "5e54f6f35f2982283d9b4dd4cbe79e8c",
+          "scenario_id": "support-0164",
+          "trace_ids": [
+            "6a23bf91f58dcb8813d2a45428385b8d"
+          ],
+          "reason": "stratified by role = merchant"
+        },
+        {
+          "session_id": "05d3552481c3baf9b1e694a6ffdef43d",
+          "scenario_id": "support-0172",
+          "trace_ids": [
+            "2d1679668afb9b4e13a01fe62728506f"
+          ],
+          "reason": "stratified by role = merchant"
+        },
+        {
+          "session_id": "5ea4a7b024931391c4b0222f3c7a08af",
+          "scenario_id": "support-0174",
+          "trace_ids": [
+            "ad46712fc6fe88d9993b9754ca275614"
+          ],
+          "reason": "stratified by role = support"
+        },
+        {
+          "session_id": "ab5e84593727480f7a884b4fb57ff6ef",
+          "scenario_id": "support-0178",
+          "trace_ids": [
+            "e95c8d90342786d365f97f3cedcbf8fe"
+          ],
+          "reason": "stratified by role = shopper"
+        },
+        {
+          "session_id": "bb3ee19e5964681b9a9656395fbfc84a",
+          "scenario_id": "support-0197",
+          "trace_ids": [
+            "2fba00b5135a97aaa61ee3c38cbe2f5a"
+          ],
+          "reason": "stratified by role = merchant"
+        },
+        {
+          "session_id": "3568b6b9733df99374aeb6dcdd388369",
+          "scenario_id": "support-0207",
+          "trace_ids": [
+            "ffe77a2f483203e786dd94fbfb220301"
+          ],
+          "reason": "stratified by role = merchant"
+        },
+        {
+          "session_id": "4b242e12babd53a3c9f1d11a7d43a837",
+          "scenario_id": "support-0222",
+          "trace_ids": [
+            "371e99dcda48343a0cdf7662e7b7c86f"
+          ],
+          "reason": "stratified by role = shopper"
+        },
+        {
+          "session_id": "449a5445566d4685f91a19fb34b9c0e3",
+          "scenario_id": "support-0226",
+          "trace_ids": [
+            "1476d0c3d17754ef23f2ca037e3f2730"
+          ],
+          "reason": "stratified by role = shopper"
+        },
+        {
+          "session_id": "ee9d57c3119be78226f836ef551910a2",
+          "scenario_id": "support-0244",
+          "trace_ids": [
+            "fec44356a840df843d8ca4ba9b6d741e"
+          ],
+          "reason": "stratified by role = shopper"
+        }
+      ]
+    },
+    "escalation_maybe": {
+      "strategy": "manual",
+      "k": 24,
+      "selected_at": "2026-09-20T19:54:29.925699+00:00",
+      "note": "pasted ids",
+      "sessions": [
+        {
+          "session_id": "7975bd78fa1975e3bfc6dc672388ef7e",
+          "scenario_id": "support-0001",
+          "trace_ids": [
+            "48820dfd2becc1c8db57e3addfd49e92"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "719f8f1efb9c311c9c2c6d83dd28786a",
+          "scenario_id": "support-0009",
+          "trace_ids": [
+            "b6723dfb15699084f6e337dc61b03db4",
+            "2969c6fa3a69bc402650788e164da739"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "5ae418fc26e488a2a8606569f5437c1b",
+          "scenario_id": "support-0012",
+          "trace_ids": [
+            "8de5d1a8c9d784576541bc437cb9ea54"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "a69266eea3a29a1c166445ba84f7c354",
+          "scenario_id": "support-0017",
+          "trace_ids": [
+            "c11ed33a824b1fdc5aa74b42f97a39ff"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "4a8c0dd9d466ec12e73e2c065df58adc",
+          "scenario_id": "support-0028",
+          "trace_ids": [
+            "0b7b3e27bf09a0e6d5eba8c13536016a"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "d30d64bfdf1de8e5e2c26deb102c523c",
+          "scenario_id": "support-0031",
+          "trace_ids": [
+            "355775e4396feea07d8bac2e3ed13e37"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "0b95a6f98d6753896412a59bf9eecc74",
+          "scenario_id": "support-0046",
+          "trace_ids": [
+            "b7f93ca6ca5b871bc4645efeb44594f5"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "789a895e35d55f0da433bb0e7eab3619",
+          "scenario_id": "support-0047",
+          "trace_ids": [
+            "e96ee191c9e31771080d33b0e8b49076",
+            "db2a9648a3823bc9274183e6aca1dfaa"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "ab7652121a666d9e3ae3ef29be8d80b4",
+          "scenario_id": "support-0077",
+          "trace_ids": [
+            "22e1a7a3d8d6796d85acba8b8e644d51"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "5f24a5aacd2b414625617a91ddeb0a87",
+          "scenario_id": "support-0099",
+          "trace_ids": [
+            "01d1da0f66f8093b4f9c123b478a16db"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "cae317ef215a0cb37474bf1fc2821853",
+          "scenario_id": "support-0113",
+          "trace_ids": [
+            "4b5256b67dc2f2acae3b2f9bc2b4b7f2"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "97bbee5fe97e5f8b97b5f92e2312e152",
+          "scenario_id": "support-0127",
+          "trace_ids": [
+            "ab64e5b11ade4251992232ffe5aeb50e"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "d38414c88cbf359a6923745fa36a9def",
+          "scenario_id": "support-0155",
+          "trace_ids": [
+            "0de485d0c7098343b2de5d0f0a66a27d"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "f4b4895ae8cb9972af8bb18201b97268",
+          "scenario_id": "support-0156",
+          "trace_ids": [
+            "35b3352e2707ce9086033e4a4959bdee"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "6d7a19dec9a44c1d55e90d2b123c6906",
+          "scenario_id": "support-0157",
+          "trace_ids": [
+            "5209aaecd6229f1ac6a6c3edbdfdc942"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "bb86ae9bf17a3e235d21511fe991a4e8",
+          "scenario_id": "support-0161",
+          "trace_ids": [
+            "f8c77f567b12014dc1f3140c67e589a6"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "58fc90abf0d965d76299e128eea3e2eb",
+          "scenario_id": "support-0166",
+          "trace_ids": [
+            "bde852339c4e1bcd4951d480dfb597c1"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "cdb6a1f5d49859c0894d0654f2008f85",
+          "scenario_id": "support-0168",
+          "trace_ids": [
+            "23a6dc0ad8dea9a86a1d58410c4eda38"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "f54a0404083bab9a62d7eb78bd5b6a80",
+          "scenario_id": "support-0169",
+          "trace_ids": [
+            "3723333170ffeaf6caeec67f252e8846"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "0712f2829c2be361e541f3a8b509e416",
+          "scenario_id": "support-0173",
+          "trace_ids": [
+            "dffa6a59ed981e9f422c3f74bb99793f"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "2950a1fc1c51e1cee11701cdb0c758b5",
+          "scenario_id": "support-0200",
+          "trace_ids": [
+            "f4c7fda05a39f9b25a5d15a263067b00"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "1f2c0cbb8f6d493b270d08a03676e026",
+          "scenario_id": "support-0205",
+          "trace_ids": [
+            "b287e9426ff02a0039aefb1fe504ef30"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "90fb7aeb38f1de5a2e0095dc36fb3ace",
+          "scenario_id": "support-0227",
+          "trace_ids": [
+            "614797c487df5872516f6f90a0104a93"
+          ],
+          "reason": "pasted ids"
+        },
+        {
+          "session_id": "e584fc1a4bb0b27256a2fa64c43c0ee3",
+          "scenario_id": "support-0245",
+          "trace_ids": [
+            "9ccbd6ffbde8b6694b51249cdba93d00",
+            "1d32c0fd4af5be7965e97d7f1ee9ad09"
+          ],
+          "reason": "pasted ids"
+        }
+      ]
+    },
+    "serial_first_15": {
+      "strategy": "manual",
+      "k": 15,
+      "selected_at": "2026-09-21T19:36:50.834349+00:00",
+      "note": "first 19 scenarios reviewed in serial order (14 new) plus support-0022 from the random draw",
+      "sessions": [
+        {
+          "session_id": "8044551ba540736b8f1c7a8e0fe2294b",
+          "scenario_id": "support-0002",
+          "trace_ids": [
+            "6e51c544ba39b00e0a0f43e989cbdbfd"
+          ],
+          "reason": "serial sweep of support-0001..0019, newly annotated"
+        },
+        {
+          "session_id": "1fe9c3d222208b964ddca56a6038839b",
+          "scenario_id": "support-0004",
+          "trace_ids": [
+            "3083369cc906632a7870d4d7b1011f4e"
+          ],
+          "reason": "serial sweep of support-0001..0019, newly annotated"
+        },
+        {
+          "session_id": "feb50124033ede6e405b95dc8f7f39ca",
+          "scenario_id": "support-0005",
+          "trace_ids": [
+            "bac70c4ba7a305709ca07a84fab4b43f"
+          ],
+          "reason": "serial sweep of support-0001..0019, newly annotated"
+        },
+        {
+          "session_id": "7de2b40a0a6e4ae0b7557387648c86d7",
+          "scenario_id": "support-0006",
+          "trace_ids": [
+            "5793728ed868b1878062c06ae49127cc"
+          ],
+          "reason": "serial sweep of support-0001..0019, newly annotated"
+        },
+        {
+          "session_id": "cf574ef5d8f5700c3936083c3352c7d3",
+          "scenario_id": "support-0007",
+          "trace_ids": [
+            "f0360dc8303c41c0dc49e358dcbcb6a8"
+          ],
+          "reason": "serial sweep of support-0001..0019, newly annotated"
+        },
+        {
+          "session_id": "443ce225aa9d2eec7b4cfbb4c4753da1",
+          "scenario_id": "support-0008",
+          "trace_ids": [
+            "6043cc1c21c54a3d6db46029be9084ab"
+          ],
+          "reason": "serial sweep of support-0001..0019, newly annotated"
+        },
+        {
+          "session_id": "56f319cfcf4055819e978cc17f0196d5",
+          "scenario_id": "support-0010",
+          "trace_ids": [
+            "5f333f8f9edfe3605f1e1eb4efe89d90"
+          ],
+          "reason": "serial sweep of support-0001..0019, newly annotated"
+        },
+        {
+          "session_id": "89e101d03c6555036e0eaa9c4ed975d1",
+          "scenario_id": "support-0011",
+          "trace_ids": [
+            "ac92bd00f079815c35969aa79f17a72c"
+          ],
+          "reason": "serial sweep of support-0001..0019, newly annotated"
+        },
+        {
+          "session_id": "e94d2536024730be6cdd415460d9e271",
+          "scenario_id": "support-0013",
+          "trace_ids": [
+            "c0046e00b81f82eb542e38db0510638f"
+          ],
+          "reason": "serial sweep of support-0001..0019, newly annotated"
+        },
+        {
+          "session_id": "ae5058661219c8268ccd17d453b00888",
+          "scenario_id": "support-0014",
+          "trace_ids": [
+            "89d29bb2fb38eab816af94bef4add465"
+          ],
+          "reason": "serial sweep of support-0001..0019, newly annotated"
+        },
+        {
+          "session_id": "97d7f272973a155705e72d82e7b21304",
+          "scenario_id": "support-0015",
+          "trace_ids": [
+            "dbba32738d018f7717d3ab9feb95784f"
+          ],
+          "reason": "serial sweep of support-0001..0019, newly annotated"
+        },
+        {
+          "session_id": "efff9e05815c54007617df397cccb851",
+          "scenario_id": "support-0016",
+          "trace_ids": [
+            "547da5f18a05dcc6e131008729974efc"
+          ],
+          "reason": "serial sweep of support-0001..0019, newly annotated"
+        },
+        {
+          "session_id": "4619ed4af8a7a7c5506ba7e5efbcb7ba",
+          "scenario_id": "support-0018",
+          "trace_ids": [
+            "c0b7e7b5329c3930add935012707e1c0"
+          ],
+          "reason": "serial sweep of support-0001..0019, newly annotated"
+        },
+        {
+          "session_id": "ed79671455ee9610c682bf04d2fdb1aa",
+          "scenario_id": "support-0019",
+          "trace_ids": [
+            "5d5335feceb01852a64c4bac0ee0668a"
+          ],
+          "reason": "serial sweep of support-0001..0019, newly annotated"
+        },
+        {
+          "session_id": "bb356b0a1c5c63b71aa5bdcd8a5e875c",
+          "scenario_id": "support-0022",
+          "trace_ids": [
+            "8de5e9bcd1eb5c80362f7d45c2969013"
+          ],
+          "reason": "reviewed from the random_15 draw, moved here"
+        }
+      ]
+    }
+  }
+}

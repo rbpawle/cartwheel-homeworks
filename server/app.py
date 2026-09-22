@@ -45,7 +45,8 @@ from agent import db
 from agent.agent import build_agent, prompt_version, render_system_prompt
 from agent.auth import ROLES, AuthContext
 from agent.config import REPO_ROOT, db_path
-from observability.instrument import load_env, setup_tracing
+from observability.instrument import load_env, record_model_exchange, setup_tracing
+from observability import raindrop_trace
 
 MAX_TURNS = 12  # cap runaway loops; keeps conversations bounded
 SESSIONS_DB = REPO_ROOT / ".sessions.db"
@@ -191,6 +192,7 @@ async def post_message(
     tracer = trace.get_tracer("cartwheel.server")
     with tracer.start_as_current_span("cartwheel.session_message") as span:
         prompt_ver = prompt_version(render_system_prompt(ctx))
+        span.set_attribute("cartwheel.session_id", session_id)
         span.set_attribute("cartwheel.user_role", ctx.role)
         span.set_attribute("cartwheel.user_id", str(ctx.user_id))
         span.set_attribute("cartwheel.prompt_version", prompt_ver)
@@ -202,7 +204,27 @@ async def post_message(
                                json.dumps([{"role": "user", "parts": [
                                    {"type": "text", "content": body.message}]}]))
 
-        result = await Runner.run(agent, body.message, context=ctx, session=sqlite_session)
+        # Optional Workshop capture (CARTWHEEL_RAINDROP=1); a no-op otherwise.
+        with raindrop_trace.capture(
+            event="cartwheel.support_turn",
+            user_id=str(ctx.user_id),
+            input_text=body.message,
+            model=body.model,
+            convo_id=session_id,
+            properties={
+                "role": ctx.role,
+                "store_id": ctx.store_id,
+                "scenario_id": body.scenario_id,
+                "prompt_version": prompt_ver,
+                "session_id": session_id,
+            },
+        ) as workshop:
+            result = await Runner.run(agent, body.message, context=ctx, session=sqlite_session)
+            raindrop_trace.finish(workshop, result.final_output)
+
+        # Additive: the LiteLLM path leaves generation outputs and output-token
+        # counts off the spans, so record the model exchange for error analysis.
+        record_model_exchange(span, agent, result)
 
         if os.environ.get("TRACELOOP_TRACE_CONTENT", "false").lower() == "true":
             span.set_attribute("gen_ai.output.messages",

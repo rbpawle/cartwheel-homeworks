@@ -1,0 +1,1133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cartwheel trace review</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<style>
+  :root {
+    --bg: #fbfaf8; --panel: #fff; --line: #e3e0da; --ink: #23201c; --muted: #6f6a63;
+    --user: #2f6f9f; --assistant: #2e7d5b; --tool: #8a6d3b; --write: #a4402f;
+    --accent: #3d5afe; --suggest: #9a7bd0; --pass: #2e7d5b; --fail: #a4402f;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); }
+  header { position: sticky; top: 0; z-index: 20; background: var(--panel); border-bottom: 1px solid var(--line); padding: 8px 16px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  header h1 { font-size: 15px; margin: 0 8px 0 0; font-weight: 600; }
+  nav button { border: 1px solid var(--line); background: var(--panel); padding: 5px 10px; border-radius: 6px; cursor: pointer; margin-right: 4px; font-size: 13px; }
+  nav button.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .muted { color: var(--muted); font-size: 12px; }
+  .badge { display: inline-block; padding: 1px 7px; border: 1px solid var(--line); border-radius: 999px; font-size: 11px; background: #f4f2ee; margin-right: 4px; white-space: nowrap; }
+  .badge.group-challenge { background: #f6e9e6; border-color: #e3c9c2; }
+  .badge.group-coverage { background: #e9f1ec; border-color: #c6ddcf; }
+  .badge.flag { background: #fdf3da; border-color: #e8d6a6; }
+  main { display: none; padding: 16px; }
+  main.active { display: block; }
+
+  /* ---- review layout: list | conversation | margin notes ---- */
+  /* #review is an id selector, so it must not set display outside .active or it
+     would outrank `main { display: none }` and stay visible under every view. */
+  main:not(.active) { display: none !important; }
+  #review.active { display: grid; grid-template-columns: 280px minmax(0, 1fr) 280px; gap: 24px; align-items: start; }
+  #list { position: sticky; top: 58px; max-height: calc(100vh - 74px); overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+  #list .filters { padding: 8px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 4px; }
+  .sec-head { padding: 7px 9px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); border-bottom: 1px solid var(--line); }
+  details.sec { border-top: 1px solid var(--line); }
+  details.sec > summary { padding: 6px 9px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); cursor: pointer; }
+  details.mode > summary { cursor: pointer; list-style: revert; }
+  details.mode[open] > summary { border-bottom: 1px solid var(--line); padding-bottom: 6px; margin-bottom: 4px; }
+  details.mode .actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .lp { display: inline-block; font-size: 11px; font-variant-numeric: tabular-nums; padding: 0 5px; border-radius: 4px; border: 1px solid; }
+  .lp-none { background: #f4f2ee; border-color: #d8d4cc; color: var(--muted); }
+  .lp-part { background: #fdf3da; border-color: #e0c169; color: #7a5c12; }
+  .lp-done { background: #e6f1e9; border-color: #9cc4ab; color: #2e7d5b; }
+  .chip { display: inline-block; font-size: 11px; border: 1px solid var(--line); background: #eef1ff; border-radius: 999px; padding: 1px 7px; margin: 2px 3px 0 0; cursor: pointer; }
+  .chip:hover { background: #dde3ff; }
+  .chip.clear-all { background: #f4f2ee; }
+  #f-ids { font-size: 12px; padding: 3px; border: 1px solid var(--line); border-radius: 4px; resize: vertical; font-family: ui-monospace, Menlo, monospace; }
+  #d-table { font-size: 12px; margin: 4px 0; }
+  #d-table th, #d-table td { padding: 2px 5px; }
+  #list .filters select, #list .filters input { font-size: 12px; padding: 3px; border: 1px solid var(--line); border-radius: 4px; background: #fff; }
+  .row { padding: 7px 9px; border-bottom: 1px solid var(--line); cursor: pointer; font-size: 12px; }
+  .row:hover { background: #f4f2ee; }
+  .row.sel { background: #eef1ff; border-left: 3px solid var(--accent); }
+  .row .sid { font-weight: 600; }
+  .row .dot { float: right; font-size: 11px; }
+  .conv { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; }
+  .conv h2 { font-size: 16px; margin: 0 0 4px; }
+  details.expected { margin: 12px 0 24px; border: 1px dashed var(--line); border-radius: 6px; padding: 8px 10px; background: #faf7f0; }
+  details.expected summary { cursor: pointer; font-size: 12px; color: var(--muted); }
+  details.expected .outcome { font-weight: 600; font-family: ui-monospace, Menlo, monospace; margin-top: 6px; }
+  .turn { margin-top: 32px; }
+  .turn:first-of-type { margin-top: 16px; }
+  .turn-head { font-size: 11px; color: var(--muted); border-bottom: 1px solid var(--line); padding-bottom: 3px; margin-bottom: 12px; }
+  .msg { border-left: 3px solid var(--line); padding: 2px 0 2px 10px; margin-bottom: 16px; }
+  .msg.user { border-color: var(--user); }
+  .msg.assistant { border-color: var(--assistant); }
+  .role { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 2px; }
+  .msg.user .role { color: var(--user); }
+  .msg.assistant .role { color: var(--assistant); }
+  .tool { border: 1px solid #e2d6bd; border-radius: 6px; background: #fdfaf3; margin-bottom: 16px; }
+  .tool.write { border-color: #e6c3bb; background: #fdf5f3; }
+  .tool .call { padding: 5px 9px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: var(--tool); display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+  .tool.write .call { color: var(--write); }
+  .tool .args { flex: 1 1 100%; color: var(--muted); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .tool .result { border-top: 1px dashed #e2d6bd; padding: 4px 9px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
+  .tool .result .status { font-weight: 700; }
+  .tool .result .status.err { color: var(--write); }
+  pre { margin: 4px 0 0; padding: 6px 8px; background: #f6f4ef; border-radius: 4px; overflow-x: auto; font-size: 12px; }
+  .ann-mark { background: #fff3b0; border-bottom: 1px solid #e3c000; }
+  #notes { position: sticky; top: 58px; }
+  .note { border: 1px solid var(--line); border-left: 3px solid var(--accent); background: var(--panel); border-radius: 6px; padding: 7px 9px; margin-bottom: 8px; font-size: 12px; }
+  .note.suggestion { border-left-style: dashed; border-left-color: var(--suggest); background: #faf7ff; }
+  .note .quote { color: var(--muted); font-style: italic; margin-bottom: 4px; }
+  .note .actions { margin-top: 5px; display: flex; gap: 6px; }
+  button.small { font-size: 11px; padding: 2px 7px; border: 1px solid var(--line); background: #fff; border-radius: 4px; cursor: pointer; }
+  #popover { position: absolute; z-index: 40; display: none; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px; width: 300px; box-shadow: 0 6px 20px rgba(0,0,0,.12); }
+  #popover textarea { width: 100%; height: 66px; border: 1px solid var(--line); border-radius: 4px; padding: 6px; font: inherit; font-size: 12px; }
+  table { border-collapse: collapse; width: 100%; background: var(--panel); }
+  th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; font-size: 13px; vertical-align: top; }
+  th { background: #f4f2ee; font-size: 12px; }
+  .pill { border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; cursor: pointer; font-size: 12px; background: #fff; }
+  .pill.on-fail { background: #fbe9e6; border-color: var(--fail); color: var(--fail); font-weight: 600; }
+  .pill.on-pass { background: #e9f1ec; border-color: var(--pass); color: var(--pass); font-weight: 600; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+  .bar { height: 8px; background: #eceae5; border-radius: 4px; overflow: hidden; }
+  .bar > span { display: block; height: 100%; background: var(--accent); }
+  details.exchange { margin: 6px 0 18px; border: 1px solid var(--line); border-radius: 6px; background: #f8f7f4; }
+  details.exchange > summary { cursor: pointer; padding: 5px 9px; font-size: 12px; color: var(--muted); }
+  .step { border-top: 1px solid var(--line); padding: 8px 10px; }
+  .step .hd { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .step .side { margin: 4px 0 4px 8px; padding-left: 8px; border-left: 2px solid var(--line); }
+  .step .side.req { border-color: #b9b3a7; }
+  .step .side.res { border-color: var(--assistant); }
+  .prov { font-size: 10px; text-transform: uppercase; letter-spacing: .04em; border: 1px solid var(--line); border-radius: 3px; padding: 0 4px; margin-left: 5px; background: #fff; }
+  .prov.reconstructed { border-color: #c9b27a; color: #8a6d3b; background: #fdf8ec; }
+  .prov.from_code { border-color: #a9a2d6; color: #5b53a0; background: #f4f2fb; }
+  .copyid { font-family: ui-monospace, Menlo, monospace; font-size: 11px; cursor: pointer; border-bottom: 1px dotted var(--line); }
+  .copyid:hover { background: #f4f2ee; }
+  .callline { font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: var(--tool); }
+  #confirm-pop { display: none; position: absolute; z-index: 40; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 6px 20px rgba(0,0,0,.12); padding: 8px; width: 240px; font-size: 12px; }
+  #confirm-pop .actions { display: flex; gap: 6px; margin-top: 6px; }
+  input[type=text], textarea, select { font: inherit; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  kbd { border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; font-size: 11px; background: #f6f4ef; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Cartwheel review</h1>
+  <nav>
+    <button data-view="review" class="active">Review</button>
+    <button data-view="taxonomy">Taxonomy</button>
+    <button data-view="labeling">Labeling</button>
+    <button data-view="progress">Progress</button>
+    <button data-view="suggestions">Suggestions</button>
+  </nav>
+  <span class="muted" id="meta"></span>
+  <span class="muted" style="margin-left:auto"><kbd>j</kbd>/<kbd>k</kbd> next/prev · <kbd>e</kbd> expected · select text to annotate</span>
+</header>
+
+<main id="review" class="active">
+  <div id="list">
+    <div class="sec-head">sessions <span class="muted" id="showing"></span></div>
+    <div class="filters">
+      <select id="f-group"><option value="">group: all</option><option>coverage</option><option>challenge</option></select>
+      <select id="f-role"><option value="">role: all</option><option>shopper</option><option>merchant</option><option>support</option></select>
+      <select id="f-intent"><option value="">intent: all</option></select>
+      <select id="f-state"><option value="">reviewed: all</option><option value="todo">unreviewed</option><option value="done">reviewed</option><option value="unlabeled">needs labels</option></select>
+      <input id="f-text" type="text" placeholder="search text" size="12">
+      <textarea id="f-ids" placeholder="paste scenario ids (comma, tab, or line separated)" rows="2" style="flex-basis:100%"></textarea>
+      <span class="muted" id="f-ids-note" style="flex-basis:100%"></span>
+      <div id="chips" style="flex-basis:100%"></div>
+    </div>
+
+    <details class="sec">
+      <summary>draw a batch</summary>
+      <div class="filters">
+        <span class="muted" style="flex-basis:100%">by strategy</span>
+        <select id="s-strategy" title="selection strategy">
+          <option value="diversity">diversity</option>
+          <option value="random">random</option>
+          <option value="outlier">outlier</option>
+        </select>
+        <input id="s-k" type="number" min="1" max="100" value="15" style="width:52px" title="batch size">
+        <button class="small" id="s-run">draw</button>
+        <span class="muted" id="s-note" style="flex-basis:100%"></span>
+      </div>
+      <div class="filters" style="border-top:0">
+        <span class="muted" style="flex-basis:100%">by dimension</span>
+        <select id="d-dim" style="flex:1" title="stratify a batch across one dimension's values">
+          <option value="">stratify by…</option>
+        </select>
+        <span class="muted" id="d-note" style="flex-basis:100%"></span>
+        <table id="d-table" hidden></table>
+        <button class="small" id="d-draw" hidden style="flex-basis:100%">draw and filter</button>
+      </div>
+      <div class="filters" style="border-top:0">
+        <span class="muted" style="flex-basis:100%">from what is showing now</span>
+        <input id="b-name" type="text" placeholder="batch name" style="flex:1">
+        <button class="small" id="b-save">save as batch</button>
+      </div>
+    </details>
+
+    <details class="sec">
+      <summary>saved batches</summary>
+      <div class="filters">
+        <select id="s-saved" style="flex:1" title="saved sample sets"><option value="">saved batches…</option></select>
+        <button class="small" id="s-rename" title="rename the selected batch">✎</button>
+        <button class="small" id="s-trash" title="delete the selected batch">🗑</button>
+      </div>
+    </details>
+    <div id="confirm-pop"></div>
+    <div id="rows"></div>
+  </div>
+  <div class="conv" id="conv"></div>
+  <div id="notes"></div>
+</main>
+
+<main id="taxonomy">
+  <div class="card">
+    <b>Failure modes</b> <span class="muted">binary; a mode becomes “final” when status = confirmed</span>
+    <div id="modes"></div>
+    <div class="actions" style="margin-top:8px">
+      <input id="new-mode" type="text" placeholder="new mode name, e.g. unnecessary_escalation" style="flex:1">
+      <button class="small" id="add-mode">create mode</button>
+    </div>
+  </div>
+  <div class="card">
+    <b>Annotations</b> <span class="muted" id="ann-count"></span>
+    <div class="filters" style="border:0; padding:6px 0">
+      <input id="a-text" type="text" placeholder="search notes" size="18">
+      <select id="a-group"><option value="">group: all</option><option>coverage</option><option>challenge</option></select>
+      <select id="a-role"><option value="">role: all</option><option>shopper</option><option>merchant</option><option>support</option></select>
+      <select id="a-mode"><option value="">mode: all</option><option value="__none">unlinked</option></select>
+    </div>
+    <div style="overflow:auto; max-height:70vh"><table id="ann-table"></table></div>
+  </div>
+</main>
+
+<main id="progress"></main>
+<main id="suggestions"></main>
+
+<div id="popover">
+  <div class="muted" id="pop-quote"></div>
+  <textarea id="pop-note" placeholder="What went wrong here? Describe the failure in your own words."></textarea>
+  <div style="display:flex;gap:6px;margin-top:6px">
+    <button class="small" id="pop-save">save</button>
+    <button class="small" id="pop-copy" title="copy the highlighted text">copy</button>
+    <button class="small" id="pop-cancel">cancel</button>
+    <span class="muted" style="margin-left:auto">first failure only</span>
+  </div>
+</div>
+
+<script>
+const S = { sessions: [], current: null, annotations: [], patterns: {modes: []}, suggestions: [], labels: {}, progress: null, meta: {}, sel: null };
+const $ = sel => document.querySelector(sel);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const api = (path, body) => fetch(path, body ? {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)} : undefined).then(r => r.json());
+
+async function boot() {
+  [S.meta, S.sessions, S.annotations, S.patterns, S.suggestions, S.labels, S.progress] = await Promise.all([
+    api("/api/meta"), api("/api/sessions"), api("/api/annotations").then(d => d.annotations),
+    api("/api/patterns"), api("/api/suggestions"), api("/api/labels"), api("/api/progress")]);
+  $("#meta").textContent = `${S.meta.sessions} sessions · ${S.meta.traces} traces · ${S.meta.source}` + (S.meta.write_scores ? " · scores on" : " · scores off");
+  const intents = [...new Set(S.sessions.map(s => s.intent))].filter(Boolean).sort();
+  $("#f-intent").innerHTML = `<option value="">intent: all</option>` + intents.map(i => `<option>${i}</option>`).join("");
+  await loadSaved();
+  await loadDimensions();
+  renderRows();
+  const params = new URLSearchParams(location.search);
+  const wanted = params.get("session")
+    || (params.get("scenario") && (S.sessions.find(s => s.scenario_id === params.get("scenario")) || {}).session_id);
+  if (wanted && S.sessions.some(s => s.session_id === wanted)) {
+    select(wanted);
+  } else if (S.sessions.length) {
+    select(S.sessions[0].session_id);
+  }
+  const view = params.get("view");
+  show(["taxonomy", "labeling", "progress", "suggestions"].includes(view) ? view : "review");
+
+  // Trace ids can arrive by editing a mode's boxes, so bring annotation links up to date
+  // at startup too; a card that is already saved has no enabled button to click.
+  const before = JSON.stringify((S.patterns.modes || []).map(m => m.annotation_ids || []));
+  reconcileAll();
+  if (JSON.stringify((S.patterns.modes || []).map(m => m.annotation_ids || [])) !== before) {
+    S.patterns = await api("/api/patterns", S.patterns);
+    renderAnnotationTable();
+  }
+}
+
+/* ------------------------------------------------------------------ list */
+function annotatedIds() { return new Set(S.annotations.map(a => a.session_id)); }
+/* Accepts "support-0123", bare numbers, and any mix of commas, tabs, spaces, newlines. */
+function idFilter() {
+  const raw = $("#f-ids").value.trim();
+  if (!raw) { $("#f-ids-note").textContent = ""; return null; }
+  const known = new Set(S.sessions.map(s => s.scenario_id));
+  const wanted = new Set(), missing = [];
+  raw.split(/[\s,;]+/).filter(Boolean).forEach(token => {
+    const id = /^\d+$/.test(token) ? "support-" + token.padStart(4, "0") : token;
+    if (known.has(id)) wanted.add(id); else missing.push(token);
+  });
+  $("#f-ids-note").textContent = `${wanted.size} matched` + (missing.length ? ` · not found: ${missing.slice(0, 5).join(", ")}${missing.length > 5 ? "…" : ""}` : "");
+  return wanted;
+}
+function filtered() {
+  const g = $("#f-group").value, r = $("#f-role").value, i = $("#f-intent").value, st = $("#f-state").value, t = $("#f-text").value.toLowerCase();
+  const ids = idFilter();
+  const done = annotatedIds();
+  return S.sessions.filter(s =>
+    (!ids || ids.has(s.scenario_id)) &&
+    (!S.sample || S.sample.ids.has(s.session_id)) &&
+    (!g || s.scenario_group === g) && (!r || s.role === r) && (!i || s.intent === i) &&
+    (!st || (st === "unlabeled" ? labelProgress(s).done < labelProgress(s).total
+                                 : (st === "done") === done.has(s.session_id))) &&
+    (!t || (s.opening + " " + s.scenario_id).toLowerCase().includes(t)));
+}
+
+/* ------------------------------------------------------- sampling + copy */
+$("#s-run").onclick = async () => {
+  const strategy = $("#s-strategy").value, k = +$("#s-k").value;
+  $("#s-note").textContent = "sampling…";
+  const res = await api("/api/sample", {strategy, k, exclude_reviewed: true});
+  if (res.error) { $("#s-note").textContent = "sampling failed — see server log"; return; }
+  S.sample = {name: res.batch_name, ids: new Set(res.sessions.map(s => s.session_id)),
+              reasons: Object.fromEntries(res.sessions.map(s => [s.session_id, s.reason]))};
+  await loadSaved(res.batch_name);
+  applyBatch(res.batch_name);
+  await loadDimensions(); renderDimension();
+  refreshProgress();
+};
+/* saved sample sets: read from sample_manifest.json, applied as the sidebar filter */
+function stamp(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return isNaN(d) ? iso : d.toLocaleString(undefined, {month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"});
+}
+async function loadSaved(selectName) {
+  const manifest = await api("/api/manifest");
+  S.batches = manifest.batches || {};
+  const names = Object.keys(S.batches).sort((a, b) =>
+    (S.batches[b].selected_at || "").localeCompare(S.batches[a].selected_at || ""));
+  const inAny = new Set();
+  names.forEach(n => (S.batches[n].sessions || []).forEach(x => inAny.add(x.session_id)));
+  $("#s-saved").innerHTML = `<option value="">saved batches…</option>`
+    + (names.length ? `<option value="__all">all batches · ${inAny.size} sessions</option>
+                       <option value="__none">not in any batch · ${S.sessions.length - inAny.size}</option>` : "")
+    + names.map(n => {
+        const b = S.batches[n];
+        return `<option value="${esc(n)}">${esc(n)} · ${esc(stamp(b.selected_at))} · ${(b.sessions || []).length}</option>`;
+      }).join("");
+  if (selectName && S.batches[selectName]) $("#s-saved").value = selectName;
+}
+function applyBatch(name) {
+  // pseudo-batches: every session that belongs to some batch, or none of them
+  if (name === "__all" || name === "__none") {
+    const inAny = new Set();
+    Object.values(S.batches).forEach(b => (b.sessions || []).forEach(x => inAny.add(x.session_id)));
+    const wanted = S.sessions.filter(s => inAny.has(s.session_id) === (name === "__all"));
+    const reasons = {};
+    Object.entries(S.batches).forEach(([n, b]) => (b.sessions || []).forEach(x => {
+      reasons[x.session_id] = `${n}: ${x.reason || ""}`;
+    }));
+    S.sample = {name: name === "__all" ? "all batches" : "not in any batch",
+                ids: new Set(wanted.map(s => s.session_id)),
+                reasons: name === "__all" ? reasons : {}};
+    $("#s-note").textContent = `${S.sample.name}: ${wanted.length} sessions`;
+    renderRows();
+    const first = filtered()[0];
+    if (first) select(first.session_id);
+    return;
+  }
+  const b = S.batches[name];
+  if (!b) { S.sample = null; $("#s-note").textContent = ""; renderRows(); return; }
+  S.sample = {name, ids: new Set(b.sessions.map(s => s.session_id)),
+              reasons: Object.fromEntries(b.sessions.map(s => [s.session_id, s.reason]))};
+  $("#s-note").textContent = `${name}: ${b.sessions.length} sessions · drawn ${stamp(b.selected_at)}`;
+  renderRows();
+  const first = filtered()[0];
+  if (first) select(first.session_id);
+}
+$("#s-saved").onchange = () => applyBatch($("#s-saved").value);
+
+$("#b-save").onclick = async () => {
+  const rows = filtered();
+  if (!rows.length) { $("#s-note").textContent = "nothing to save"; return; }
+  const note = [$("#f-group").value, $("#f-role").value, $("#f-intent").value,
+                $("#f-text").value.trim() ? `text:${$("#f-text").value.trim()}` : "",
+                $("#f-ids").value.trim() ? "pasted ids" : ""].filter(Boolean).join(" · ") || "saved from the current view";
+  const res = await api("/api/sample/save", {
+    name: $("#b-name").value.trim() || "saved", note,
+    session_ids: rows.map(r => r.session_id)});
+  if (res.error) { $("#s-note").textContent = res.error; return; }
+  $("#b-name").value = "";
+  $("#s-note").textContent = `saved ${res.batch_name}: ${res.sessions.length} sessions`;
+  await loadSaved(res.batch_name);
+  applyBatch(res.batch_name);
+  refreshProgress();
+};
+
+async function renameBatch(name, next) {
+  const res = await api("/api/sample/rename", {batch_name: name, new_name: next});
+  if (res.error) return res.error;
+  if (S.sample && S.sample.name === name) S.sample.name = res.to;
+  await loadSaved(res.to);
+  renderRows(); refreshProgress();
+  return null;
+}
+$("#s-rename").onclick = async () => {
+  const name = $("#s-saved").value;
+  if (!name) return;
+  const next = prompt("Rename batch", name);
+  if (!next || next === name) return;
+  const err = await renameBatch(name, next);
+  if (err) $("#s-note").textContent = err;
+};
+
+/* Stratified batch: pick one dimension, see what each value still has available, edit the
+   per-value draw, then commit. Counts only — no outcomes — so the dimension is chosen first. */
+async function loadDimensions() {
+  S.dims = await api("/api/dimensions");
+  $("#d-dim").innerHTML = `<option value="">stratify by…</option>` +
+    Object.keys(S.dims.dimensions).map(d => `<option>${esc(d)}</option>`).join("");
+}
+function renderDimension() {
+  const dim = $("#d-dim").value, table = $("#d-table"), draw = $("#d-draw");
+  if (!dim) { table.hidden = draw.hidden = true; $("#d-note").textContent = ""; return; }
+  const values = S.dims.dimensions[dim];
+  const names = Object.keys(values).filter(v => values[v].available > 0);
+  const each = Math.floor(30 / Math.max(names.length, 1));
+  table.hidden = draw.hidden = false;
+  $("#d-note").textContent = `${S.dims.available_sessions} sessions not yet drawn or annotated`;
+  table.innerHTML = `<thead><tr><th>value</th><th>avail</th><th>draw</th></tr></thead><tbody>${
+    Object.entries(values).map(([v, c]) => `<tr>
+      <td>${esc(v)}</td>
+      <td class="muted">${c.available}<span class="muted"> / ${c.total}</span></td>
+      <td><input type="number" min="0" max="${c.available}" value="${Math.min(each, c.available)}"
+           data-val="${esc(v)}" style="width:52px"></td></tr>`).join("")}</tbody>`;
+  table.querySelectorAll("input").forEach(i => i.oninput = updateDrawTotal);
+  updateDrawTotal();
+}
+function updateDrawTotal() {
+  const total = [...$("#d-table").querySelectorAll("input")].reduce((a, i) => a + (+i.value || 0), 0);
+  $("#d-draw").textContent = `draw ${total} and filter`;
+}
+$("#d-dim").onchange = renderDimension;
+$("#d-draw").onclick = async () => {
+  const dim = $("#d-dim").value;
+  const per_value = {};
+  $("#d-table").querySelectorAll("input").forEach(i => { if (+i.value > 0) per_value[i.dataset.val] = +i.value; });
+  const res = await api("/api/sample/stratified", {dimension: dim, per_value});
+  if (res.error) { $("#d-note").textContent = res.error; return; }
+  const short = Object.entries(res.shortfalls || {});
+  $("#d-note").textContent = `${res.batch_name}: ${res.sessions.length} sessions`
+    + (short.length ? ` · short: ${short.map(([v, n]) => `${v} −${n}`).join(", ")}` : "");
+  await loadSaved(res.batch_name);
+  applyBatch(res.batch_name);
+  await loadDimensions();
+  renderDimension();
+  refreshProgress();
+};
+$("#s-trash").onclick = () => {
+  const name = $("#s-saved").value;
+  const pop = $("#confirm-pop");
+  if (!name) { pop.style.display = "none"; return; }
+  const rect = $("#s-trash").getBoundingClientRect();
+  pop.innerHTML = `Delete sample set <b>${esc(name)}</b>?
+    <div class="muted" style="margin-top:4px">Its traces become available to future draws again. Annotations and labels are not affected.</div>
+    <div class="actions"><button class="small" id="confirm-yes">delete</button>
+      <button class="small" id="confirm-no">cancel</button></div>`;
+  pop.style.display = "block";
+  pop.style.top = (window.scrollY + rect.bottom + 4) + "px";
+  pop.style.left = Math.min(window.scrollX + rect.left, window.innerWidth - 260) + "px";
+  $("#confirm-no").onclick = () => { pop.style.display = "none"; };
+  $("#confirm-yes").onclick = async () => {
+    await api("/api/sample/delete", {batch_name: name});
+    pop.style.display = "none";
+    if (S.sample && S.sample.name === name) { S.sample = null; $("#s-note").textContent = ""; }
+    await loadSaved();
+    await loadDimensions(); renderDimension();
+    renderRows(); refreshProgress();
+  };
+};
+document.addEventListener("mousedown", e => {
+  const pop = $("#confirm-pop");
+  if (pop.style.display === "block" && !pop.contains(e.target) && e.target.id !== "s-trash") pop.style.display = "none";
+});
+function renderChips() {
+  const bits = [];
+  const add = (label, reset) => bits.push({label, reset});
+  if ($("#f-group").value) add(`group: ${$("#f-group").value}`, () => $("#f-group").value = "");
+  if ($("#f-role").value) add(`role: ${$("#f-role").value}`, () => $("#f-role").value = "");
+  if ($("#f-intent").value) add(`intent: ${$("#f-intent").value}`, () => $("#f-intent").value = "");
+  if ($("#f-state").value) add(`${$("#f-state").value}`, () => $("#f-state").value = "");
+  if ($("#f-text").value.trim()) add(`text: ${$("#f-text").value.trim().slice(0, 14)}`, () => $("#f-text").value = "");
+  if ($("#f-ids").value.trim()) add(`ids pasted`, () => $("#f-ids").value = "");
+  if (S.sample) add(`batch: ${S.sample.name}`, () => { S.sample = null; $("#s-saved").value = ""; });
+  $("#chips").innerHTML = bits.map((b, i) => `<span class="chip" data-chip="${i}">${esc(b.label)} ×</span>`).join("")
+    + (bits.length > 1 ? `<span class="chip clear-all" data-clear-all="1">clear all ×</span>` : "");
+  document.querySelectorAll("#chips [data-chip]").forEach(el => el.onclick = () => {
+    bits[+el.dataset.chip].reset(); renderRows();
+  });
+  const all = document.querySelector("#chips [data-clear-all]");
+  if (all) all.onclick = () => { bits.forEach(b => b.reset()); renderRows(); };
+}
+function finalModes() { return (S.patterns.modes || []).filter(m => m.status === "confirmed" || m.status === "frozen"); }
+function labelProgress(session) {
+  const modes = finalModes();
+  const traces = session.trace_ids || [];
+  const total = modes.length * (session.features ? session.features.turn_count : 1);
+  let done = 0;
+  modes.forEach(m => ((S.labels || {})[m.name] || []).forEach(r => {
+    if (traces.includes(r.trace_id)) done += 1;
+  }));
+  return {done, total};
+}
+function renderRows() {
+  const done = annotatedIds();
+  $("#rows").innerHTML = filtered().map(s => `
+    <div class="row ${S.current === s.session_id ? "sel" : ""}" data-id="${s.session_id}">
+      <span class="sid">${s.scenario_id}</span><span class="dot">${
+        S.view === "labeling"
+          ? (() => {
+              const p = labelProgress(s);
+              const state = p.total && p.done >= p.total ? "done" : p.done ? "part" : "none";
+              return `<span class="lp lp-${state}">${p.done}/${p.total}</span>`;
+            })()
+          : (done.has(s.session_id) ? "●" : "○")}</span>
+      <div class="muted">${s.role} · ${s.intent} · ${s.scenario_group}${s.data_quality_case_id ? " · dq" : ""}</div>
+      ${S.sample && S.sample.reasons[s.session_id] ? `<div class="muted">↳ ${esc(S.sample.reasons[s.session_id])}</div>` : ""}
+      <div class="muted">${esc(s.opening)}</div>
+    </div>`).join("") || `<div class="row muted">no sessions match</div>`;
+  document.querySelectorAll("#rows .row[data-id]").forEach(el => el.onclick = () => select(el.dataset.id));
+  $("#showing").textContent = `showing ${filtered().length} of ${S.sessions.length}`;
+  renderChips();
+}
+["f-group","f-role","f-intent","f-state","f-text","f-ids"].forEach(id => $("#"+id).oninput = renderRows);
+
+/* ------------------------------------------------------ conversation view */
+async function select(id) {
+  S.current = id;
+  const s = await api("/api/sessions/" + encodeURIComponent(id));
+  S.session = s;
+  renderRows();
+  syncUrl();
+  const exp = s.expected || {};
+  const key = exp.evaluation === "objective" ? exp.outcome : "human judgment";
+  $("#conv").innerHTML = `
+    <h2>${s.scenario_id}</h2>
+    <div>
+      <span class="badge group-${s.scenario_group}">${s.scenario_group}</span>
+      <span class="badge">${s.tuple.role} ${s.tuple.user_id ?? ""}</span>
+      <span class="badge">${s.tuple.intent}</span>
+      <span class="badge">${s.tuple.difficulty}</span>
+      <span class="badge">${s.tuple.user_style}</span>
+      ${s.data_quality_case_id ? `<span class="badge">${s.data_quality_case_id}</span>` : ""}
+      ${(s.flags || []).map(f => `<span class="badge flag">${f}</span>`).join("")}
+    </div>
+    <div class="muted" style="margin-top:4px">session ${s.session_id} · ${s.turns.length} turn(s) · ${s.features.tool_calls} tool calls · ${(s.turns[0].models || []).join(", ")}</div>
+    <details class="exchange" id="toolset"><summary>tools and model settings the agent was built with</summary><div class="step muted">loading…</div></details>
+    <details class="expected" id="expected">
+      <summary>expected result (press <kbd>e</kbd>) — read the trace first</summary>
+      <div class="outcome">${esc(key)}</div>
+      <div style="margin-top:4px">${esc(exp.reason || exp.criterion || "")}</div>
+      <div class="muted" style="margin-top:4px">source: ${esc((exp.source || {}).type)} · ${esc((exp.source || {}).reference)}</div>
+    </details>
+    ${s.turns.map(renderTurn).join("")}`;
+  if (S.view !== "labeling") bindSelection();
+  renderRail();
+  renderToolset();
+}
+async function renderToolset() {
+  if (!S.toolset) S.toolset = await api("/api/toolset");
+  const t = S.toolset, el = $("#toolset");
+  if (!el) return;
+  el.innerHTML = `<summary>${t.tools.length} tool schemas + model settings <span class="prov from_code">from code</span></summary>
+    <div class="step muted">${esc(t.note)}</div>
+    <div class="step"><b>model settings</b> (${esc(t.model)})<pre>${esc(JSON.stringify(t.model_settings, null, 1))}</pre></div>
+    ${t.tools.map(tool => `<div class="step">
+      <div class="callline">${esc(tool.name)}(${tool.parameters.map(esc).join(", ")})</div>
+      <div class="muted">${esc(tool.description.slice(0, 300))}</div>
+      <details><summary class="muted">json schema</summary><pre>${esc(JSON.stringify(tool.schema, null, 1))}</pre></details>
+    </div>`).join("")}`;
+}
+function renderTurn(t) {
+  return `<div class="turn">
+    <div class="turn-head">turn ${t.turn} · trace
+      <span class="copyid" data-copy="${t.trace_id}" title="click to copy">${t.trace_id}</span>
+      · ${(t.timestamp || "").slice(11, 19)} UTC</div>
+    ${t.blocks.map((b, i) => renderBlock(b, t.trace_id, `${t.turn}:${i}`)).join("")}
+    ${renderExchange(t)}
+  </div>`;
+}
+function renderExchange(t) {
+  const ex = t.exchange || {steps: []};
+  if (!ex.steps.length) return "";
+  const secs = ex.steps.reduce((a, s) => a + (s.latency_seconds || 0), 0).toFixed(1);
+  const toks = ex.steps.reduce((a, s) => a + (s.input_tokens || 0), 0);
+  return `<details class="exchange">
+    <summary>model exchange · ${ex.steps.length} step(s) · ${secs}s · ${toks} input tokens</summary>
+    <div class="step">
+      <details><summary class="muted">system prompt (${ex.system_prompt.length} chars)${ex.system_prompt_varies ? " — differs between steps" : ""}</summary>
+        <pre>${esc(ex.system_prompt)}</pre></details>
+    </div>
+    ${ex.steps.map(s => `<div class="step">
+      <div class="hd">step ${s.step} · ${esc(s.model || "")} · ${s.latency_seconds ?? "?"}s · ${s.input_tokens ?? "?"} input tokens · ${s.message_count} messages in context</div>
+      <div class="side req">request<span class="prov">logged</span>
+        ${s.request.added.map(m => `<div style="margin-top:3px"><b>${esc(m.role)}</b>
+          ${m.text ? `<div>${esc(m.text.slice(0, 400))}</div>` : ""}
+          ${(m.tool_calls || []).map(c => `<div class="callline">→ ${esc(c.name)} ${esc(JSON.stringify(c.arguments || {}))}</div>`).join("")}
+          ${(m.tool_responses || []).map(r => `<details><summary class="muted">tool response</summary><pre>${esc(typeof r.response === "string" ? r.response : JSON.stringify(r.response, null, 1))}</pre></details>`).join("")}
+        </div>`).join("") || `<div class="muted">no new messages</div>`}
+      </div>
+      <div class="side res">response<span class="prov ${s.response.provenance}">${s.response.provenance}</span>
+        ${s.response.text ? `<div>${esc(s.response.text.slice(0, 600))}</div>` : `<div class="muted">no text</div>`}
+        ${(s.response.tool_calls || []).map(c => `<div class="callline">→ ${esc(c.name)} ${esc(JSON.stringify(c.arguments || {}))}</div>`).join("")}
+      </div>
+    </div>`).join("")}
+    <div class="step muted">Responses marked <span class="prov reconstructed">reconstructed</span> are recovered from the next step's request; the instrumentation did not store generation outputs. Output tokens and cost were not recorded.</div>
+  </details>`;
+}
+function renderBlock(b, traceId, idx) {
+  if (b.kind === "tool") {
+    const res = b.result === null ? `<div class="result muted">no result recorded</div>` : `
+      <div class="result">
+        <span class="status ${String(b.status).match(/denied|error|not_|invalid|paused/) ? "err" : ""}">${esc(b.status)}</span>
+        <details><summary class="muted">result json</summary><pre class="anno" data-trace="${traceId}" data-idx="${idx}">${esc(JSON.stringify(b.result, null, 1))}</pre></details>
+      </div>`;
+    return `<div class="tool ${b.write ? "write" : ""}">
+      <div class="call"><b>${esc(b.name)}</b><span class="args">${esc(JSON.stringify(b.arguments || {}))}</span>${b.write ? `<span class="badge">write</span>` : ""}</div>
+      ${res}</div>`;
+  }
+  if (b.kind === "user" || b.kind === "assistant") {
+    return `<div class="msg ${b.kind}"><div class="role">${b.kind}</div>
+      <div class="anno" data-trace="${traceId}" data-idx="${idx}">${esc(b.text)}</div></div>`;
+  }
+  return "";
+}
+
+/* -------------------------------------------------------- annotations */
+function bindSelection() {
+  document.querySelectorAll(".anno").forEach(el => {
+    el.onmouseup = () => {
+      const sel = window.getSelection();
+      const text = String(sel).trim();
+      if (!text) return;
+      const range = sel.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      // Keep the selection visible while the textarea has focus (the browser drops the
+      // native highlight), so the quote stays readable and copyable.
+      try {
+        const mark = document.createElement("mark");
+        mark.className = "ann-mark tmp-hl";
+        range.surroundContents(mark);
+        sel.removeAllRanges();
+      } catch (e) { /* selection spans elements; keep the native highlight */ }
+      S.sel = {trace_id: el.dataset.trace, block_index: el.dataset.idx, quote: text};
+      const pop = $("#popover");
+      pop.style.display = "block";
+      pop.style.top = (window.scrollY + rect.bottom + 6) + "px";
+      pop.style.left = Math.min(window.scrollX + rect.left, window.innerWidth - 320) + "px";
+      $("#pop-quote").textContent = text.length > 90 ? text.slice(0, 90) + "…" : text;
+      $("#pop-note").value = "";
+      $("#pop-note").focus();
+    };
+  });
+}
+function closePopover() {
+  $("#popover").style.display = "none";
+  S.sel = null;
+  document.querySelectorAll("mark.tmp-hl").forEach(mark => {
+    const parent = mark.parentNode;
+    while (mark.firstChild) parent.insertBefore(mark.firstChild, mark);
+    parent.removeChild(mark);
+    parent.normalize();
+  });
+}
+$("#pop-cancel").onclick = closePopover;
+$("#pop-note").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("#pop-save").click(); }
+});
+$("#pop-copy").onclick = async () => {
+  if (!S.sel) return;
+  try { await navigator.clipboard.writeText(S.sel.quote); } catch (e) { /* clipboard blocked */ }
+  const b = $("#pop-copy"); b.textContent = "copied";
+  setTimeout(() => { b.textContent = "copy"; }, 1000);
+};
+// Click away or press Escape to dismiss, so cancel is never the only way out.
+document.addEventListener("click", async e => {
+  const el = e.target.closest("[data-copy]");
+  if (!el) return;
+  e.preventDefault();
+  const value = el.dataset.copy, shown = el.textContent;
+  try { await navigator.clipboard.writeText(value); } catch (err) { /* clipboard blocked */ }
+  el.textContent = "copied";
+  setTimeout(() => { el.textContent = shown; }, 900);
+});
+
+document.addEventListener("mousedown", e => {
+  const pop = $("#popover");
+  if (pop.style.display === "block" && !pop.contains(e.target)) closePopover();
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && $("#popover").style.display === "block") closePopover();
+  // Cmd/Ctrl+C copies the quoted text while the popover is open. The native selection is
+  // gone by then (focus sits in the textarea), so copy the stored quote instead — unless
+  // the reviewer has selected something inside the textarea itself.
+  if ((e.metaKey || e.ctrlKey) && e.key === "c" && S.sel && $("#popover").style.display === "block") {
+    const ta = $("#pop-note");
+    if (document.activeElement === ta && ta.selectionStart !== ta.selectionEnd) return;
+    e.preventDefault();
+    navigator.clipboard.writeText(S.sel.quote).catch(() => {});
+    const b = $("#pop-copy"); b.textContent = "copied";
+    setTimeout(() => { b.textContent = "copy"; }, 1000);
+  }
+});
+$("#pop-save").onclick = async () => {
+  const note = $("#pop-note").value.trim();
+  if (!note || !S.sel) return;
+  const saved = await api("/api/annotations", {...S.sel, session_id: S.session.session_id, scenario_id: S.session.scenario_id, note});
+  S.annotations.push(saved);
+  closePopover();
+  renderNotes(); renderRows(); refreshProgress();
+};
+function renderRail() {
+  if (S.view === "labeling") return renderLabelRail();
+  return renderNotes();
+}
+function renderNotes() {
+  const mine = S.annotations.filter(a => a.session_id === S.current);
+  const sugg = S.suggestions.filter(s => s.session_id === S.current && !s.decision);
+  $("#notes").innerHTML = `
+    <div class="muted" style="margin-bottom:6px">${mine.length} annotation(s)</div>
+    ${mine.map(a => `<div class="note">
+        ${a.quote ? `<div class="quote">“${esc(a.quote.slice(0, 80))}”</div>` : ""}
+        <div data-note="${a.annotation_id}">${esc(a.note)}</div>
+        <div class="actions">
+          <button class="small" data-edit="${a.annotation_id}">edit</button>
+          <button class="small" data-del="${a.annotation_id}">delete</button>
+        </div>
+      </div>`).join("")}
+    ${sugg.map(s => `<div class="note suggestion">
+        <span class="badge">agent suggestion</span>
+        ${s.quote ? `<div class="quote">“${esc(s.quote.slice(0, 80))}”</div>` : ""}
+        <div>${esc(s.note || s.suggested_mode || "")}</div>
+        <div class="actions">
+          <button class="small" data-acc="${s.suggestion_id}">accept</button>
+          <button class="small" data-rej="${s.suggestion_id}">reject</button>
+        </div></div>`).join("")}
+    <button class="small" id="no-failure" style="margin-top:4px">record “no failure observed”</button>`;
+  $("#no-failure").onclick = async () => {
+    const saved = await api("/api/annotations", {session_id: S.session.session_id, scenario_id: S.session.scenario_id,
+      trace_id: S.session.trace_ids[0], quote: "", note: "no failure observed"});
+    S.annotations.push(saved); renderNotes(); renderRows(); refreshProgress();
+  };
+  document.querySelectorAll("[data-edit]").forEach(b => b.onclick = () => {
+    const id = b.dataset.edit;
+    const target = document.querySelector(`[data-note="${id}"]`);
+    const current = S.annotations.find(a => a.annotation_id === id);
+    if (!target || !current || target.querySelector("textarea")) return;
+    target.innerHTML = `<textarea style="width:100%;height:60px">${esc(current.note)}</textarea>
+      <div class="actions"><button class="small" data-save="${id}">save</button>
+        <button class="small" data-cancel="${id}">cancel</button></div>
+      <div class="muted">enter saves · shift+enter for a new line · esc cancels</div>`;
+    const box = target.querySelector("textarea");
+    box.focus(); box.selectionStart = box.value.length;
+    const save = async () => {
+      const note = box.value.trim();
+      if (!note) return;
+      const saved = await api("/api/annotations", {...current, note});
+      S.annotations = S.annotations.map(a => a.annotation_id === id ? saved : a);
+      renderNotes(); renderRows(); renderAnnotationTable(); refreshProgress();
+    };
+    box.onkeydown = e => {
+      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); save(); }
+      if (e.key === "Escape") { e.preventDefault(); renderNotes(); }
+    };
+    target.querySelector("[data-save]").onclick = save;
+    target.querySelector("[data-cancel]").onclick = () => renderNotes();
+  });
+  document.querySelectorAll("[data-del]").forEach(b => b.onclick = async () => {
+    const d = await api("/api/annotations/delete", {annotation_id: b.dataset.del});
+    S.annotations = d.annotations; renderNotes(); renderRows(); refreshProgress();
+  });
+  document.querySelectorAll("[data-acc],[data-rej]").forEach(b => b.onclick = async () => {
+    const accept = b.hasAttribute("data-acc");
+    await api("/api/suggestions/accept", {suggestion_id: accept ? b.dataset.acc : b.dataset.rej, decision: accept ? "accepted" : "rejected"});
+    [S.suggestions, S.annotations] = await Promise.all([api("/api/suggestions"), api("/api/annotations").then(d => d.annotations)]);
+    renderNotes(); renderSuggestions(); renderRows();
+  });
+}
+
+/* ------------------------------------------------------------ taxonomy */
+function modeSummary(m) {
+  const pos = (m.example_trace_ids || []).length, neg = (m.close_negative_trace_ids || []).length;
+  const notes = (m.annotation_ids || []).length;
+  const warn = [];
+  if (!m.definition) warn.push("no definition");
+  if (!m.requirement_source) warn.push("no requirement");
+  if (pos < 3) warn.push(`${pos}/3 positives`);
+  return `<b>${esc(m.name || "(unnamed)")}</b>
+    <span class="badge">${esc(m.status || "draft")}</span>
+    <span class="muted">${pos} positive · ${neg} close neg · ${notes} notes</span>
+    ${warn.length ? `<span class="badge flag">${esc(warn.join(" · "))}</span>` : ""}`;
+}
+function reconcileAnnotationLinks(mode) {
+  /* Keep the two directions in step: a trace id typed into the positive or close-negative
+     box links every annotation written on that trace, and a trace id removed from both
+     boxes unlinks them. Trace ids with no annotation stay in the list untouched, since the
+     fields are also meant for traces that were never annotated. */
+  const ids = new Set([...(mode.example_trace_ids || []), ...(mode.close_negative_trace_ids || [])]);
+  const linked = new Set(mode.annotation_ids || []);
+  S.annotations.forEach(a => {
+    if (!a.trace_id) return;
+    if (ids.has(a.trace_id)) linked.add(a.annotation_id);
+    else linked.delete(a.annotation_id);
+  });
+  mode.annotation_ids = [...linked];
+}
+function renderTaxonomy() {
+  const modes = S.patterns.modes || [];
+  S.openModes = S.openModes || new Set();
+  // Unsaved edits live here, keyed by the mode's saved name, so re-rendering after a
+  // save on one card restores the others' in-progress text instead of wiping it.
+  S.pending = S.pending || {};
+  $("#modes").innerHTML = modes.map((m, i) => `
+    <details class="mode card" data-mode-card="${i}" ${S.openModes.has(m.name) ? "open" : ""}>
+      <summary>${modeSummary(m)}</summary>
+      <div class="grid2" style="margin-top:8px">
+        <label>name<br><input type="text" data-m="${i}" data-k="name" value="${esc(m.name || "")}" style="width:100%"></label>
+        <label>status<br><select data-m="${i}" data-k="status">${["draft","confirmed","frozen"].map(x => `<option ${m.status === x ? "selected" : ""}>${x}</option>`).join("")}</select></label>
+      </div>
+      <label>binary definition<br><textarea data-m="${i}" data-k="definition" style="width:100%;height:48px">${esc(m.definition || "")}</textarea></label>
+      <div class="grid2">
+        <label>requirement source<br><input type="text" data-m="${i}" data-k="requirement_source" value="${esc(m.requirement_source || "")}" style="width:100%" placeholder="RESP-2, or a recorded spec revision"></label>
+        <label>evaluator type<br><select data-m="${i}" data-k="evaluator_type">${["judge","code"].map(x => `<option ${m.evaluator_type === x ? "selected" : ""}>${x}</option>`).join("")}</select></label>
+      </div>
+      <label>boundary vs nearest mode<br><textarea data-m="${i}" data-k="boundary" style="width:100%;height:38px">${esc(m.boundary || "")}</textarea></label>
+      <div class="grid2">
+        <label>positive trace ids<br><input type="text" data-m="${i}" data-k="example_trace_ids" value="${esc((m.example_trace_ids || []).join(", "))}" style="width:100%"></label>
+        <label>close negative trace ids<br><input type="text" data-m="${i}" data-k="close_negative_trace_ids" value="${esc((m.close_negative_trace_ids || []).join(", "))}" style="width:100%"></label>
+      </div>
+      <div class="muted" style="margin-top:6px">supporting annotations: ${
+        (() => { const n = S.annotations.filter(a => (m.annotation_ids || []).includes(a.annotation_id));
+                 return n.length ? n.map(x => esc(x.note.slice(0, 60))).join(" | ")
+                                 : "none yet — link them in the annotations table below"; })()}</div>
+      <div class="actions" style="margin-top:8px">
+        <button class="small" data-update="${i}" disabled>update mode</button>
+        <span class="muted" data-dirty="${i}"></span>
+        <span style="margin-left:auto"></span>
+        <button class="small" data-rm="${i}">remove mode</button>
+      </div>
+    </details>`).join("") || `<div class="muted">no modes yet</div>`;
+
+  // restore staged edits and their dirty state after the re-render
+  modes.forEach((m, i) => {
+    const pending = S.pending[m.name];
+    if (!pending) return;
+    Object.entries(pending).forEach(([k, v]) => {
+      const el = document.querySelector(`#modes [data-m="${i}"][data-k="${k}"]`);
+      if (el) el.value = v;
+    });
+    const btn = document.querySelector(`#modes [data-update="${i}"]`);
+    if (btn) btn.disabled = false;
+    const note = document.querySelector(`#modes [data-dirty="${i}"]`);
+    if (note) note.textContent = "unsaved changes";
+    S.openModes.add(m.name);
+    const card = document.querySelector(`#modes [data-mode-card="${i}"]`);
+    if (card) card.open = true;
+  });
+
+  // remember which cards are open across re-renders
+  document.querySelectorAll("#modes details").forEach((d, i) => d.ontoggle = () => {
+    const name = (S.patterns.modes[i] || {}).name;
+    if (!name) return;
+    d.open ? S.openModes.add(name) : S.openModes.delete(name);
+  });
+
+  // edits are staged; "update mode" commits them
+  document.querySelectorAll("#modes [data-m]").forEach(el => el.oninput = () => {
+    const i = el.dataset.m, name = (S.patterns.modes[+i] || {}).name;
+    if (name) {
+      S.pending[name] = S.pending[name] || {};
+      S.pending[name][el.dataset.k] = el.value;
+    }
+    const btn = document.querySelector(`#modes [data-update="${i}"]`);
+    if (btn) btn.disabled = false;
+    const note = document.querySelector(`#modes [data-dirty="${i}"]`);
+    if (note) note.textContent = "unsaved changes";
+  });
+
+  document.querySelectorAll("#modes [data-update]").forEach(btn => btn.onclick = () => {
+    const i = +btn.dataset.update, mode = S.patterns.modes[i], was = mode.name;
+    document.querySelectorAll(`#modes [data-m="${i}"]`).forEach(el => {
+      const k = el.dataset.k;
+      mode[k] = k.endsWith("trace_ids") ? el.value.split(/[\s,;]+/).filter(Boolean) : el.value;
+    });
+    reconcileAnnotationLinks(mode);
+    delete S.pending[was];           // this card is saved; others keep their staged edits
+    S.openModes.delete(was);
+    S.openModes.add(mode.name);
+    savePatterns();
+  });
+
+  document.querySelectorAll("#modes [data-rm]").forEach(btn => btn.onclick = () => {
+    const i = +btn.dataset.rm, mode = S.patterns.modes[i];
+    const row = btn.closest(".actions");
+    row.innerHTML = `<span>Delete <b>${esc(mode.name || "(unnamed)")}</b>? Its annotations stay; only the mode is removed.</span>
+      <button class="small" data-yes="1">delete</button><button class="small" data-no="1">cancel</button>`;
+    row.querySelector("[data-no]").onclick = () => renderTaxonomy();
+    row.querySelector("[data-yes]").onclick = () => {
+      S.openModes.delete(mode.name);
+      delete S.pending[mode.name];
+      S.patterns.modes.splice(i, 1);
+      savePatterns();
+    };
+  });
+}
+/* Supporting annotations: every open code, with the scenario's characteristics, and a
+   control to link it to a mode (patterns.json annotation_ids). */
+function renderAnnotationTable() {
+  const modes = S.patterns.modes || [];
+  const linked = {};
+  modes.forEach(m => (m.annotation_ids || []).forEach(id => (linked[id] = linked[id] || []).push(m.name)));
+  const sessions = Object.fromEntries(S.sessions.map(s => [s.session_id, s]));
+  const q = $("#a-text").value.toLowerCase(), g = $("#a-group").value, r = $("#a-role").value, mf = $("#a-mode").value;
+
+  const rows = S.annotations.filter(a => {
+    const s = sessions[a.session_id] || {};
+    const names = linked[a.annotation_id] || [];
+    return (!q || (a.note + " " + (a.quote || "") + " " + (a.scenario_id || "")).toLowerCase().includes(q))
+      && (!g || s.scenario_group === g) && (!r || s.role === r)
+      && (!mf || (mf === "__none" ? names.length === 0 : names.includes(mf)));
+  });
+
+  $("#ann-count").textContent = `${rows.length} of ${S.annotations.length} shown · ${new Set(S.annotations.map(a => a.session_id)).size} sessions annotated`;
+  $("#a-mode").innerHTML = `<option value="">mode: all</option><option value="__none">unlinked</option>`
+    + modes.map(m => `<option ${mf === m.name ? "selected" : ""}>${esc(m.name)}</option>`).join("");
+
+  $("#ann-table").innerHTML = `
+    <thead><tr><th>scenario</th><th>role / intent</th><th>group</th><th>note</th><th>quote</th><th>mode</th></tr></thead>
+    <tbody>${rows.map(a => {
+      const s = sessions[a.session_id] || {};
+      const names = linked[a.annotation_id] || [];
+      return `<tr>
+        <td><a href="/?scenario=${encodeURIComponent(a.scenario_id || "")}" target="_blank" rel="noopener"
+              title="open this conversation in a new tab">${esc(a.scenario_id || "")}</a>
+          ${a.trace_id ? `<div><span class="copyid" data-copy="${a.trace_id}" title="click to copy">${a.trace_id}</span></div>` : ""}</td>
+        <td>${esc(s.role || "")}<div class="muted">${esc(s.intent || "")}${s.difficulty ? " · " + esc(s.difficulty) : ""}</div></td>
+        <td>${s.scenario_group ? `<span class="badge group-${s.scenario_group}">${s.scenario_group}</span>` : ""}
+          ${s.data_quality_case_id ? `<div class="muted">${esc(s.data_quality_case_id)}</div>` : ""}</td>
+        <td>${esc(a.note)}</td>
+        <td class="muted">${a.quote ? "“" + esc(a.quote.slice(0, 60)) + "”" : ""}</td>
+        <td>${names.map(n => {
+            const m = modes.find(x => x.name === n) || {};
+            const side = (m.close_negative_trace_ids || []).includes(a.trace_id) ? "close neg" : "positive";
+            return `<span class="badge">${esc(n)} · ${side} <a href="#" data-unlink="${a.annotation_id}" data-mode="${esc(n)}">×</a></span>`;
+          }).join("")}
+          ${modes.length ? `<select data-link="${a.annotation_id}"><option value="">link…</option>${
+            modes.map(m => `<option value="${esc(m.name)}|pos">${esc(m.name)} — positive</option>
+                            <option value="${esc(m.name)}|neg">${esc(m.name)} — close negative</option>`).join("")}</select>` : ""}</td>
+      </tr>`;
+    }).join("")}</tbody>`;
+
+  document.querySelectorAll("#ann-table [data-link]").forEach(el => el.onchange = () => {
+    if (!el.value) return;
+    const [name, kind] = el.value.split("|");
+    const mode = S.patterns.modes.find(m => m.name === name);
+    const ann = S.annotations.find(a => a.annotation_id === el.dataset.link);
+    if (!mode || !ann) return;
+    // one action records both halves Part D asks for: the supporting annotation and the trace id
+    mode.annotation_ids = [...new Set([...(mode.annotation_ids || []), ann.annotation_id])];
+    const field = kind === "neg" ? "close_negative_trace_ids" : "example_trace_ids";
+    const other = kind === "neg" ? "example_trace_ids" : "close_negative_trace_ids";
+    mode[field] = [...new Set([...(mode[field] || []), ann.trace_id])];
+    mode[other] = (mode[other] || []).filter(id => id !== ann.trace_id);
+    savePatterns();
+  });
+  document.querySelectorAll("#ann-table [data-unlink]").forEach(el => el.onclick = e => {
+    e.preventDefault();
+    const mode = S.patterns.modes.find(m => m.name === el.dataset.mode);
+    const ann = S.annotations.find(a => a.annotation_id === el.dataset.unlink);
+    mode.annotation_ids = (mode.annotation_ids || []).filter(id => id !== el.dataset.unlink);
+    if (ann) {
+      mode.example_trace_ids = (mode.example_trace_ids || []).filter(id => id !== ann.trace_id);
+      mode.close_negative_trace_ids = (mode.close_negative_trace_ids || []).filter(id => id !== ann.trace_id);
+    }
+    savePatterns();
+  });
+}
+["a-text", "a-group", "a-role", "a-mode"].forEach(id => $("#" + id).oninput = renderAnnotationTable);
+
+$("#add-mode").onclick = () => {
+  const name = ($("#new-mode").value || "").trim().replace(/\s+/g, "_");
+  if (!name) { $("#new-mode").focus(); return; }
+  if ((S.patterns.modes || []).some(m => m.name === name)) { alert(`${name} already exists`); return; }
+  S.patterns.modes.push({name, status: "draft", definition: "", requirement_source: "", evaluator_type: "judge",
+    boundary: "", example_trace_ids: [], close_negative_trace_ids: [], annotation_ids: []});
+  S.openModes = S.openModes || new Set();
+  S.openModes.add(name);
+  $("#new-mode").value = "";
+  savePatterns();
+};
+$("#new-mode").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); $("#add-mode").click(); } });
+function reconcileAll() {
+  (S.patterns.modes || []).forEach(reconcileAnnotationLinks);
+}
+async function savePatterns() {
+  reconcileAll();
+  S.patterns = await api("/api/patterns", S.patterns);
+  renderTaxonomy(); renderAnnotationTable(); renderRail(); renderRows(); refreshProgress();
+}
+
+/* ------------------------------------------------------------ labeling */
+function renderLabelRail() {
+  const modes = finalModes(), s = S.session;
+  if (!s) { $("#notes").innerHTML = `<div class="muted">pick a session</div>`; return; }
+  if (!modes.length) {
+    $("#notes").innerHTML = `<div class="muted">no confirmed modes yet — add them in the Taxonomy view,
+      then set a mode's status to <b>confirmed</b> to label against it.</div>`;
+    return;
+  }
+  const notes = S.annotations.filter(a => a.session_id === S.current);
+  const p = labelProgress(s);
+  $("#notes").innerHTML = `
+    <div class="muted" style="margin-bottom:6px">${p.done} of ${p.total} judgments · ${modes.length} mode(s)</div>
+    ${s.trace_ids.map((tid, i) => `<div class="note" style="border-left-color:var(--tool)">
+        <div class="muted">turn ${i + 1} · <span class="copyid" data-copy="${tid}" title="click to copy">${tid.slice(0, 12)}…</span></div>
+        ${modes.map(m => {
+          const row = (S.labels[m.name] || []).find(r => r.trace_id === tid);
+          const v = row ? row.label : null;
+          return `<div style="margin-top:5px">
+            <div>${esc(m.name)}</div>
+            <button class="pill ${v === 1 ? "on-fail" : ""}" data-t="${tid}" data-m="${esc(m.name)}" data-v="1">Fail</button>
+            <button class="pill ${v === 0 ? "on-pass" : ""}" data-t="${tid}" data-m="${esc(m.name)}" data-v="0">Pass</button>
+          </div>`;
+        }).join("")}
+      </div>`).join("")}
+    <details style="margin-top:8px"><summary class="muted">my annotations (${notes.length})</summary>
+      ${notes.map(a => `<div class="note" style="margin-top:6px">${esc(a.note)}</div>`).join("") || `<div class="muted">none</div>`}
+    </details>
+    <div class="muted" style="margin-top:8px">press <kbd>e</kbd> for the expected result · <kbd>j</kbd>/<kbd>k</kbd> to move on</div>`;
+
+  $("#notes").querySelectorAll(".pill").forEach(b => b.onclick = async () => {
+    const res = await api("/api/labels", {mode: b.dataset.m, trace_id: b.dataset.t, label: +b.dataset.v});
+    if (res.score_error) alert("saved locally, Langfuse score failed:\n" + res.score_error);
+    S.labels = await api("/api/labels");
+    renderLabelRail(); renderRows(); refreshProgress();
+  });
+}
+
+/* ------------------------------------------------------------ progress */
+async function refreshProgress() { S.progress = await api("/api/progress"); renderProgress(); }
+function renderProgress() {
+  const p = S.progress; if (!p) return;
+  const pct = Math.min(100, Math.round(100 * p.traces_reviewed / p.target_traces));
+  $("#progress").innerHTML = `
+    <div class="card"><b>Review progress</b>
+      <div class="muted">${p.traces_reviewed} of ${p.target_traces} traces reviewed (${p.sessions_reviewed} of ${p.sessions_total} sessions, ${p.annotations} annotations)</div>
+      <div class="bar" style="margin-top:6px"><span style="width:${pct}%"></span></div>
+    </div>
+    <div class="card"><b>Batches</b> <span class="muted">(handout: 15 uniform, 15 cluster, 30 dimension, 25 depth, 15 final)</span>
+      ${Object.keys(p.batches).length ? `<table style="margin-top:6px"><tr><th>batch</th><th>size</th><th>reviewed</th></tr>
+        ${Object.entries(p.batches).map(([k, v]) => `<tr>
+          <td>${esc(k)} <button class="small" data-rn="${esc(k)}" title="rename">✎</button></td>
+          <td>${v.size}</td><td>${v.reviewed}</td></tr>`).join("")}</table>`
+        : `<div class="muted">no sample_manifest.json batches yet</div>`}
+    </div>
+    <div class="card"><b>Modes</b>
+      ${p.final_modes.length ? `<table style="margin-top:6px"><tr><th>mode</th><th>fail</th><th>pass</th><th>labeled</th></tr>
+        ${p.final_modes.map(m => `<tr><td>${esc(m)}</td><td>${p.mode_counts[m].fail}</td><td>${p.mode_counts[m].pass}</td><td>${p.mode_counts[m].labeled}</td></tr>`).join("")}</table>`
+        : `<div class="muted">no confirmed modes yet</div>`}
+      ${p.draft_modes.length ? `<div class="muted" style="margin-top:6px">draft: ${p.draft_modes.map(esc).join(", ")}</div>` : ""}
+    </div>
+    <div class="card"><b>Incomplete judgments</b> <span class="muted">reviewed sessions missing a label for a confirmed mode</span>
+      ${p.incomplete.length ? `<div style="max-height:260px;overflow:auto;margin-top:6px">${p.incomplete.map(i =>
+        `<div style="border-bottom:1px solid var(--line);padding:4px 0"><a href="#" data-go="${i.session_id}">${esc(i.scenario_id)}</a>
+          <span class="muted">${i.missing.map(m => m.trace_id.slice(0, 8) + ": " + m.modes.join(", ")).join(" · ")}</span></div>`).join("")}</div>`
+        : `<div class="muted">none</div>`}
+    </div>`;
+  document.querySelectorAll("#progress [data-go]").forEach(a => a.onclick = e => {
+    e.preventDefault(); show("review"); select(a.dataset.go);
+  });
+  document.querySelectorAll("#progress [data-rn]").forEach(b => b.onclick = async () => {
+    const name = b.dataset.rn, next = prompt("Rename batch", name);
+    if (!next || next === name) return;
+    const err = await renameBatch(name, next);
+    if (err) alert(err);
+  });
+}
+
+/* --------------------------------------------------------- suggestions */
+function renderSuggestions() {
+  const pending = S.suggestions.filter(s => !s.decision), decided = S.suggestions.filter(s => s.decision);
+  $("#suggestions").innerHTML = `
+    <div class="card"><b>Agent suggestions</b>
+      <div class="muted">Suggestions are proposals only. Accepting copies one into your annotations, marked as accepted; rejecting keeps the record for the handout’s “rejected suggestion”.</div>
+      ${pending.length ? pending.map(s => `<div class="note suggestion" style="margin-top:8px">
+          <b>${esc(s.suggested_mode || "(no mode)")}</b> · <span class="muted">${esc(s.scenario_id || "")}</span>
+          <div class="quote">“${esc((s.quote || "").slice(0, 120))}”</div>
+          <div>${esc(s.note || "")}</div>
+          <div class="actions"><button class="small" data-acc="${s.suggestion_id}">accept</button>
+            <button class="small" data-rej="${s.suggestion_id}">reject</button></div>
+        </div>`).join("") : `<div class="muted" style="margin-top:8px">none pending</div>`}
+    </div>
+    ${decided.length ? `<div class="card"><b>Decided</b><table style="margin-top:6px"><tr><th>mode</th><th>scenario</th><th>decision</th></tr>
+      ${decided.map(s => `<tr><td>${esc(s.suggested_mode || "")}</td><td>${esc(s.scenario_id || "")}</td><td>${esc(s.decision)}</td></tr>`).join("")}</table></div>` : ""}`;
+  document.querySelectorAll("#suggestions [data-acc],#suggestions [data-rej]").forEach(b => b.onclick = async () => {
+    const accept = b.hasAttribute("data-acc");
+    await api("/api/suggestions/accept", {suggestion_id: accept ? b.dataset.acc : b.dataset.rej, decision: accept ? "accepted" : "rejected"});
+    [S.suggestions, S.annotations] = await Promise.all([api("/api/suggestions"), api("/api/annotations").then(d => d.annotations)]);
+    renderSuggestions(); renderNotes();
+  });
+}
+
+/* -------------------------------------------------------------- views */
+function syncUrl() {
+  // Keep the address bar naming both the view and the conversation, so a refresh
+  // (or a copied link) returns to the same place.
+  try {
+    const params = new URLSearchParams();
+    if (S.view && S.view !== "review") params.set("view", S.view);
+    if (S.session && S.session.scenario_id) params.set("scenario", S.session.scenario_id);
+    const query = params.toString();
+    history.replaceState(null, "", query ? `?${query}` : location.pathname);
+  } catch (e) { /* sandboxed: the app still works, the URL just does not update */ }
+}
+function show(view) {
+  S.view = view;
+  // Review and Labeling share one workspace: same session list, same conversation
+  // renderer, different right rail and different default filter.
+  const workspace = view === "review" || view === "labeling" ? "review" : view;
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("active", b.dataset.view === view));
+  document.querySelectorAll("main").forEach(m => m.classList.toggle("active", m.id === workspace));
+  if (view === "labeling" || view === "review") {
+    // The filter is the reviewer's choice; a completed session stays in the list, the
+    // way an annotated one does in Review.
+    renderRows();
+    renderRail();
+  }
+  if (view === "taxonomy") { renderTaxonomy(); renderAnnotationTable(); }
+  if (view === "progress") refreshProgress();
+  if (view === "suggestions") renderSuggestions();
+  syncUrl();
+}
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => show(b.dataset.view));
+
+document.addEventListener("keydown", e => {
+  if (["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) return;
+  const rows = filtered(), i = rows.findIndex(r => r.session_id === S.current);
+  if (e.key === "j" && i < rows.length - 1) select(rows[i + 1].session_id);
+  if (e.key === "k" && i > 0) select(rows[i - 1].session_id);
+  if (e.key === "e") { const d = $("#expected"); if (d) d.open = !d.open; }
+});
+
+boot().catch(err => {
+  const el = $("#showing");
+  if (el) el.textContent = "load failed — see console";
+  console.error("boot failed:", err);
+});
+</script>
+</body>
+</html>

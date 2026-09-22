@@ -129,6 +129,68 @@ def record_tool_result(ctx: "AuthContext", result: dict[str, Any]) -> None:
     _set_permission_denied_attributes(span, result)
 
 
+def record_model_exchange(span: trace.Span, agent: Any, result: Any) -> None:
+    """Record what the Module 1 traces are missing: tool schemas, model settings,
+    and each model response with its token usage.
+
+    OpenLLMetry records the request sent to the model, but the LiteLLM path leaves
+    the generation span's output empty, so no per-step response, output-token count,
+    or cost is stored. This helper is additive: it leaves every existing span and
+    attribute alone and writes to the `cartwheel.*` namespace on the request span.
+
+    Keep payloads bounded, because span attributes travel with every export.
+    """
+    if not span.is_recording():
+        return
+    import json
+
+    try:
+        tools = [
+            {
+                "name": tool.name,
+                "parameters": sorted((getattr(tool, "params_json_schema", {}) or {}).get("properties", {})),
+            }
+            for tool in getattr(agent, "tools", []) or []
+            if hasattr(tool, "name")
+        ]
+        if tools:
+            span.set_attribute("cartwheel.tools", json.dumps(tools))
+
+        settings = getattr(agent, "model_settings", None)
+        if settings is not None:
+            span.set_attribute("cartwheel.model_settings", json.dumps(str(settings))[:4000])
+
+        responses = []
+        for raw in getattr(result, "raw_responses", []) or []:
+            items = []
+            for item in getattr(raw, "output", []) or []:
+                entry: dict[str, Any] = {"type": type(item).__name__}
+                for field in ("name", "arguments", "call_id", "status", "role"):
+                    value = getattr(item, field, None)
+                    if value is not None:
+                        entry[field] = str(value)[:2000]
+                content = getattr(item, "content", None)
+                if content is not None:
+                    entry["text"] = "".join(
+                        getattr(part, "text", "") or "" for part in content
+                    )[:4000] if isinstance(content, list) else str(content)[:4000]
+                items.append(entry)
+            usage = getattr(raw, "usage", None)
+            responses.append({
+                "output": items,
+                "usage": {
+                    "input_tokens": getattr(usage, "input_tokens", None),
+                    "output_tokens": getattr(usage, "output_tokens", None),
+                    "total_tokens": getattr(usage, "total_tokens", None),
+                },
+            })
+        if responses:
+            span.set_attribute("cartwheel.model_responses", json.dumps(responses)[:120000])
+            span.set_attribute("cartwheel.model_steps", len(responses))
+    except Exception as exc:  # instrumentation must never break a request
+        log.warning("record_model_exchange skipped: %s", exc)
+
+
 def _set_permission_denied_attributes(
     span: trace.Span, result: dict[str, Any]
 ) -> None:

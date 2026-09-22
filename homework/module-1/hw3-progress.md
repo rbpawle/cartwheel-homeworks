@@ -18,9 +18,9 @@ Working note for the Homework 3 walkthrough (`homework/module-1/hw3.md`). Not a 
 - [x] `scenarios/support_scenarios.jsonl`
 - [x] `scenarios/support_review.jsonl`
 - [x] `scenarios/monitoring_scenarios.jsonl`
-- [ ] `scenarios/final-results.jsonl`
-- [ ] `reports/smoke-output.txt`
-- [ ] `traces/support_traces.json`
+- [x] `scenarios/final-results.jsonl`
+- [x] `reports/smoke-output.txt`
+- [x] `traces/support_traces.json`
 - [ ] Video, 5 minutes or less (student)
 
 ## Required checks
@@ -30,8 +30,8 @@ Working note for the Homework 3 walkthrough (`homework/module-1/hw3.md`). Not a 
 - [x] Final review: 15 scenarios covering both groups, all 3 roles, every intent; revisions applied, rejects replaced
 - [x] `uv run python -m scenarios.validate scenarios/support_scenarios.jsonl --final` passes (175 coverage / 75 challenge, 5 per damaged record, new IDs)
 - [x] Monitoring set: 50 scenarios, both groups, all 3 roles
-- [ ] Final run: all 250 `completed`
-- [ ] Export succeeds with 250 unique `cartwheel_scenario_id` values
+- [x] Final run: all 250 `completed`
+- [x] Export succeeds with 250 unique `cartwheel_scenario_id` values
 - [ ] Three exported traces checked (one challenge, one multi-turn)
 
 ## Review gates (student decides)
@@ -93,7 +93,17 @@ Key facts: world "today" is 2026-07-01 (`WORLD_ASOF`). Damaged records: orders 8
 - Part C: student reviewed the 15-scenario sample; all accepted (0088 first rejected, then accepted: the caller is support staff, who would have the order number). Student noted that correction scenarios pair unrelated items (e.g. 0247), which is unrealistic, and chose not to regenerate. Wrote `scenarios/support_review.jsonl` (15 accepts, no changes to apply) and `scenarios/monitoring_scenarios.jsonl` (50: 35 coverage / 15 challenge; shopper 25, merchant 15, support 10; all 9 intents; one scenario per damaged record). All scenario files validate (offline).
 - The IDE reformats JSONL files into multi-line JSON when they are opened or saved. It happened to `pilot_scenarios.jsonl`, `pilot-results.jsonl`, and `support_scenarios.jsonl`; all three were restored to one record per line. Check `wc -l` before committing (30 / 30 / 250 / 12 / 15 / 50).
 
+- Part D: final run completed 250/250 on `claude-sonnet-5`. A credit outage at 17:44 on 2026-09-17 failed scenarios support-0206..0250 (HTTP 500 from the provider); the student topped up and resumed, and all 250 completed.
+- HW2 gap found during HW4 prep: `post_message` never set `cartwheel.session_id`, although its docstring requires it and the HW3 reference bundle has it. Fixed at `server/app.py:193` for future runs. The 283 existing final traces were backfilled with synthetic ids (sha256("cartwheel-session::<scenario_id>")[:32], one per scenario, shared across turns) via the Langfuse ingestion API, which merges rather than replaces. Mapping in `analysis/state/session_map.json`.
+- The 45 output-less traces from the outage were deleted from Langfuse (ids recorded in the session scratchpad, `deleted_traces.json`). Remaining: 283 traces, one per user turn, 250 scenarios, all with session ids.
+- Part E: `reports/smoke-output.txt` written (traces per scenario, per role: shopper 203 / merchant 80 / support 56; tool errors: get_order 5, search_help_center 2, list_my_orders 1, escalate_to_human 1; 31 escalations). `traces/support_traces.json` exported: 283 traces, 250 scenarios, 0 missing, 9.7 MB.
+
 ### Next
+
+- HW3: student checks three exported traces (one challenge, one multi-turn) and records the video.
+- HW4 Part A: review-interface proposal pending the student's answers (trace source, scope, expected-result visibility, Langfuse scores, agent suggestions).
+
+### Earlier next steps (done)
 
 - Part D: reseed (`uv run python -m seed.generate`), confirm the server still has `CARTWHEEL_MODEL=claude-sonnet-5`, then run `uv run python -m scenarios.runner scenarios/support_scenarios.jsonl --model claude-sonnet-5 --output scenarios/final-results.jsonl` (about 35+ minutes unattended, live model).
 
