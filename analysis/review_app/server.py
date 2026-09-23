@@ -234,6 +234,7 @@ STATE_DEFAULTS = {
     "patterns.json": {"modes": []},
     "suggestions.json": [],
     "sample_manifest.json": {"batches": {}},
+    "judge_rulings.json": {"rulings": []},
 }
 
 
@@ -247,6 +248,96 @@ def write_state(name: str, payload: Any) -> None:
 
 def label_rows(mode: str) -> list[dict[str, Any]]:
     return _state.read_jsonl(_state.state_path("labels", f"{mode}.jsonl"))
+
+
+# ---------------------------------------------------------------------------
+# judges (Homework 5 Part C)
+# ---------------------------------------------------------------------------
+
+
+def judge_runs() -> dict[str, Any]:
+    """Every registered judge version, with its per-trace verdicts and critiques.
+
+    A judge file caches predictions and critiques under its own ``prompt_hash``,
+    so a version that has been re-registered keeps older caches; only the current
+    hash describes the prompt on disk. Predictions are stored Pass=1, matching the
+    Homework 5 label export rather than the Homework 4 files the review app uses,
+    so both are reported here in Homework 4 polarity (1 = failure present) and the
+    UI never has to know which convention it is holding.
+    """
+    judges_dir = _state.state_path("judges")
+    splits = _state.read_json(_state.state_path("splits.json"), default={})
+    out: dict[str, list[dict[str, Any]]] = {}
+    for path in sorted(judges_dir.glob("*.json")):
+        if path.name.startswith("_history_"):
+            continue
+        judge = _state.read_json(path, default=None) or {}
+        mode, prompt_hash = judge.get("mode"), judge.get("prompt_hash")
+        if not mode or not prompt_hash:
+            continue
+        preds = (judge.get("predictions") or {}).get(prompt_hash, {})
+        critiques = (judge.get("critiques") or {}).get(prompt_hash, {})
+        split_of = {
+            trace_id: name
+            for name, ids in (splits.get(mode) or {}).items()
+            if name in ("train", "dev", "test")
+            for trace_id in ids
+        }
+        out.setdefault(mode, []).append({
+            "judge_id": judge["judge_id"],
+            "version": judge.get("version"),
+            "model": judge.get("model"),
+            "status": judge.get("status"),
+            "prompt_hash": prompt_hash,
+            "created_at": judge.get("created_at"),
+            "traces": {
+                trace_id: {
+                    # Judge files use Pass=1; the review app is Fail=1 throughout.
+                    "verdict": 1 - int(prediction),
+                    "critique": critiques.get(trace_id, ""),
+                    "split": split_of.get(trace_id),
+                }
+                for trace_id, prediction in preds.items()
+            },
+        })
+    for versions in out.values():
+        versions.sort(key=lambda judge: judge.get("version") or 0)
+    return {"modes": out}
+
+
+def save_ruling(body: dict[str, Any]) -> dict[str, Any]:
+    """Record how one judge/human disagreement was resolved.
+
+    The handout requires a decision on every development disagreement before the
+    prompt is edited, so the ruling is stored rather than left in the reviewer's
+    head: ``judge_wrong`` (fix the prompt), ``label_wrong`` (fix the label and
+    recalculate), or ``definition_unclear`` (clarify the boundary).
+    """
+    allowed = {"judge_wrong", "label_wrong", "definition_unclear"}
+    ruling = body.get("ruling")
+    if ruling is not None and ruling not in allowed:
+        return {"error": f"ruling must be one of {sorted(allowed)}"}
+    trace_id, judge_id = body.get("trace_id"), body.get("judge_id")
+    if not trace_id or not judge_id:
+        return {"error": "a ruling needs a trace_id and a judge_id"}
+
+    data = read_state("judge_rulings.json")
+    rows = [
+        row for row in data.get("rulings", [])
+        if not (row.get("trace_id") == trace_id and row.get("judge_id") == judge_id)
+    ]
+    if ruling:  # a null ruling clears it
+        rows.append({
+            "trace_id": trace_id,
+            "judge_id": judge_id,
+            "mode": body.get("mode"),
+            "ruling": ruling,
+            "note": body.get("note", ""),
+            "ts": _utcnow(),
+        })
+    data["rulings"] = rows
+    write_state("judge_rulings.json", data)
+    return {"saved": ruling, "trace_id": trace_id, "rulings": rows}
 
 
 def save_label(mode: str, trace_id: str, label: int, comment: str | None, write_score: bool) -> dict[str, Any]:
@@ -494,6 +585,85 @@ def sample_batch(strategy: str, k: int, exclude_reviewed: bool) -> dict[str, Any
     return {"batch_name": name, **batch}
 
 
+def sample_candidates(mode: str, k: int, strategy: str, exclude_batched: bool) -> dict[str, Any]:
+    """Grow the labeling pool for one registered failure mode (Homework 5, Part A).
+
+    ``next_to_label`` ranks the unlabeled traces by similarity to the mode's confirmed
+    failures (``enrich``) or samples uniformly (``random``). It runs locally over the
+    trace source recorded in the manifest, with no model calls, so this returns in well
+    under a second; the picks become a saved batch, with the helper's own signal kept as
+    each session's reason.
+
+    Two filters the helper cannot apply are applied here. The one-trace-one-batch rule
+    from Homework 4 Part B is ours, and ``next_to_label`` merges a multi-turn
+    conversation under its first turn's id, so it does not know that a later turn of the
+    same conversation already carries a label.
+    """
+    from analysis.helpers import tools
+
+    known = {m["name"] for m in read_state("patterns.json").get("modes", [])}
+    if mode not in known:
+        return {"error": f"no registered failure mode named {mode!r}"}
+    if strategy not in ("enrich", "random"):
+        return {"error": f"unsupported strategy {strategy!r}"}
+    if k < 1:
+        return {"error": "ask for at least one candidate"}
+
+    manifest = read_state("sample_manifest.json")
+    batches = manifest.get("batches") if isinstance(manifest.get("batches"), dict) else {}
+    source = manifest.get("source") or str(EXPORT_PATH)
+
+    labeled = {row["trace_id"] for row in label_rows(mode)}
+    skip = _drawn_trace_ids() if exclude_batched else set()
+    skip |= {
+        tid for session in State.sessions
+        if labeled & set(session["trace_ids"])
+        for tid in session["trace_ids"]
+    }
+
+    # The helper takes no exclusion list, so over-draw by the size of what we will drop.
+    picks = tools.next_to_label(
+        mode=mode, k=k + len(skip), strategy=strategy, trace_source=source
+    )
+
+    sessions, seen = [], set()
+    for pick in picks:
+        trace_id = pick["trace_id"]
+        if trace_id in skip:
+            continue
+        session = next((s for s in State.sessions if trace_id in s["trace_ids"]), None)
+        if session is None or session["session_id"] in seen:
+            continue
+        seen.add(session["session_id"])
+        sessions.append({
+            "session_id": session["session_id"],
+            "scenario_id": session["scenario_id"],
+            "trace_ids": [trace_id],
+            "reason": pick.get("signal") or strategy,
+        })
+        if len(sessions) >= k:
+            break
+
+    if not sessions:
+        return {"error": f"no unlabeled candidates left for {mode!r}"}
+
+    batch = {
+        "strategy": f"next_to_label:{strategy}",
+        "mode": mode,
+        "k": k,
+        "selected_at": _utcnow(),
+        "sessions": sessions,
+    }
+    name = f"{mode}_{strategy}_{k}"
+    suffix = 2
+    while name in batches:
+        name, suffix = f"{mode}_{strategy}_{k}_{suffix}", suffix + 1
+    batches[name] = batch
+    manifest["batches"] = batches
+    write_state("sample_manifest.json", manifest)
+    return {"batch_name": name, "requested": k, "found": len(sessions), **batch}
+
+
 # ---------------------------------------------------------------------------
 # progress
 # ---------------------------------------------------------------------------
@@ -577,6 +747,10 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
+        # The UI is read from disk per request, so an edit is live on the next reload.
+        # Without this the browser may still serve its own copy, which reads as the
+        # change not having landed.
+        self.send_header("Cache-Control", "no-store")
         self.end_headers()
         self.wfile.write(body)
 
@@ -637,6 +811,10 @@ class Handler(BaseHTTPRequestHandler):
                     "tools": tool_schemas(),
                     "model_settings": model_settings(model),
                 })
+            if path == "/api/judges":
+                return self._json(judge_runs())
+            if path == "/api/rulings":
+                return self._json(read_state("judge_rulings.json"))
             if path == "/api/dimensions":
                 return self._json(dimension_counts())
             if path == "/api/progress":
@@ -676,6 +854,13 @@ class Handler(BaseHTTPRequestHandler):
                     return self._json(sample_batch(
                         body.get("strategy", "diversity"), int(body.get("k", 15)),
                         bool(body.get("exclude_reviewed", True))))
+                if path == "/api/rulings":
+                    return self._json(save_ruling(body))
+                if path == "/api/sample/candidates":
+                    return self._json(sample_candidates(
+                        body.get("mode", ""), int(body.get("k", 20)),
+                        body.get("strategy", "enrich"),
+                        bool(body.get("exclude_batched", True))))
                 if path == "/api/sample/stratified":
                     return self._json(sample_stratified(
                         body.get("dimension", "role"), body.get("per_value") or {},

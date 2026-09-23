@@ -344,6 +344,47 @@ button that was easy to miss, and it makes an applied batch visible rather than 
 - Even splits are deliberate for stratified draws. Proportional allocation would mirror the
   dataset (145 shopper / 60 merchant / 45 support sessions) and add little over a random sample.
 
+### 3.8 Candidates for one failure mode (`POST /api/sample/candidates`)
+
+Homework 5 needs many more labeled cases for the single mode under judgment than open coding
+produced, so the sidebar can grow a mode's labeling pool directly.
+
+`sample_candidates(mode, k, strategy, exclude_batched)` wraps `analysis.helpers.next_to_label`:
+
+- `mode` must name a mode in `patterns.json`; anything else returns
+  `{"error": "no registered failure mode named …"}` rather than raising.
+- `strategy` is `enrich` (bag-of-words neighbors of the mode's confirmed failures) or `random`.
+  `uncertainty` and `disagreement` are rejected: they read `judge_flip_rate` and
+  `code_vs_judge_conflict` trace features that only exist once judges have run.
+- The trace source is the `source` recorded in `sample_manifest.json`, falling back to
+  `traces/support_traces.json`.
+- The picks are saved as a batch named `<mode>_<strategy>_<k>`, with `strategy` recorded as
+  `next_to_label:<strategy>`, the `mode`, and each session's `reason` set to the helper's own
+  signal string, so the manifest records why each trace was proposed.
+
+Two exclusions are applied here because the helper cannot apply them:
+
+- **Already batched.** `next_to_label` takes no exclusion list, so the call over-draws by
+  `len(skip)` and filters afterwards, preserving Homework 4 Part B's one-trace-one-batch rule.
+- **Already labeled at conversation level.** `normalize_traces` merges a multi-turn conversation
+  under its *first* turn's id, so the helper does not know a later turn already carries a label.
+  Any conversation with a label for this mode is skipped whole.
+
+An empty result returns an error rather than saving an empty batch. The response adds
+`requested` and `found` so the UI can say when the pool ran short.
+
+No background job: the helper is local bag-of-words cosine with no model calls, measured at
+0.19 s for k=5 over 250 conversations, including 0.05 s to load and normalize the export. The
+button disables itself while the request is in flight and that is the whole progress treatment.
+
+**UI.** A third block in the sidebar's *draw a batch* section, under "by failure mode":
+a mode dropdown (`#c-mode`, populated from `finalModes()`, so confirmed and frozen modes only),
+a strategy dropdown (`#c-strategy`), a count (`#c-k`, default 20), a `find` button (`#c-run`),
+and a note line (`#c-note`). On success it selects the new batch through the existing
+`loadSaved` / `applyBatch` path, so the drawn sessions become the sidebar filter exactly as a
+strategy draw does. `renderModeOptions()` runs at boot and again inside `savePatterns()`, so a
+mode that has just become confirmed appears without a reload.
+
 ---
 
 ## 4. Review-app quality-of-life changes
@@ -439,6 +480,13 @@ exception in its render function before its event wiring.
 **Saved batches silently dropped.** `tools.select_traces` rewrites `sample_manifest.json` in its
 own shape, so reading the existing `batches` *after* calling it returns a manifest that no longer
 has them. **Rule:** read the batches before calling it; see section 3.2.
+
+**A UI change that had landed looked like it had not.** `index.html` is read from disk on every
+request, so an edit is live on the next reload with no restart — but `_send` set no cache headers,
+leaving the browser free to serve its own copy. A new sidebar control was absent from the page while
+`curl` showed the server returning it, and the next control down was mistaken for the new one.
+**Rule:** send `Cache-Control: no-store` on every response; when a change appears missing, fetch the
+served bytes before editing anything.
 
 ---
 
@@ -633,8 +681,8 @@ ambiguous which trace a digit should apply to.
 | `pyproject.toml` / `uv.lock` | Adds `raindrop-ai` |
 | `analysis/review_app/steps.py` | New: per-step exchange reconstruction |
 | `analysis/review_app/toolset.py` | New: tool schemas and model settings from code |
-| `analysis/review_app/server.py` | Attaches `exchange` per turn; serves `/api/toolset`, `/api/dimensions`, `POST /api/sample`, `/api/sample/stratified`, `/api/sample/save`, `/api/sample/rename`, and `/api/sample/delete`; batch-aware `progress()` |
-| `analysis/review_app/ui/index.html` | Model-exchange and toolset panels; favicon link; three-section sidebar (filters with id paste and chips, draw-a-batch, saved batches); stratified-draw table; selection, popover, and tool-argument fixes; Enter-to-save and editable annotations; supporting-annotations table with mode linking; view-switching CSS fix |
+| `analysis/review_app/server.py` | Attaches `exchange` per turn; serves `/api/toolset`, `/api/dimensions`, `POST /api/sample`, `/api/sample/stratified`, `/api/sample/save`, `/api/sample/rename`, `/api/sample/delete`, and `/api/sample/candidates`; batch-aware `progress()` |
+| `analysis/review_app/ui/index.html` | Model-exchange and toolset panels; favicon link; three-section sidebar (filters with id paste and chips, draw-a-batch, saved batches); stratified-draw table; by-failure-mode candidate draw; selection, popover, and tool-argument fixes; Enter-to-save and editable annotations; supporting-annotations table with mode linking; view-switching CSS fix |
 | `analysis/review_app/ui/favicon.svg` | New |
 | `analysis/state/session_map.json` | Scenario-to-session mapping for the backfilled traces |
 

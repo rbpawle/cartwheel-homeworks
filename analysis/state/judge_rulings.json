@@ -1,0 +1,60 @@
+{
+  "rulings": [
+    {
+      "trace_id": "5f333f8f9edfe3605f1e1eb4efe89d90",
+      "judge_id": "escalation_without_basis-v0",
+      "mode": "escalation_without_basis",
+      "ruling": "label_wrong",
+      "note": "",
+      "ts": "2026-09-23T02:08:26.277471+00:00"
+    },
+    {
+      "trace_id": "7d69ce63089ea3222d415861e1c4af0d",
+      "judge_id": "escalation_without_basis-v0",
+      "mode": "escalation_without_basis",
+      "ruling": "judge_wrong",
+      "note": "",
+      "ts": "2026-09-23T02:08:49.512257+00:00"
+    },
+    {
+      "trace_id": "c1792ce10a864387bcb4896709faa1e4",
+      "judge_id": "escalation_without_basis-v0",
+      "mode": "escalation_without_basis",
+      "ruling": "judge_wrong",
+      "note": "",
+      "ts": "2026-09-23T02:10:03.504308+00:00"
+    },
+    {
+      "trace_id": "8bf914cb679d7c2306e66c9266531e6e",
+      "judge_id": "escalation_without_basis-v0",
+      "mode": "escalation_without_basis",
+      "ruling": "judge_wrong",
+      "note": "the agent appropriately saw that the only way to refund is to escalate",
+      "ts": "2026-09-23T02:10:43.401015+00:00"
+    },
+    {
+      "trace_id": "d391b3ac320a9298aa69c966058559ff",
+      "judge_id": "escalation_without_basis-v0",
+      "mode": "escalation_without_basis",
+      "ruling": "judge_wrong",
+      "note": "there's an invalid data issue, appropriate to escalate",
+      "ts": "2026-09-23T02:11:10.285679+00:00"
+    },
+    {
+      "trace_id": "b287e9426ff02a0039aefb1fe504ef30",
+      "judge_id": "escalation_without_basis-v0",
+      "mode": "escalation_without_basis",
+      "ruling": "judge_wrong",
+      "note": "",
+      "ts": "2026-09-23T02:18:01.593778+00:00"
+    },
+    {
+      "trace_id": "9cbd8c348ed00b8581bce7a663d44e97",
+      "judge_id": "escalation_without_basis-v0",
+      "mode": "escalation_without_basis",
+      "ruling": "judge_wrong",
+      "note": "",
+      "ts": "2026-09-23T02:18:16.974404+00:00"
+    }
+  ]
+}

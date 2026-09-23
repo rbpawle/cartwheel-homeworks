@@ -1,0 +1,12 @@
+{
+  "versions": [
+    {
+      "judge_id": "escalation_without_basis-v0",
+      "prompt_hash": "331c91415735"
+    },
+    {
+      "judge_id": "escalation_without_basis-v1",
+      "prompt_hash": "bfd89458f9c9"
+    }
+  ]
+}

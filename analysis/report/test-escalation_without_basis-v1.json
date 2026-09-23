@@ -1,0 +1,32 @@
+{
+  "judge_id": "escalation_without_basis-v1",
+  "mode": "escalation_without_basis",
+  "model": "gpt-4o-mini",
+  "frozen_at": "2026-09-23T14:57:59.678503+00:00",
+  "split": "test",
+  "tpr": 0.88,
+  "tnr": 0.7333,
+  "tpr_interval": [
+    0.7004,
+    0.9583
+  ],
+  "tnr_interval": [
+    0.4805,
+    0.891
+  ],
+  "agreement": 0.825,
+  "tp": 22,
+  "fn": 3,
+  "tn": 11,
+  "fp": 4,
+  "n": 40,
+  "disagreements": [
+    "355775e4396feea07d8bac2e3ed13e37",
+    "3723333170ffeaf6caeec67f252e8846",
+    "37be421a6b52b2271ee3622c02a90228",
+    "48820dfd2becc1c8db57e3addfd49e92",
+    "4eab365b0badd2740bc0b5b8dba5ebee",
+    "b13202fe4b88c8ddcbe26f0a6657a675",
+    "dffa6a59ed981e9f422c3f74bb99793f"
+  ]
+}

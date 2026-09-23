@@ -47,6 +47,14 @@
   #f-ids { font-size: 12px; padding: 3px; border: 1px solid var(--line); border-radius: 4px; resize: vertical; font-family: ui-monospace, Menlo, monospace; }
   #d-table { font-size: 12px; margin: 4px 0; }
   #d-table th, #d-table td { padding: 2px 5px; }
+  .judge { margin-top: 4px; padding: 5px 6px; border-radius: 4px; background: #faf9f7; border: 1px solid var(--line); }
+  .judge.conflict { background: #fdf3da; border-color: #e0c169; }
+  .jv { font-size: 11px; padding: 1px 5px; border-radius: 3px; border: 1px solid var(--line); margin-left: 4px; }
+  .jv-pass { background: #e6f1e9; border-color: #9cc4ab; }
+  .jv-fail { background: #f7e7e7; border-color: #cba3a3; }
+  .jv-conflict { background: #f4e2c3; border-color: #d0a85a; }
+  .critique { font-size: 12px; white-space: pre-wrap; margin-top: 3px; }
+  button.on-rule { background: #e8e3f5; border-color: #a99ccd; }
   #list .filters select, #list .filters input { font-size: 12px; padding: 3px; border: 1px solid var(--line); border-radius: 4px; background: #fff; }
   .row { padding: 7px 9px; border-bottom: 1px solid var(--line); cursor: pointer; font-size: 12px; }
   .row:hover { background: #f4f2ee; }
@@ -135,7 +143,8 @@
       <select id="f-group"><option value="">group: all</option><option>coverage</option><option>challenge</option></select>
       <select id="f-role"><option value="">role: all</option><option>shopper</option><option>merchant</option><option>support</option></select>
       <select id="f-intent"><option value="">intent: all</option></select>
-      <select id="f-state"><option value="">reviewed: all</option><option value="todo">unreviewed</option><option value="done">reviewed</option><option value="unlabeled">needs labels</option></select>
+      <select id="f-state"><option value="">reviewed: all</option><option value="todo">unreviewed</option><option value="done">reviewed</option><option value="unlabeled">needs labels</option><option value="disagree">judge disagreements</option></select>
+      <select id="f-judge" title="which judge version the disagreement filter and verdicts use"><option value="">judge: latest</option></select>
       <input id="f-text" type="text" placeholder="search text" size="12">
       <textarea id="f-ids" placeholder="paste scenario ids (comma, tab, or line separated)" rows="2" style="flex-basis:100%"></textarea>
       <span class="muted" id="f-ids-note" style="flex-basis:100%"></span>
@@ -163,6 +172,19 @@
         <span class="muted" id="d-note" style="flex-basis:100%"></span>
         <table id="d-table" hidden></table>
         <button class="small" id="d-draw" hidden style="flex-basis:100%">draw and filter</button>
+      </div>
+      <div class="filters" style="border-top:0">
+        <span class="muted" style="flex-basis:100%">by failure mode</span>
+        <select id="c-mode" style="flex:1" title="grow the labeling pool for one registered failure mode">
+          <option value="">mode…</option>
+        </select>
+        <select id="c-strategy" title="enrich: neighbors of the confirmed failures · random: uniform">
+          <option value="enrich">enrich</option>
+          <option value="random">random</option>
+        </select>
+        <input id="c-k" type="number" min="1" max="100" value="20" style="width:52px" title="how many candidates">
+        <button class="small" id="c-run">find</button>
+        <span class="muted" id="c-note" style="flex-basis:100%"></span>
       </div>
       <div class="filters" style="border-top:0">
         <span class="muted" style="flex-basis:100%">from what is showing now</span>
@@ -231,9 +253,12 @@ async function boot() {
   [S.meta, S.sessions, S.annotations, S.patterns, S.suggestions, S.labels, S.progress] = await Promise.all([
     api("/api/meta"), api("/api/sessions"), api("/api/annotations").then(d => d.annotations),
     api("/api/patterns"), api("/api/suggestions"), api("/api/labels"), api("/api/progress")]);
+  [S.judges, S.rulings] = await Promise.all([api("/api/judges"), api("/api/rulings")]);
+  renderJudgeOptions();
   $("#meta").textContent = `${S.meta.sessions} sessions · ${S.meta.traces} traces · ${S.meta.source}` + (S.meta.write_scores ? " · scores on" : " · scores off");
   const intents = [...new Set(S.sessions.map(s => s.intent))].filter(Boolean).sort();
   $("#f-intent").innerHTML = `<option value="">intent: all</option>` + intents.map(i => `<option>${i}</option>`).join("");
+  renderModeOptions();
   await loadSaved();
   await loadDimensions();
   renderRows();
@@ -282,6 +307,7 @@ function filtered() {
     (!S.sample || S.sample.ids.has(s.session_id)) &&
     (!g || s.scenario_group === g) && (!r || s.role === r) && (!i || s.intent === i) &&
     (!st || (st === "unlabeled" ? labelProgress(s).done < labelProgress(s).total
+           : st === "disagree" ? sessionDisagrees(s)
                                  : (st === "done") === done.has(s.session_id))) &&
     (!t || (s.opening + " " + s.scenario_id).toLowerCase().includes(t)));
 }
@@ -299,6 +325,38 @@ $("#s-run").onclick = async () => {
   await loadDimensions(); renderDimension();
   refreshProgress();
 };
+
+/* Candidates for one failure mode (Homework 5, Part A). next_to_label runs locally over
+   the recorded trace source, so this returns in well under a second and needs no
+   progress reporting beyond the button's own disabled state. */
+function renderModeOptions() {
+  const select = $("#c-mode"), current = select.value;
+  const modes = finalModes().map(m => m.name);
+  select.innerHTML = `<option value="">mode…</option>`
+    + modes.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join("");
+  if (modes.includes(current)) select.value = current;
+}
+$("#c-run").onclick = async () => {
+  const mode = $("#c-mode").value, strategy = $("#c-strategy").value, k = +$("#c-k").value;
+  if (!mode) { $("#c-note").textContent = "pick a failure mode first"; return; }
+  const button = $("#c-run");
+  button.disabled = true;
+  $("#c-note").textContent = "finding…";
+  try {
+    const res = await api("/api/sample/candidates", {mode, strategy, k, exclude_batched: true});
+    if (res.error) { $("#c-note").textContent = res.error.split("\n").pop().slice(0, 120); return; }
+    S.sample = {name: res.batch_name, ids: new Set(res.sessions.map(s => s.session_id)),
+                reasons: Object.fromEntries(res.sessions.map(s => [s.session_id, s.reason]))};
+    await loadSaved(res.batch_name);
+    applyBatch(res.batch_name);
+    await loadDimensions(); renderDimension();
+    refreshProgress();
+    $("#c-note").textContent = `${res.batch_name}: ${res.found} of ${res.requested} requested`;
+  } finally {
+    button.disabled = false;
+  }
+};
+
 /* saved sample sets: read from sample_manifest.json, applied as the sidebar filter */
 function stamp(iso) {
   if (!iso) return "";
@@ -979,9 +1037,95 @@ async function savePatterns() {
   reconcileAll();
   S.patterns = await api("/api/patterns", S.patterns);
   renderTaxonomy(); renderAnnotationTable(); renderRail(); renderRows(); refreshProgress();
+  renderModeOptions();  // a mode that just became confirmed is a candidate source now
 }
 
 /* ------------------------------------------------------------ labeling */
+/* ------------------------------------------------- judge verdicts (HW5 C) */
+/* Verdicts arrive from /api/judges already converted to the review app's
+   convention (1 = failure present), so they compare directly with a human label. */
+function activeJudge(mode) {
+  const versions = ((S.judges || {}).modes || {})[mode] || [];
+  if (!versions.length) return null;
+  const wanted = (S.judgeVersion || {})[mode];
+  return versions.find(j => j.judge_id === wanted) || versions[versions.length - 1];
+}
+/* One selector across every mode that has judges. Each option names a single
+   judge_id, so picking one pins that mode and leaves the others on their latest
+   version -- comparing v0 and v1 of the same mode is the point, and a global
+   "version 1" would be meaningless once two modes have different version counts. */
+function renderJudgeOptions() {
+  const byMode = (S.judges || {}).modes || {};
+  const groups = Object.entries(byMode).filter(([, v]) => v.length);
+  $("#f-judge").innerHTML = `<option value="">judge: latest</option>`
+    + groups.map(([mode, versions]) => `<optgroup label="${esc(mode)}">`
+        + versions.map(j => `<option value="${esc(j.judge_id)}">${esc(j.judge_id)}`
+            + `${j.status === "frozen" ? " (frozen)" : ""} · ${Object.keys(j.traces).length} scored</option>`).join("")
+      + `</optgroup>`).join("");
+  const current = Object.values(S.judgeVersion || {})[0];
+  if (current) $("#f-judge").value = current;
+}
+$("#f-judge").onchange = () => {
+  const judgeId = $("#f-judge").value;
+  S.judgeVersion = {};
+  if (judgeId) {
+    for (const [mode, versions] of Object.entries((S.judges || {}).modes || {})) {
+      if (versions.some(j => j.judge_id === judgeId)) S.judgeVersion[mode] = judgeId;
+    }
+  }
+  renderRows(); renderRail();
+};
+function judgeVerdict(mode, traceId) {
+  const judge = activeJudge(mode);
+  const hit = judge && judge.traces[traceId];
+  return hit ? {judge, ...hit} : null;
+}
+function rulingFor(judgeId, traceId) {
+  return ((S.rulings || {}).rulings || []).find(
+    r => r.judge_id === judgeId && r.trace_id === traceId) || null;
+}
+/* A disagreement is only meaningful once the human has labelled the trace, so an
+   unlabelled trace is never counted as one. */
+function disagrees(mode, traceId) {
+  const v = judgeVerdict(mode, traceId);
+  if (!v) return false;
+  const row = (S.labels[mode] || []).find(r => r.trace_id === traceId);
+  return !!row && row.label !== v.verdict;
+}
+/* A trace that has been ruled on stays in the filter even once the disagreement is
+   resolved. Fixing a label removes the conflict, and dropping the session from the
+   list at that moment hides the work just done and makes the remaining count jump. */
+function sessionDisagrees(session) {
+  return finalModes().some(m => (session.trace_ids || []).some(t => {
+    if (disagrees(m.name, t)) return true;
+    const judge = activeJudge(m.name);
+    return !!judge && !!rulingFor(judge.judge_id, t);
+  }));
+}
+const RULINGS = [["judge_wrong", "judge wrong"], ["label_wrong", "my label wrong"],
+                 ["definition_unclear", "definition unclear"]];
+function judgeBlock(mode, traceId, humanLabel) {
+  const v = judgeVerdict(mode, traceId);
+  if (!v) return "";
+  const conflict = humanLabel !== null && humanLabel !== v.verdict;
+  const ruled = rulingFor(v.judge.judge_id, traceId);
+  return `<div class="judge ${conflict ? "conflict" : ""}">
+    <div>
+      <span class="muted">${esc(v.judge.judge_id)}${v.split ? " · " + v.split : ""}</span>
+      <span class="jv ${v.verdict === 1 ? "jv-fail" : "jv-pass"}">judge: ${v.verdict === 1 ? "Fail" : "Pass"}</span>
+      ${conflict ? `<span class="jv jv-conflict">disagrees</span>` : ""}
+    </div>
+    ${v.critique ? `<details style="margin-top:4px"><summary class="muted">critique</summary>
+      <div class="critique">${esc(v.critique)}</div></details>` : ""}
+    ${conflict || ruled ? `<div class="actions" style="margin-top:4px">
+      ${RULINGS.map(([key, text]) => `<button class="small ${ruled && ruled.ruling === key ? "on-rule" : ""}"
+          data-rule="${key}" data-rt="${traceId}" data-rj="${esc(v.judge.judge_id)}"
+          data-rm="${esc(mode)}">${text}</button>`).join("")}
+      ${ruled ? `<div class="muted" style="margin-top:3px">ruled: ${esc(ruled.ruling)}${ruled.note ? " — " + esc(ruled.note) : ""}${conflict ? "" : " · resolved"}</div>` : ""}
+    </div>` : ""}
+  </div>`;
+}
+
 function renderLabelRail() {
   const modes = finalModes(), s = S.session;
   if (!s) { $("#notes").innerHTML = `<div class="muted">pick a session</div>`; return; }
@@ -1003,6 +1147,7 @@ function renderLabelRail() {
             <div>${esc(m.name)}</div>
             <button class="pill ${v === 1 ? "on-fail" : ""}" data-t="${tid}" data-m="${esc(m.name)}" data-v="1">Fail</button>
             <button class="pill ${v === 0 ? "on-pass" : ""}" data-t="${tid}" data-m="${esc(m.name)}" data-v="0">Pass</button>
+            ${judgeBlock(m.name, tid, v)}
           </div>`;
         }).join("")}
       </div>`).join("")}
@@ -1016,6 +1161,16 @@ function renderLabelRail() {
     if (res.score_error) alert("saved locally, Langfuse score failed:\n" + res.score_error);
     S.labels = await api("/api/labels");
     renderLabelRail(); renderRows(); refreshProgress();
+  });
+  $("#notes").querySelectorAll("[data-rule]").forEach(b => b.onclick = async () => {
+    const existing = rulingFor(b.dataset.rj, b.dataset.rt);
+    const same = existing && existing.ruling === b.dataset.rule;
+    const note = same ? "" : (prompt("Why? (optional)", existing ? existing.note : "") ?? "");
+    S.rulings = await api("/api/rulings", {
+      trace_id: b.dataset.rt, judge_id: b.dataset.rj, mode: b.dataset.rm,
+      ruling: same ? null : b.dataset.rule, note,   // clicking the set ruling clears it
+    }).then(() => api("/api/rulings"));
+    renderLabelRail(); renderRows();
   });
 }
 

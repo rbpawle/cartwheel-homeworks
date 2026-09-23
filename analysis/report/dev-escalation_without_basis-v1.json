@@ -1,0 +1,30 @@
+{
+  "judge_id": "escalation_without_basis-v1",
+  "mode": "escalation_without_basis",
+  "model": "gpt-4o-mini",
+  "prompt": "analysis/prompts/escalation_without_basis-v1.txt",
+  "split": "dev",
+  "tpr": 0.8333,
+  "tnr": 0.9375,
+  "tpr_interval": [
+    0.6415,
+    0.9332
+  ],
+  "tnr_interval": [
+    0.7167,
+    0.9889
+  ],
+  "agreement": 0.875,
+  "tp": 20,
+  "fn": 4,
+  "tn": 15,
+  "fp": 1,
+  "n": 40,
+  "disagreements": [
+    "4c32f422444e7cc009dab75c210ef8ee",
+    "7d69ce63089ea3222d415861e1c4af0d",
+    "8bf914cb679d7c2306e66c9266531e6e",
+    "b287e9426ff02a0039aefb1fe504ef30",
+    "d391b3ac320a9298aa69c966058559ff"
+  ]
+}

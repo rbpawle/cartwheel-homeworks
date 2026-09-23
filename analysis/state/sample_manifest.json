@@ -907,6 +907,174 @@
           "reason": "reviewed from the random_15 draw, moved here"
         }
       ]
+    },
+    "escalation_without_basis_enrich_20": {
+      "strategy": "next_to_label:enrich",
+      "mode": "escalation_without_basis",
+      "k": 20,
+      "selected_at": "2026-09-22T17:07:48.092154+00:00",
+      "sessions": [
+        {
+          "session_id": "a73c0e263705d1c07c385e93da15aac7",
+          "scenario_id": "support-0240",
+          "trace_ids": [
+            "353ec31259e07c8814bf58a01931b31a"
+          ],
+          "reason": "semantic neighbor of a confirmed failure"
+        },
+        {
+          "session_id": "12159eb4bea74e16302a4b5e4dceb384",
+          "scenario_id": "support-0073",
+          "trace_ids": [
+            "69df9136bc8a55f2e671f880296cab1e"
+          ],
+          "reason": "semantic neighbor of a confirmed failure"
+        },
+        {
+          "session_id": "a8a7fa6c68c48bd1bfcefc898fc7887a",
+          "scenario_id": "support-0095",
+          "trace_ids": [
+            "370396b6d32e1e6ffbc6a466c8c7d1f9"
+          ],
+          "reason": "semantic neighbor of a confirmed failure"
+        },
+        {
+          "session_id": "9cad67590590695873433eb2333faf2d",
+          "scenario_id": "support-0098",
+          "trace_ids": [
+            "adaa9f8055aa7926d66e963289b6c304"
+          ],
+          "reason": "semantic neighbor of a confirmed failure"
+        },
+        {
+          "session_id": "4a6399a740463dd3d17fbd78294aeeca",
+          "scenario_id": "support-0108",
+          "trace_ids": [
+            "1dc00636d8393460fec6606303bd9873"
+          ],
+          "reason": "semantic neighbor of a confirmed failure"
+        },
+        {
+          "session_id": "86efe88b5faa45eb8faad2ffa0f6e21e",
+          "scenario_id": "support-0224",
+          "trace_ids": [
+            "3b6fd0b01118703499da0e7211e4872f"
+          ],
+          "reason": "semantic neighbor of a confirmed failure"
+        },
+        {
+          "session_id": "a97886ac2e107d06849973fd383e6aa6",
+          "scenario_id": "support-0033",
+          "trace_ids": [
+            "37be421a6b52b2271ee3622c02a90228"
+          ],
+          "reason": "semantic neighbor of a confirmed failure"
+        },
+        {
+          "session_id": "cab3447514971fc29fa62e2b54bec1f2",
+          "scenario_id": "support-0102",
+          "trace_ids": [
+            "6d2f9b74220c58b6fa6dbeae2c42cd03"
+          ],
+          "reason": "semantic neighbor of a confirmed failure"
+        },
+        {
+          "session_id": "2bae1cbd4d16ab9eebcea6a976607a20",
+          "scenario_id": "support-0107",
+          "trace_ids": [
+            "fa2d3bc8787cafe83bc887363fcaf6cf"
+          ],
+          "reason": "semantic neighbor of a confirmed failure"
+        },
+        {
+          "session_id": "094c6f5db463b0229655a8594ac27f35",
+          "scenario_id": "support-0110",
+          "trace_ids": [
+            "d75ef185e9f7c081ebb7242fc35e9b1e"
+          ],
+          "reason": "semantic neighbor of a confirmed failure"
+        },
+        {
+          "session_id": "dbeb2b91b10087406401f3816abc969c",
+          "scenario_id": "support-0225",
+          "trace_ids": [
+            "195e57d1f60d59d7ea252848084e7e6d"
+          ],
+          "reason": "semantic neighbor of a confirmed failure"
+        },
+        {
+          "session_id": "546270f5aa4cd78d6edea5bde54fd988",
+          "scenario_id": "support-0061",
+          "trace_ids": [
+            "3bf089cc592eb5e138b58edf80c0da53"
+          ],
+          "reason": "semantic neighbor of a confirmed failure"
+        },
+        {
+          "session_id": "8ae8220a420c4e7f167c4847a3a71dee",
+          "scenario_id": "support-0106",
+          "trace_ids": [
+            "a1e8e1c0dc6a43a1c0e0da678903796e"
+          ],
+          "reason": "semantic neighbor of a confirmed failure"
+        },
+        {
+          "session_id": "3eb7d715edf10866457657c0f47c9c5e",
+          "scenario_id": "support-0091",
+          "trace_ids": [
+            "919526df29a4fa9cfea825232d4e528d"
+          ],
+          "reason": "semantic neighbor of a confirmed failure"
+        },
+        {
+          "session_id": "0d5665893b7f2003b77741e77f983439",
+          "scenario_id": "support-0094",
+          "trace_ids": [
+            "629afb9147f21a0cc3f3ea1a4224ad1c"
+          ],
+          "reason": "semantic neighbor of a confirmed failure"
+        },
+        {
+          "session_id": "087f1d1fd87ed0b115fee02c222ef51a",
+          "scenario_id": "support-0153",
+          "trace_ids": [
+            "62ab3f37c87f6be65b1ead9eafcef7b2"
+          ],
+          "reason": "semantic neighbor of a confirmed failure"
+        },
+        {
+          "session_id": "652faa32cf6958b367b4ef2a8211a145",
+          "scenario_id": "support-0176",
+          "trace_ids": [
+            "878fb5d207766152e2a08a264e9c3cfa"
+          ],
+          "reason": "semantic neighbor of a confirmed failure"
+        },
+        {
+          "session_id": "9bbcb01e0b61c58d2a7b02e689ebd9bd",
+          "scenario_id": "support-0182",
+          "trace_ids": [
+            "4eab365b0badd2740bc0b5b8dba5ebee"
+          ],
+          "reason": "semantic neighbor of a confirmed failure"
+        },
+        {
+          "session_id": "2234f86c1b54e2efe8951dc06f3fcb98",
+          "scenario_id": "support-0097",
+          "trace_ids": [
+            "7cc11377adec8c55245d218ab33ecc63"
+          ],
+          "reason": "semantic neighbor of a confirmed failure"
+        },
+        {
+          "session_id": "a3c39694a71ebd044ea542ec28f5637b",
+          "scenario_id": "support-0193",
+          "trace_ids": [
+            "28dcca224ecb450fc556c0d2cf13cff9"
+          ],
+          "reason": "semantic neighbor of a confirmed failure"
+        }
+      ]
     }
   }
 }
