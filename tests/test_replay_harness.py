@@ -87,3 +87,19 @@ def test_judge_trace_text_uses_the_hw5_normalized_roles() -> None:
         'tool_result: {"ok": true, "status": "shipped"}',
         "assistant: It shipped today.",
     ]
+
+
+def test_tool_called_any_passes_when_any_listed_tool_ran(tmp_path) -> None:
+    from replay.rollout import apply_checks
+
+    check = {"check": "tool_called_any", "names": ["find_order", "get_order", "list_my_orders"]}
+    case = {"expected": {"checks": [check]}}
+
+    def transcript(*names: str) -> dict:
+        return {"final_reply": "", "turns": [{"tool_calls": [{"name": n} for n in names]}]}
+
+    db = tmp_path / "empty.db"
+    assert apply_checks(case, transcript("search_help_center", "find_order"), db)["passed"]
+    assert apply_checks(case, transcript("list_my_orders", "get_order"), db)["passed"]
+    assert not apply_checks(case, transcript("search_help_center"), db)["passed"]
+    assert not apply_checks(case, transcript(), db)["passed"]

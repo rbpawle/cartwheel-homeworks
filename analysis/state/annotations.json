@@ -1407,6 +1407,28 @@
       "note": "escalation unnecessary",
       "ts": "2026-09-22T17:18:19.687546+00:00",
       "author": "human"
+    },
+    {
+      "annotation_id": "b14f25deb273",
+      "session_id": "aacddce87b7d53e0b33e04809c1a0d51",
+      "trace_id": "c1792ce10a864387bcb4896709faa1e4",
+      "scenario_id": "support-0059",
+      "block_index": "1:3",
+      "quote": "So there's nothing further to process here",
+      "note": "actually there's something to process",
+      "ts": "2026-09-24T01:50:38.574242+00:00",
+      "author": "human"
+    },
+    {
+      "annotation_id": "d36d21e60f2d",
+      "session_id": "5ae418fc26e488a2a8606569f5437c1b",
+      "trace_id": "8de5d1a8c9d784576541bc437cb9ea54",
+      "scenario_id": "support-0012",
+      "block_index": "1:3",
+      "quote": "Let me know if you want help checking a specific order or recent refund on your store.",
+      "note": "dont' be a bitch",
+      "ts": "2026-09-25T15:00:24.207651+00:00",
+      "author": "human"
     }
   ]
 }

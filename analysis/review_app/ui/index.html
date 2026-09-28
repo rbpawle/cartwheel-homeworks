@@ -146,7 +146,7 @@
       <select id="f-state"><option value="">reviewed: all</option><option value="todo">unreviewed</option><option value="done">reviewed</option><option value="unlabeled">needs labels</option><option value="disagree">judge disagreements</option></select>
       <select id="f-judge" title="which judge version the disagreement filter and verdicts use"><option value="">judge: latest</option></select>
       <input id="f-text" type="text" placeholder="search text" size="12">
-      <textarea id="f-ids" placeholder="paste scenario ids (comma, tab, or line separated)" rows="2" style="flex-basis:100%"></textarea>
+      <textarea id="f-ids" placeholder="paste scenario ids or trace ids (comma, tab, or line separated)" rows="2" style="flex-basis:100%"></textarea>
       <span class="muted" id="f-ids-note" style="flex-basis:100%"></span>
       <div id="chips" style="flex-basis:100%"></div>
     </div>
@@ -285,15 +285,18 @@ async function boot() {
 
 /* ------------------------------------------------------------------ list */
 function annotatedIds() { return new Set(S.annotations.map(a => a.session_id)); }
-/* Accepts "support-0123", bare numbers, and any mix of commas, tabs, spaces, newlines. */
+/* Accepts "support-0123", bare numbers, trace ids, and any mix of commas, tabs, spaces, newlines. */
 function idFilter() {
   const raw = $("#f-ids").value.trim();
   if (!raw) { $("#f-ids-note").textContent = ""; return null; }
   const known = new Set(S.sessions.map(s => s.scenario_id));
+  const byTrace = new Map(S.sessions.flatMap(s => (s.trace_ids || []).map(t => [t.toLowerCase(), s.scenario_id])));
   const wanted = new Set(), missing = [];
   raw.split(/[\s,;]+/).filter(Boolean).forEach(token => {
     const id = /^\d+$/.test(token) ? "support-" + token.padStart(4, "0") : token;
-    if (known.has(id)) wanted.add(id); else missing.push(token);
+    if (known.has(id)) wanted.add(id);
+    else if (byTrace.has(token.toLowerCase())) wanted.add(byTrace.get(token.toLowerCase()));
+    else missing.push(token);
   });
   $("#f-ids-note").textContent = `${wanted.size} matched` + (missing.length ? ` · not found: ${missing.slice(0, 5).join(", ")}${missing.length > 5 ? "…" : ""}` : "");
   return wanted;

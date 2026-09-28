@@ -97,22 +97,11 @@ Use a code check when the result is an exact tool call or database value. Use an
 Run one unclassified case five times:
 
 ```bash
-uv run python scripts/export_harbor_tasks.py \
-  --baseline \
-  --case e-001
-PYTHONPATH="$PWD" harbor run \
-  --env-file .env \
-  -p .harbor/tasks \
-  -a harbor_adapter.agent:CartwheelAgent \
-  -m "$CARTWHEEL_MODEL" \
-  -e docker \
-  --n-attempts 5 \
-  --job-name hw6-baseline-e-001 \
-  --jobs-dir .harbor/jobs
-uv run python scripts/summarize_harbor_job.py \
-  .harbor/jobs/hw6-baseline-e-001 \
-  --expected-attempts 5 \
-  --classify
+uv run python scripts/export_harbor_tasks.py --baseline --case e-001
+  
+PYTHONPATH="$PWD" harbor run --env-file .env -p .harbor/tasks -a harbor_adapter.agent:CartwheelAgent -m "$CARTWHEEL_MODEL" -e docker --n-attempts 5 --job-name hw6-baseline-e-001 --jobs-dir .harbor/jobs
+
+uv run python scripts/summarize_harbor_job.py .harbor/jobs/hw6-baseline-e-001 --expected-attempts 5 --classify
 ```
 
 The summary tells you what to record:
@@ -248,3 +237,7 @@ Record one continuous video of no more than 5 minutes:
 3. Explain pass@k and pass^k using your results.
 4. Show the two GitHub Actions runs and explain the second result.
 5. Show the capability result after 5, 10, and 15 observed runs.
+
+
+
+PYTHONPATH="$PWD" harbor run --env-file .env -p .harbor/tasks -a harbor_adapter.agent:CartwheelAgent -m "$CARTWHEEL_MODEL" -e docker --n-attempts 5 -n 2 --verifier-timeout-multiplier 3 --job-name hw6-baseline-support-0099-r2 --jobs-dir .harbor/jobs

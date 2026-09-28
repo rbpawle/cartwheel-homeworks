@@ -250,6 +250,11 @@ def _one_check(
         ok = any(c["name"] == check["name"] for c in calls)
         return (ok, f"tool {check['name']} called")
 
+    if kind == "tool_called_any":
+        calls = _all_tool_calls(transcript, check.get("turn"))
+        seen = sorted({c["name"] for c in calls if c["name"] in check["names"]})
+        return (bool(seen), f"one of {check['names']} called (saw {seen or 'none'})")
+
     if kind == "tool_result_permission_denied":
         for call in _all_tool_calls(transcript, None):
             result = call["result"]

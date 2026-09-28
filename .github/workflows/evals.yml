@@ -26,14 +26,42 @@ jobs:
       PYTHONPATH: ${{ github.workspace }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-      TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
-      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+#      TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+#      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
     steps:
       - uses: actions/checkout@v4
         with:
           lfs: true
       - uses: astral-sh/setup-uv@v5
-      - run: uv sync
+      - name: Pull dependencies
+        run: uv sync
+      - name: Install Harbor
+        run: |
+          uv tool install 'harbor==0.23.0'
+          echo "$(uv tool dir --bin)" >> "$GITHUB_PATH"
+      - name: Generate tasks
+        run: uv run python scripts/export_harbor_tasks.py
+      - name: Run every task in fresh Docker container
+        run: >-                                                                   
+            harbor run
+            -p .harbor/tasks
+            -a harbor_adapter.agent:CartwheelAgent
+            -m "$CARTWHEEL_MODEL"
+            -e docker
+            --n-attempts 5
+            --job-name hw6-evals
+            --jobs-dir .harbor/jobs
+            --yes
+            --verifier-timeout-multiplier 3
+      - name: Summarize job
+        if: always()
+        run: uv run python scripts/summarize_harbor_job.py .harbor/jobs/hw6-evals --expected-attempts 5
+      - name: Upload jobs artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: run-results
+          path: .harbor/jobs/hw6-evals
 
       # Homework 6: install Harbor 0.23.0.
       # Generate the classified tasks in eval_cases/cases.jsonl.

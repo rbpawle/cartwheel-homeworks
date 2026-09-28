@@ -326,3 +326,38 @@ def test_capability_analysis_uses_5_10_and_15_observed_runs(
         "10",
         "15",
     }
+
+
+def test_summary_reads_per_trial_results_when_job_lists_none(tmp_path: Path) -> None:
+    cases_path = tmp_path / "cases.jsonl"
+    case = {
+        "id": "e-301",
+        "mode": "response_quality",
+        "input": {"role": "shopper", "user_id": 1, "message": "hello"},
+        "initial_state": {"world": "reseed", "fixture": None, "assumes": "demo"},
+        "expected": {
+            "assertions": ["Answer the shopper."],
+            "checks": [{"check": "tool_called", "name": "get_order"}],
+        },
+    }
+    _write_cases(cases_path, [case])
+
+    job = tmp_path / "job"
+    job.mkdir()
+    (job / "result.json").write_text(json.dumps({"n_total_trials": 5, "stats": {}}))
+    for index in range(5):
+        trial_dir = job / f"e-301__t{index}"
+        trial_dir.mkdir()
+        (trial_dir / "result.json").write_text(json.dumps({
+            "task_name": "cartwheel/evals__e-301",
+            "trial_name": f"e-301__t{index}",
+            "started_at": f"2026-09-25T10:0{index}:00",
+            "verifier_result": {"rewards": {"reward": 1.0}},
+            "exception_info": None,
+        }))
+
+    markdown, _ = summarize_job(
+        job, cases_path=cases_path, expected_attempts=5, classify=True
+    )
+
+    assert "| `e-301` | 5 | 5 | `kind: \"regression\"` |" in markdown
