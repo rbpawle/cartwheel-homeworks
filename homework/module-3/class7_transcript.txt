@@ -1,0 +1,470 @@
+Hamel Husain: Hello.
+ Shreya Shankar: you I'm super excited for today.
+ Hamel Husain: Yeah, me too.
+ Shreya Shankar: Okay, hopefully you can.
+ Shreya Shankar: See my screen. Okay, this is all we need today.
+ Hamel Husain: Can see it.
+ Hamel Husain: Let me… Disable the waiting room.
+ Shreya Shankar: Cool.
+ Hamel Husain: And I made up to call it.
+ Shreya Shankar: Sweet.
+ Shreya Shankar: All right. Happy Saturday, everybody.
+ Shreya Shankar: Why am I getting notifications about waiting? Okay.
+ Shreya Shankar: I'm really happy. I feel like people are continuing to come to class. I
+ Shreya Shankar: Typically, at this time of the course, people are, like, done with AI eval. So, no, thanks everybody for continuing to come.
+ Shreya Shankar: I know it's a lot, you know, we have, like, 9 lessons in this course, so it's really awesome that folks are powering through to the end.
+ Shreya Shankar: Makes us really happy.
+ Shreya Shankar: So let's get started. Today we're going to talk about monitoring, kind of the dual of continuous integration from Wednesday's lecture. And then, I'm really excited about this, but we're going to talk a little bit about safety, and specifically, we're going to go into the Hugging Face incident. I know that there's a lot of information out there about what happened. We don't actually know what fully happened, but we're going to go through what happened, and kind of what that means for AI evals, and how we can think
+ Shreya Shankar: think about being quote unquote safe when we're deploying AI agents.
+ Shreya Shankar: And I'm gonna speak from a very, like, practical perspective of somebody who builds and deploys agents. Like, I'm not gonna speak from the policy perspective, or, you know, what we should be doing, or how we should, you know, give UBI to everybody out there, because AI agents are gonna take over all of our jobs. Like, that's… that's not the…
+ Shreya Shankar: the angle that I'm trying to go for, that I'm going for a very practical angle, so I'm sorry if I'm not going to cover what everybody wants, Linda.
+ Shreya Shankar: All right, so last time, specifically, we talked about continuous integration, and we talked about it in the lens of AI. So, for actually, first, we talked about retrieval a little bit, the component of AI agents, and then we talked about, okay, how we can take all of our axial codes
+ Shreya Shankar: And turn those into test cases for evals. And I'll go over that in the next slide, just to refresh and remind everybody, because I know we skipped through a lot of it in the last lecture.
+ Shreya Shankar: We talked about metrics such as PASS at K. We didn't get into actually how to do this with GitHub Actions, but it was in the homework, so if folks have been doing the homework, then they probably have experience with that.
+ Shreya Shankar: Then today we're going to do a little bit of recap of CI. And then we're going to talk about what continuous deployment or CD means. So specifically monitoring your agents, your traces, doing that in production. And then thinking about, you know, how you can visualize that and feed some stuff that you learn from CD back into your evals process. Like how does that connect back into analyze and measure.
+ Shreya Shankar: Then we're gonna look at how to do monitoring in Langfuse, and then we're gonna switch to the safety portion of the lecture today.
+ Shreya Shankar: Any logistics or administrivia that I might have missed, Hamel, before we get into it? I know there's probably some new stuff coming up.
+ Hamel Husain: There's a whole bunch of new stuff on the Maven student portal. Just take a look. We have added a whole bunch of bonus lessons.
+ Shreya Shankar: Yeah.
+ Hamel Husain: Things like how to interview, like, interviewing tips for evals, and then some guest lectures, just take a look.
+ Shreya Shankar: Yes, I'm super excited about the interviews thing that Hamel's gonna lead, by the way. So if you're interested in interviewing for a job, and you want to learn about what the evals part of that interview might look like, definitely go to that session.
+ Shreya Shankar: Alright, so… let's talk about recap of CI. So, remember, we… through this course.
+ Shreya Shankar: We looked at our data, we looked at our traces, we did open coding on them, we did axial coding, we built up some sort of taxonomy of failure modes. And then the idea was, okay, what do we do with those failure modes, and how do we integrate that into our engineering processes? So.
+ Shreya Shankar: What we did was we showed us… last week, we showed going through those 5 to 8 failure modes, and then we talked about, okay, picking the subset of those failure modes that are actually pretty tricky, not things that you can immediately improve in your prompt. Like, if there was something that was not specified in the prompt, a specification issue, just go and fix that.
+ Shreya Shankar: Otherwise, maybe you want to make an eval.
+ Shreya Shankar: So we pick which ones need automated evaluators, and some ways to think about this are what kinds of failure modes you think are going to regress over time, for example. But if…
+ Shreya Shankar: If there's something that you can fix the prompt directly, definitely just do that.
+ Shreya Shankar: Then what we did was think about, okay, for each one of these failure modes.
+ Shreya Shankar: let's write some tasks that will trigger those failure modes. And you can actually use the traces that you labeled, right, in open coding, and just directly use those, to trigger these failure modes.
+ Shreya Shankar: We also talked about, for these failure modes and for these tests, you want some of the tests to be more stress testing for capabilities, and then you want the other ones to be more regression-style tests, where you expect the agent to always get.
+ Shreya Shankar: And Hamela and I made this controversial claim, is which the eval suite should never 100% be passing for all tasks and all failure modes. So, concretely, to visualize this.
+ Shreya Shankar: all of the failure modes that you might have uncovered during your axial coding might be the rows here, and then all the tasks, which are all the user requests, you know, that are triggered, can be the columns here. And the idea here is
+ Shreya Shankar: Some of the most of these you will want to make sure that your agent can do correctly, but some of them you might imagine might be difficult tasks. And this is maybe Hamel has a really good explanation for why we want some of these not to always be passing. So I'll ask him to say that.
+ Hamel Husain: Yeah, basically, you just want your evals to…
+ Hamel Husain: Sort of act like as a challenge.
+ Hamel Husain: That you… that you need to rise to. And if you don't… if your evals aren't challenging enough, you're not really pushing yourself forward.
+ Hamel Husain: And that's really the idea behind that.
+ Shreya Shankar: Yeah,
+ Shreya Shankar: It also helps you, like, whenever new models come out, then you can just run those on your eval suite, and if your numbers go up, like, that means the model's actually useful. And if the model goes from… if…
+ Shreya Shankar: If it's like 95% to 96%, you're not getting any signal. So you want this suite of evals to be a signal for the North Star of your AI product.
+ Shreya Shankar: We also talked about how big should this test suite be. So I like to keep it as like 30 to 40 tasks. The reason being so this is very different, right, from software engineering, where you might have hundreds of tests or hundreds of unit tests in your code base. This is not unit tests.
+ Shreya Shankar: Right? These are… some of them we expect to fail. The other thing is every invocation of these tasks can be very expensive. You're doing an entire agent rollout on these tasks that is going to cost money.
+ Shreya Shankar: I've seen these
+ Shreya Shankar: CI… I've seen people spend hundreds of dollars on doing this for just 35 to 40 tasks, because people might want to do 5 to 10 trials for each task to get an aggregate score. So just, you know, be judicious here. You want to make it, sweet such that, you know, you could actually run it on code changes and not…
+ Shreya Shankar: Gonna blow the bank.
+ Shreya Shankar: Why I like to give this table view is…
+ Shreya Shankar: you can think of it as, over time, you'll be expanding both horizontally as well as vertically, where you're going to get new failure modes that you observe in production. Horizontally is you're going to add new tasks, to your eval suite, because
+ Shreya Shankar: you're gonna find new instances that trigger the failure modes. And also, you know, as you go over time, you might drop some rows, drop some columns, that's totally fine. Like, think of this as a really evolving, eval set.
+ Shreya Shankar: Okay, so when do people typically run these evals? I'm using the term CI because I really want to map it to software engineering lifecycle, because that's what people use for building AI products. However, I know that this is not like software engineering CI, so.
+ Shreya Shankar: don't, you know, feel like, oh my gosh, like, this is not even, like, unit testing at all. I know it's not. Just think of it as you'd be running these evals when… as you kind of run CI.
+ Shreya Shankar: So I like to run it on pull requests to the application code base, specifically any changes to the prompt, any new tools I'm gonna add to my agent.
+ Shreya Shankar: I like to run these evals. I like to run both regression tasks as well as capability tasks. We talked about this in the lecture, where, you know, some of them you expect to pass, and some of them you don't expect.
+ Shreya Shankar: And, some of these are code-based checks. The other of them are agent… agentic or LLM judge-based checks. And I like to use modal.
+ Shreya Shankar: sandboxes to run these agents and evaluate them, but you can kind of use any infrastructure you like. You can probably even use GitHub Actions that compute to run evals. Hamel, do you have, like, a favorite that you use, or are you also modal?
+ Shreya Shankar: Modal pill, like I am.
+ Hamel Husain: I don't have a favorite, like, I know GitHub Actions really well, because I used to work at GitHub. I used to kind of evangelize GitHub Actions even, but I actually hate it. So, love is, like.
+ Hamel Husain: Yeah, not the right term.
+ Shreya Shankar: No.
+ Shreya Shankar: Okay, so I'm gonna check the questions if there's any…
+ Shreya Shankar: questions around this, but hopefully this is a good overview of what we talked about in CI. Again, we're not going to the nuts and bolts of actually using these tools, that's what the homework is for, but this is to give you an overview of the process of when you run your eval suite, because that's a big question we get all the time. So, the answer to that is you run this whenever you're having a material change to your agent, like.
+ Shreya Shankar: Codebase.
+ Shreya Shankar: Has changed.
+ Shreya Shankar: Okay, so now I want to pose a question, okay.
+ Shreya Shankar: is… is this all you do, right? Like, what happens after you change your codebase? What happens after you merge your PR? Like, are you done? Have you finished evals entirely? Absolutely not, right?
+ Shreya Shankar: This is where monitoring, or continuous deployment, comes into play. So, we talked about CI, where you run your eval cases, you might deploy, which is the second box here. Then, this whole process of monitoring is on actually making sure that you are looking at sample traces in production.
+ Shreya Shankar: making sure that you're continuously finding new rows and columns to add to your eval matrix, and then those end up running in downstream CI. So I'll show you what tools, like the stack that I use to do this.
+ Shreya Shankar: So, I like to run monitoring on a sample of live traffic, and so this is good because, you know, this is stuff that I've never seen in error analysis, and this is stuff that's definitely not in my eval suite. And then I…
+ Shreya Shankar: use my LLM judges online, actually, to try to find new instances of failures. And then I also frequently do error analysis myself, like on a random sample of production traffic, things that maybe my LLM judge has not found. I just look at a random sample, do an error analysis, and see if there are entirely new failure modes that didn't come up when I was doing error analysis for the first time.
+ Shreya Shankar: And this ends up happening quite frequently. I try to do this every week, but honestly, I'm pretty bad at that. Maybe it's, like, every two weeks. But I do find new failure modes. And there's a number of reasons for this, like.
+ Shreya Shankar: maybe… I think it's not that surprising if you're a traditional machine learning person, like you're an MLOps person, you know that if you've heard of the concept called drift.
+ Shreya Shankar: Have folks heard of drift? Maybe thumbs up if you've heard of data drift or behavioral drift. That kind of stuff.
+ Shreya Shankar: occurs all the time in LLM agents. So, user behavior changes, LLM behavior changes.
+ Shreya Shankar: new models come out. Maybe new models don't even come out, and, like, the model provider has changed the model under the hood for you. This drift always happens, so you always do need to be continually doing error analysis on, sample traces.
+ Shreya Shankar: Hamel, I feel like you also… we've had a lot of conversations about drift in LLMs and agents land.
+ Shreya Shankar: I feel like I don't have a particular pointed question to ask you, but I, I want you to start.
+ Hamel Husain: Yeah.
+ Shreya Shankar: Because yeah, yeah.
+ Hamel Husain: No, I mean, so people want to know, like, well, how often do you run your tests? And it's a cost-benefit trade-off, so, like, the…
+ Hamel Husain: cheaper tests are the code-based evals, the more expensive ones are the LLM-based ones, and you need to, sort of think about how much value those evals are giving you.
+ Hamel Husain: The more that they're failing, the more value that they're giving you.
+ Hamel Husain: And if an LM judge is not failing, then it's giving you… it's giving you less value, because it's not telling you… it's not telling… giving you… it's giving you less information. Now, Drift is…
+ Hamel Husain: Something else you need to worry about, too, is, like, sort of related. It's like, you need to make sure that you are incorporating the latest
+ Hamel Husain: sort of changes about your product into your evals as, like, reflecting the current state of the world. And so.
+ Shreya Shankar: Yeah, it's a good way to put it.
+ Hamel Husain: And so, like.
+ Hamel Husain: the amount of times you redo error analysis, like, how often should you do error analysis? Well, it's, roughly, it's like, whenever you make a major change to your
+ Hamel Husain: product, that's one, and then you should also periodically do it. There's no, like, blanket right answer. You have to use some intuition and say, like, okay.
+ Hamel Husain: you know.
+ Hamel Husain: Once you know the details of your evals.
+ Hamel Husain: You should…
+ Hamel Husain: Kind of have an intuition, like, hey, I need to refresh this data. Error analysis is a lifelong, continuous thing. You will just… you're gonna always have to do it.
+ Hamel Husain: And so, it's kind of a trade-off again.
+ Hamel Husain: Error analysis is not free, nothing is free, and you have to, like, balance that against, like, how is your application changing? And, like, what are the level of the changes happening, and how do you want to let that inform how you refresh your data?
+ Shreya Shankar: And you might be wondering, oh man, do I actually have to do this? Like, are Hamel and Shreya selling me snake oil here? Like, I've done one round of error analysis, I've made some evals, like it's probably good enough.
+ Shreya Shankar: ask anybody who's worked in machine learning and done MLOps. Like, nobody is done after they deploy their first model. It is very… this is the same thing here. I promise we are not lying to you. You do need to do some form of this. And again, it, like, depends on the application.
+ Shreya Shankar: All right.
+ Shreya Shankar: So.
+ Shreya Shankar: Alright, so people might wonder, okay, what should we be monitoring on live traffic? So, there's two categories of things that I think people should monitor. So, one is really basic operational metrics. So, these are things that don't require anything that you did with error analysis.
+ Shreya Shankar: It's simply things like, okay, how many traces are we seeing? What is the latency?
+ Shreya Shankar: of the bottle calls, or, you know, from the user's initial request to the funnel request, how many tokens are being used, and turning that into cost. How much…
+ Shreya Shankar: Excuse me, how many model calls per trace? I put escalation right here, because if you're in the cartwheel scenario, like, how many times is the human being invoked if you're building, like, a support agent, and you have some form of human escalation?
+ Shreya Shankar: So these are all things that, you know, you don't need to use LLM judges to run, it's very simple, it's code-based checks. Having all of these is very useful because it might hint at some really big bugs that get introduced into your codebase. So, for example, I have seen the number of tool calls per trace go down to zero.
+ Shreya Shankar: And if I was not measuring that, then I would not know that there was a bug in my agent. And it turned out that there was a bug in the harness. And so, tool calls were returning errors, and, like, there was no way I would have known. And if I just looked at the agent's output, the agent output will say, I'm sorry, like, something is down.
+ Shreya Shankar: Try again later, right? So, it's difficult to…
+ Shreya Shankar: you know, know that there's a bug there, unless you track… you're tracking this metric of, like, number of tool calls per trace. Same things with, like.
+ Shreya Shankar: Trace volume, obviously, you should track, like, anyone knows that you should track your request volume. Latency is useful insofar as it can kind of hint at when model providers are down. Cost is useful.
+ Shreya Shankar: Insofar as, you know, how much you're spending, like, one of the things that I've found recently is a lot of teams, like, simply don't even know how much they're spending on their agents, and you probably want to have some form of that.
+ Shreya Shankar: So anyways, you know, there's all these operational metrics that you could do.
+ Shreya Shankar: And then there are these online evaluators to measure your actual axial codes, the prevalence of those on traces. So you can do code-based checks for every axial code that, admits some sort of code-based implementation. So, one of our failure modes in the cartwheel error analysis was that the agent would cite document IDs for internal documentations.
+ Shreya Shankar: And we didn't really like that, because the end user can't… doesn't really have a way to see those internal document IDs, and that might have been confusing. So you could have a code-based check to simply have a regular expression check whether that internal document ID is exposed in the output.
+ Shreya Shankar: Think of these as deterministic, these are free. You can run these on pretty much all traces, right? There's nothing stopping you from doing that.
+ Shreya Shankar: The other form of checks that we want to run online is these LLM judges. And, we get… there's a lot of confusion here of, oh, should I run my LLM judge in real time, like, when the trace
+ Shreya Shankar: completes, where do I run it? You can totally do this LLM judge. You could… you could think of it as, like, a nightly job, or, like, some sort of data pipeline where you just read a sample of traces for the past 24 hours, run your LLM judge on those traces online.
+ Shreya Shankar: And then write the scores of the LLM judge, either back to LineFuse, if you're using that as your observability database, or whatever you are using.
+ Shreya Shankar: So, I like to write them back to Langfuse, because anyways, anything is stored. We talk about in the course reader, not in the lecture, because it just takes a lot of time, about, okay, how you might want to correct the raw prevalence rate for your errors or bias in the judge.
+ Shreya Shankar: You don't have to do this, it's just, if you want to do it, if you want to be rigorous statistically, you can. The reader describes how to do that, as well as the homeworks will describe that. But I'll show you, kind of, what that might look like in the Langfuse interface.
+ Shreya Shankar: So here we are in Langfuse. Actually, if you were to open up Langfuse for the first time, right, it'll look something like this.
+ Shreya Shankar: hopefully people… Remember, LifeViews, you know, it's not new. You're in your project.
+ Shreya Shankar: Oops. I want to open this, yeah.
+ Shreya Shankar: Alright, so, here are some of the traces that I've logged and done error analysis on. This is the main dashboard. So, one thing you can do in LinkViews is store scores, and so that's what this evaluation portal is all about. So here, right, you can have
+ Shreya Shankar: All of your traces, and then some of these are duplicates, of course.
+ Shreya Shankar: But the idea is…
+ Shreya Shankar: You can store scores associated with every single one of your judges, which is quite nice, because then we can make dashboards on it. And remember, all the LLM judges that we created in this course are binary, so they're gonna have 1 or 0, reverse… verbose or not.
+ Shreya Shankar: You could also trigger evaluators to be running in real time here. I don't actually do that, I have this, offline, but you can create evaluators
+ Shreya Shankar: You can use some of Langfuse's managed LLM judges, so here is where the criteria is predefined for you, like hallucination, helpfulness.
+ Shreya Shankar: I am not a good fan of any of these. Actually, maybe I will…
+ Shreya Shankar: ask Hamel to give the reason why we shouldn't use off-the-shelf evaluators and build our own.
+ Hamel Husain: Do not use off-the-shelf evaluators. If you use off-the-shelf evaluators, I will come out from the screen And.
+ Hamel Husain: And, yell at you, okay? Like, it is the worst thing that you can do. So, like.
+ Hamel Husain: Shreya's showing you on the screen.
+ Hamel Husain: What are you doing with an off-the-shelf evaluator? You're just using somebody else's prompt. This is not even your prompt. It's someone else's prompt.
+ Hamel Husain: That doesn't understand your product.
+ Hamel Husain: That has never looked at your data.
+ Hamel Husain: And you are just blindly.
+ Hamel Husain: Taking that prompt and applying it to your product.
+ Hamel Husain: You're gonna get very bad results if you do this. Just don't.
+ Shreya Shankar: Zoom in and just show you one of these prompts, actually, to really drive the point forward. So, there is a… there's a predefined criteria called correctness, which
+ Shreya Shankar: Everybody who has done axial coding, right, knows that none of your… your correctness is not an axial code that emerges. It's too vague, right? But just take a look.
+ Hamel Husain: Some often when I read the prompt, it's like very apparent and I can always find problems with it. Yeah.
+ Shreya Shankar: Can you read this?
+ Hamel Husain: Yeah, I can read it. I can already see… okay, like, okay.
+ Hamel Husain: So, okay, let's just… I can already see a problem.
+ Hamel Husain: So… In this prompt, is grounding it with an example from a recipe bot.
+ Hamel Husain: And it may be… Yeah, it might be because they're taking our evals course, and the vendors do compete with each other in our evals course. They really do.
+ Hamel Husain: And…
+ Hamel Husain: you know, I'm not surprised to see Recipe… Recipe bought in here. That was… that was the previous homework in this course. We changed it.
+ Hamel Husain: So, like, if you have… If your example in your LLM judge prompt is Recipe Bot.
+ Hamel Husain: How is it gonna work for…
+ Hamel Husain: you know, this e-commerce, or something else. It's not.
+ Hamel Husain: It doesn't even make any sense.
+ Hamel Husain: Most prompts don't make sense.
+ Hamel Husain: They don't even make.
+ Shreya Shankar: accept.
+ Hamel Husain: us.
+ Hamel Husain: That's why I tell you, don't do it. It's very tempting, like, oh, okay, like. this must be a good idea. I'm paying for this tool. This is an enterprise-class tool. I'm paying thousands of dollars a month. Surely, I can just trust it. I don't have time for this.
+ Hamel Husain: Wrong. You cannot trust this stuff. Don't do it. Write your own prompts. Please.
+ Shreya Shankar: Yeah, like, LLM judges are hard, we went through that in a previous lecture, but you do need to, like, work on the prompt, right? So you have some good
+ Shreya Shankar: true pass rate and true fail rate. You don't want it to be totally off.
+ Shreya Shankar: The point that I want to make here, there's two things. One, these categories are so vague. Like, your axial codes should never be something like correctness, because that is so ill-defined, right? Correctness needs to be decomposed into multiple different facets. Those need to be in your axial codes. It needs to be bespoke, specific to your application.
+ Shreya Shankar: The second thing I want to mention is, for these LLM judges.
+ Shreya Shankar: You don't know what query, what generation is, what ground truth is. This is extremely weird to me, because I don't actually know where they're getting ground truth from.
+ Shreya Shankar: It's possible that if ground truth doesn't exist, they will just fill it in with an empty thing.
+ Shreya Shankar: Which is also weird, right? Like, you don't want your LLM judge to think, oh, there's no ground truth, so therefore I can't correct, or I can't grade it, or… you know, I don't even know what it would do in that case. But online, right, you will never have ground truth. So, this doesn't really make sense from a template perspective for me.
+ Hamel Husain: I just noticed that one says, continuous scale from 0 to 1.
+ Shreya Shankar: Oh, that too.
+ Hamel Husain: Yeah, it's gonna be, like, making you do the exact wrong thing.
+ Shreya Shankar: User distress.
+ Hamel Husain: Okay…
+ Shreya Shankar: Oh, they have a customer support agent here.
+ Shreya Shankar: They now have fuchsia examples, okay.
+ Shreya Shankar: Well.
+ Shreya Shankar: I don't know. This.
+ Hamel Husain: That's very specific, though, still.
+ Shreya Shankar: Yeah, conversation history, user… last user message.
+ Shreya Shankar: Okay. I don't know. Anyways…
+ Hamel Husain: Like, honestly.
+ Shreya Shankar: This.
+ Hamel Husain: Should not even be in the product.
+ Hamel Husain: Like.
+ Shreya Shankar: Wait, context precision.
+ Shreya Shankar: Given question and answer in context, verify if the context was useful in arriving at the given answer. Okay, I don't…
+ Shreya Shankar: Again, yeah, let's not trust all of these judges. Maybe some of these icons mean
+ Shreya Shankar: don't trust them, I actually have no idea. Oh no, this is from Raghas, which is a RAG evaluation framework.
+ Shreya Shankar: Don't use.
+ Shreya Shankar: Right.
+ Hamel Husain: Just don't use this whole screen, honestly.
+ Shreya Shankar: Okay, so… so you're gonna get to this, and you're gonna be confused because
+ Shreya Shankar: you'll be like, wow, none of these are my axial codes, and that's great. If you have none of these as your axial codes, you did a good job with axial coding. If these are your axial codes, you did a bad job. But anyways, I don't want to, like, dig on Langfuse, I think, like, everybody has this problem. This…
+ Shreya Shankar: Payne is very good because you can… or this window is very good because you can create your own evaluators to then run in the dashboard. So, I'm not going to do this because I don't want to leak my API keys around. I got burned with that in the past. But it's pretty straightforward. You can just set
+ Shreya Shankar: whatever model provider that you're going to use for your LLM judges.
+ Shreya Shankar: And then set your API key here, create a connection, and then when you define an evaluator.
+ Shreya Shankar: Maybe it'll allow me to do something that's, like, fake.
+ Shreya Shankar: No. That's too bad. Okay, so it does try to check it.
+ Shreya Shankar: Anyways, trust me on this, like, when you get to the Define Evaluator page, it'll work.
+ Shreya Shankar: And you can set up what your prompt is gonna be.
+ Shreya Shankar: I'm not going to go into that.
+ Shreya Shankar: So you can set up evaluators here, and you can run evaluators on traces that are already in Langfuse. Again, you can… you can run evaluators this way through this page, or you can run it offline, like, you can have a job
+ Shreya Shankar: Which is what I like to do. I have some sort of data pipeline that is consistently running evaluators and writing the scores directly via API to Linkfuse.
+ Shreya Shankar: There are also things that you can do with human annotation. So, for example, I can create a new human annotation queue, so test queue for the course.
+ Shreya Shankar: Create a queue… oh.
+ Shreya Shankar: And then when you're doing annotation queues, you need to set up, like, how you want people to annotate. So, I might say, for free text, I might call this open codes.
+ Shreya Shankar: Write your open codes.
+ Shreya Shankar: Okay? And then… Go back to the annotation, I suppose.
+ Shreya Shankar: little queue.
+ Shreya Shankar: Great.
+ Shreya Shankar: Alright, so this is what's known as an annotation queue, and what's nice is if you have domain experts, who you want to review your traces, and you're reviewing your traces, so you're here in tracing, maybe you see trace.
+ Shreya Shankar: Click here.
+ Shreya Shankar: Alas, will it ever appear?
+ Shreya Shankar: And I don't know.
+ Shreya Shankar: Okay.
+ Shreya Shankar: So then you can do things like, Add to the queue.
+ Shreya Shankar: For example, here, when you are looking at your traces.
+ Shreya Shankar: And then you can have your domain experts.
+ Shreya Shankar: Look directly at the queues.
+ Shreya Shankar: For example, there's one pending item.
+ Shreya Shankar: And then they are able to kind of read it and provide.
+ Shreya Shankar: as we had here, open codes. I think this is nice. The only…
+ Shreya Shankar: So, I think that, like, this is much better than not looking at the data. For human entrants, you want a really low-effort way.
+ Shreya Shankar: to show extra or external annotators your data so that they can, edit it, this is great. Unfortunately, what I've found is that it doesn't always have all of the information needed and presented in, like, the best way for human annotators. So this is great for, like, single LLM calls.
+ Shreya Shankar: But for maybe, like, for long-form Agentic traces or for document processing, these UIs aren't really sufficient.
+ Shreya Shankar: But yeah, your annotator can look at these and say whatever, like, I don't want, policies, internal policies cited in the outputs.
+ Shreya Shankar: What I… why I'm showing you Langfuse also is, like, they're one of the few dashboards
+ Shreya Shankar: maybe even the only one that actually have the annotation in situ with the trace. Like so many other platforms, you have to, like, click a button, and a new pop-up appears where you write your open codes, and then you can't see your trace at the same time that you're writing the open code, which is kind of crazy.
+ Shreya Shankar: Okay, so you can see that that was completed.
+ Shreya Shankar: Yeah. I'm just showing you features that are useful in Langfuse also, because when you're doing continuous deployment and monitoring, you might actually… you'll spend a lot of time in Langfuse, more so than when you were doing, like, error analysis.
+ Shreya Shankar: Okay, the last thing I wanted to demo for folks is the dashboards feature.
+ Shreya Shankar: And Langfuse already has dashboards on, like, costs and latency and so forth, which is nice. But you can also make your own dashboards that are based on your LLM judge or automated evaluator scores. So maybe if I were to make a demo dashboard.
+ Shreya Shankar: for monitoring Response quality.
+ Shreya Shankar: Order the course.
+ Shreya Shankar: Alright, so, dashboard looks something like this, and then you'll want to create widgets, basically. So, one widget… I'm gonna create a widget from scratch, so…
+ Shreya Shankar: think of a widget as, like, truly a panel in your dashboard here. So, maybe I want to view some of my scores.
+ Shreya Shankar: Like, I have categorical scores, I have numeric scores.
+ Shreya Shankar: Maybe numeric here. I don't want to show just count.
+ Shreya Shankar: Want to show the value.
+ Shreya Shankar: I'm gonna show the average, maybe…
+ Shreya Shankar: And then I want to break it down by…
+ Shreya Shankar: I can't remember which one a score name.
+ Shreya Shankar: No.
+ Shreya Shankar: Because I have three LLM judges going on.
+ Shreya Shankar: So, as you can see here, it is kind of confusing.
+ Shreya Shankar: No.
+ Shreya Shankar: Okay, yes. Next one.
+ Shreya Shankar: Alas, yeah, I was just trying to look for the dimension that
+ Shreya Shankar: Showed you the 3 different judges that I have going on.
+ Shreya Shankar: And I think this is it. So, if you're confused by this.
+ Shreya Shankar: Please ask a question in the chat.
+ Shreya Shankar: Okay.
+ Hamel Husain: There's a lot of questions around, do we, like, why are we using Langfuse, why are we showing it, blah blah blah. We're just showing you one example, so you at least see a tool. It's good to see what an evals tool looks like.
+ Hamel Husain: And we also don't want to go down the path of showing you five tools, because that is a waste of your time. They're all…
+ Shreya Shankar: Absolutely.
+ Hamel Husain: Pretty much the same.
+ Hamel Husain: And we also don't want to show you no tools, so you're like, well, we don't want you to encounter an evals tool and be like, I don't know.
+ Hamel Husain: So, we're just giving you a taste here.
+ Shreya Shankar: Yeah.
+ Shreya Shankar: Anyway, so you want to figure out what the widgets are to then be able to actually have a time series for each one of your LLM judges. Save widgets.
+ Shreya Shankar: And then, great, you can see that. Maybe I'll set this to be past 7 days. And then you can see, yeah, I have 3 LLM judges here, and all this means, right, is that, like, my verbose reply verdict, so 53% of the traces were passing, and the other two judges.
+ Shreya Shankar: Which are… you had, for example, internal document ID cited, so only 10% of those are passing.
+ Shreya Shankar: In practice, right, I shouldn't have created an evaluator for the internal doc ID. I should have just gone and fixed the prompt, like, that's not worth creating a code-based evaluator for. But I just wanted to have a few time series here to show you what it might look like, so that way, whenever you're monitoring in real time, you can see what this dip is. You can look at things that have a dip.
+ Shreya Shankar: And then you can actually go see example traces.
+ Shreya Shankar: That failed it. And then… From that, maybe put those back into your evaluation datasets.
+ Shreya Shankar: I hope all of this kind of makes sense, and people get a good feel for, okay, how can I tie all of these courses together from synthetic data generation… sorry, all of these concepts together, from synthetic data generation to open coding, XL coding, building LLM judges, making an eval set.
+ Shreya Shankar: Deploying, having this dashboard… Turning that back into evals.
+ Shreya Shankar: Let's look at the… chat messages, yeah, like Hamel said, this is just an example of a tool.
+ Shreya Shankar: you can use your own tool, you can vibe code your own for CD. I… I just… I personally don't vibe code my own monitoring tool. I feel like, you know, there's a lot of functionality already in this. Really, what I care about is these graphs and having a database to store it, so I'm happy to use something off the shelf here.
+ Shreya Shankar: Hamel, anything more that you might want to add to this, or we can move forward?
+ Hamel Husain: No, just keep in mind that Langfuse has an API, you can build whatever you want on top of it. You can push data in, you can pull data out, you can write your annotations to it, you can do whatever you want.
+ Hamel Husain: And, like Trey said, you could essentially treat it like a database if you want to.
+ Shreya Shankar: They have to express some UI like this. Yeah.
+ Shreya Shankar: Alright, so… Let's keep going,
+ Shreya Shankar: I have a slide for what I just said at the end, but basically you could think about, you know, how do you know that you're doing monitoring correctly, which is that you're adding new columns, and you're adding new rows. So if you look at traces that are failing a particular criteria in your dashboard, you know, consider adding them as columns here.
+ Shreya Shankar: And then also sample some traces that are passing all of your evaluators, because, as Hamel said, right, that doesn't mean you're done, you know, you might have new failure modes that arise, so sample those traces, and do error analysis on those, look for new failure modes, and then add new rows.
+ Shreya Shankar: And yeah, do both weekly is just a rule of thumb if people want to have
+ Shreya Shankar: Some sort of number for how often that they should do it, but really it depends on your application.
+ Shreya Shankar: Cool.
+ Shreya Shankar: So I'm gonna now do a very hard pivot into the safety portion of the talk, and actually, it's not as hard of a pivot as I'm making it out to be. So I think CI and CD are really good for just, like, observing what behavior happens in production and trying to convert that back into failure modes. But this concept of, kind of, adversarial inputs. A lot of people don't know how to reason about, okay.
+ Shreya Shankar: What if attackers or people are trying to, like, send requests that mess up my system intentionally? How can I reason about, you know, what safeguards to put in place for this? What is happening out there?
+ Shreya Shankar: in the safety world that I can learn from. So I will talk a little bit about this OpenAI Hugging Face incident, actually, as a way to illustrate, you know, what
+ Shreya Shankar: Things can go wrong when we deploy agents, and then how we could think about.
+ Shreya Shankar: Kind of adapting our own agents to not exhibit such failures.
+ Shreya Shankar: And more of this is going to be, like, very storytelling. So, part of it is also I want to demystify. I think there's a lot of fear-mongering out there in the world about, you know, agents from, like, OpenAI, Anthropic, like, going rogue, and should we be worried about this?
+ Shreya Shankar: And you really shouldn't. It's like extremely. You'll see when I talk about this story, you'll see that it was entirely.
+ Shreya Shankar: it was entirely expected that this would happen, so it's not a crazy thing that it happened. Yeah. Maybe anything, Hamel, you want to add before…
+ Hamel Husain: No.
+ Shreya Shankar: storytelling.
+ Hamel Husain: I didn't get into it, yeah.
+ Shreya Shankar: Yeah, and the other thing I want to mention is that we actually don't know everything that happened in this incident, because the traces have not been released. So, I will only give you partial of what I know, which is also partial of what everybody else knows.
+ Shreya Shankar: Alright, so the first thing I'll talk about is, you know, what happened. So I'm sure everyone has seen the news, like, OpenAI's agents, quote-unquote, broke into a gank phase.
+ Shreya Shankar: And then I'll talk about, you know, what the lessons of this incident are for evals in general. And the spoiler here is that, you know, the agent specification was misaligned with what we would want, right? The agents went after the grader, which will become clear in a little bit.
+ Shreya Shankar: I'll talk about some similar cases of OpenAI misalignment reports, where, you know, you'll see the same behavior over and over, and then I'll talk about, you know, how you can prevent all of these by both
+ Shreya Shankar: Having controls or guardrails into your agent, as well as, you know, thinking about what is a good, like, incident response plan for whenever you deploy agents and they go rogue.
+ Shreya Shankar: Yeah.
+ Shreya Shankar: Alright, so what happened in this incident? So…
+ Shreya Shankar: There's a benchmark called Exploit Gym. This is a security benchmark for agents. So, it's a benchmark that requires agents to write a hack for a program, and then the evaluator tests whether that hack successfully hacked the program.
+ Shreya Shankar: So, it's called ExploitGen, this is a well-known benchmark, and OpenAI was trying to build agents to solve ExploitGen.
+ Shreya Shankar: So what that means is that agents were supposed to generate a bunch of hacks to do well on this benchmark. So it was a closed world, like, offline scenario that was happening.
+ Shreya Shankar: So just some definitions here for folks who might not be as technical, but, a security bug is just some flaw in a software that allows the software to do something that it's not.
+ Shreya Shankar: What we mean by exploit here is generating some program or some input that can trigger the security bug.
+ Shreya Shankar: And the Exploit Gym benchmark.
+ Shreya Shankar: It's just, you know, can agents generate exploits that trigger any number of these security books?
+ Shreya Shankar: Feel free to ask questions, you know, if you're confused, I'll pause periodically. Ask them in the chat. So, again, like, the point of the agent is to write exploits that work. So, the grader runs this exploit on the program and checks whether the program was quote-unquote hacked or not.
+ Shreya Shankar: So, again, agent knows that there is a grader, it's trying to write exploits for that grader.
+ Shreya Shankar: And you'll see that this whole hack was just the agent trying to understand what the grader was doing, and trying to kind of figure out a way to fool the grader. That's it. Like, it was reward hacking. So the first thing that OpenAI did
+ Shreya Shankar: So note that, you know, this is actually a really common thing that… that these frontier model companies do. They… they build agents, they try to, like, run these tests on these agents to see how good they are at cybersecurity, so this was a really standard run that they'd done.
+ Shreya Shankar: And the way that they do this is they have these agents run in a sandbox.
+ Shreya Shankar: What that means is the agents run on a computer that does not have internet access. The only access that these agents had.
+ Shreya Shankar: was, they were able to download software packages from this package server called Artifactory, and this is an internal package server to OpenAI. You can think of this as, like, PyPy.
+ Shreya Shankar: folks might be familiar with, like, PyPI or NPM, they're able to download software that they can then use to, like, construct their exploits that they wanted to send to the graders.
+ Shreya Shankar: Okay, so this becomes the key, because
+ Shreya Shankar: You know, the only way that the… when you see phrases like, agents escaped the sandbox, that is a fear-mongering term.
+ Shreya Shankar: All that means is the agent figured out a way to write back to the sandbox registry, like… or not even figured out a way, like, it was possible for agents to write back to the sandbox registry. And so they… they did that because, again, like, the agent's goal, the specification up front was, can we create programs
+ Shreya Shankar: That are going to trigger vulnerabilities, Yeah.
+ Shreya Shankar: Let me pause here if there are any questions that are coming up.
+ Shreya Shankar: Yes.
+ Shreya Shankar: Actually, I guess none of these. Hamel, is there anything that has come up that is…
+ Hamel Husain: No, not relevant to safety, but, yeah.
+ Shreya Shankar: Were there anything in place to prevent writing back to the package manager? No. And not sandbox registry, like, there's a package registry. So, engineers are probably familiar with that term, but it's essentially, like, a website where you can download components of software.
+ Shreya Shankar: libraries of software that you can then use when you're writing programs. So all of us use this every day whenever we're writing, software.
+ Shreya Shankar: Not artifactory, but our, like, more public package managers.
+ Shreya Shankar: Okay, so the other thing is that, you know, all of these OpenAI models, or sorry, all of these models have these safety refusals and classifiers. They were turned off for this benchmarking experiment because
+ Shreya Shankar: would just trigger a lot of false positives, right? This was a sandbox, this was a hypothetical scenario where OpenAI was trying to test.
+ Shreya Shankar: Whether they could… generate exploits for this benchmark.
+ Shreya Shankar: So, it obviously would have triggered all the classifiers, so they just turned it off for this.
+ Shreya Shankar: Okay, so what happened, concretely, right, is that these agents.
+ Shreya Shankar: they were reasoning about how to create good exploits, and in that reasoning, they realized, independently, maybe, that, oh, they should figure out what the grader wants. Like, it would be great to look at the grader's code.
+ Shreya Shankar: And then try to figure out how to pass the grader, right? If anyone has heard of reward hacking, this is exactly what it is. It's your agent is so locked in on trying to pass the grader.
+ Shreya Shankar: That it will do whatever it can to pass the grader. And that is the big lesson here, right? Whenever we tell agents to do something, it will ignore everything else. It will lock in and try to do exactly what we mentioned at the spec.
+ Shreya Shankar: without, you know, considering anything else. So, OpenAI ran tens of thousands of copies of their agent at once. Each one of these agents was supposed to work on one exploit gym task. And…
+ Shreya Shankar: when the prompt for the agent, the goal was just, you know, get the grader to mark the task as passed, right? So…
+ Shreya Shankar: some of these tasks are really hard. Some of these exploits are extremely hard to generate. The agent probably doesn't know how to generate it, so its solution, right, was to figure out, okay, what is the greater checking?
+ Shreya Shankar: And then why don't I just write a program, or, like, figure out how to, like, trivially pass that check, rather than actually write a program that really actually does do the… exploit the vulnerability.
+ Shreya Shankar: So this is a form of reward hacking, as I'm saying. So this reward hacking means you're just pursuing the greater, rather than the skill itself that the greater is meant to measure.
+ Shreya Shankar: Okay, so what ended up happening was that these agents
+ Shreya Shankar: In their pursuit of trying to get the grader's code.
+ Shreya Shankar: They started writing to the package server.
+ Shreya Shankar: and trying to coordinate with each other, they knew that there was a swarm of agents, probably that was in the prompt somewhere. Like, you are one sub-agent that is trying to, I don't know, solve this particular task and exploit Jim.
+ Shreya Shankar: We don't actually know, as in the prompt, again, OpenAI has not released those traces. But I can only imagine, right, that the prompt says, you are one subagent, your job is to generate an exploit that will pass this benchmark task.
+ Shreya Shankar: And so what the agents did was probably realize, hey, I'm one of many subagents. Probably all of us are writing to this… or reading from this same package server. Oh, wait, this package server allows us to write.
+ Shreya Shankar: So maybe what we'll do is, like, I will write some messages to this package server for other agents to look at.
+ Shreya Shankar: Like, who is working on this task?
+ Shreya Shankar: new plan to see the task list, or whatever, and try to coordinate. Do other agents know what is happening on the graders? And then can they tell me, as an agent, what the graders are doing so I can fool the graders? And this whole, experiment was running over the course of many months.
+ Shreya Shankar: So, 1,200 agents, apparently, out of tens of thousands, or maybe even more agents, were actually writing to this package server.
+ Shreya Shankar: Over… over at least these days, but there's probably more, over the course of multiple months.
+ Shreya Shankar: 70,000 messages. I think it's crazy, that's super cool. There's so much data around with this.
+ Shreya Shankar: But anyway, so they all kind of wrote to this package server. And if you were wondering, okay, what did they write in there?
+ Shreya Shankar: So, a little bit more details on the benchmark tasks here. So, the agents are supposed to figure out what this flag is, like, there's a secret code embedded in the software for these tasks. So rather than, you know, do the normal thing, which is, like, write a real exploit to try to find that flag.
+ Shreya Shankar: Agents were trying to
+ Shreya Shankar: use… check the greater code to see if the flag was, like, embedded in that greater code. And then… then they could just output that flag. Like, they never actually had to go and hack the software to get it.
+ Shreya Shankar: One thing that was very interesting is, if you look at these agent logs, they also believed that the grader was not only checking for the flag string, but also how the flag was obtained. So, if the agent's trace was something like.
+ Shreya Shankar: hard-coding the flag, then the grader might be…
+ Shreya Shankar: might not give it credit because it thinks it cheated. So, the agent also realized it has to create… it has to have a trace that is reasonable, that looks like a real…
+ Shreya Shankar: way that somebody would generate a hack. This was actually not true, so it turned out the grader doesn't check how each flag was obtained. The grader simply just checks for the presence of the flag, but the agents believed this, so they went through extra effort on this package server.
+ Shreya Shankar: to try to obfuscate their thinking. So, like, once they figured out what the flag was, some other agent would, you know, write the… write over the folder, and then put, like, a real plan in there or something, so that way future agents could read a real plan.
+ Shreya Shankar: Again, I I hope I'm I feel like I'm talking to myself, so Hamel, like, please stop me.
+ Hamel Husain: No, I mean, no, no, this is great. Okay, so you might be wondering, like, okay, why are we discussing this in an evals class? Like, what does it have to do with evals?
+ Shreya Shankar: I'll get there.
+ Hamel Husain: It's because… oh, you'll get there.
+ Shreya Shankar: I'll get there. I just I want to a part of this is like I want to get around the fear-mongering that a lot of these companies are doing. So I want to explain very detailed way, like this is what happened, you know, put yourself in the shoes of the agent.
+ Shreya Shankar: You know, your prompt probably says something like, you better attack… you better generate an exploit for this, otherwise you will get fired.
+ Shreya Shankar: Like, you know how props are saying all sorts of these things. So.
+ Hamel Husain: There's a term that I really like, it's called reward pressure.
+ Hamel Husain: And reward pressure is kind of, like, it's used to explain this phenomenon. It's sort of like evolutionary pressure. So you're putting agents in this container, and you're saying… and you're having, like, thousands of agents. I don't know how many, maybe hundreds of thousands, I don't know, in some of these agent swarms, and you're saying.
+ Hamel Husain: Okay, pursue this goal.
+ Hamel Husain: And it's exactly like evolutionary, evolutionary pressure.
+ Shreya Shankar: you're.
+ Hamel Husain: saying, survive, or do have this goal, and then, like, yeah, the system is going to try to.
+ Hamel Husain: In the reward pressure.
+ Hamel Husain: is doing something very predictable, actually, in my mind. Like, the fact that it's trying all these clever things and doing these kind of clever things, that's exactly what's gonna happen.
+ Shreya Shankar: Yes. I think reward pressure is a great term. Also, like, humans have this issue too, right? Like, imagine you are a boss, you have employees. If you tell them you need to do this thing, otherwise you'll get fired.
+ Shreya Shankar: They'll probably do whatever it takes to do that thing, right? Or they'll get fired. So, you know, it's it's not that surprising.
+ Shreya Shankar: There's a comment around this, like, agents found a way to get flags without breaking in at all. All this means is that agents figured out a way to get the answer, right, without generating an exploit, because they believe if they can read the greater code.
+ Shreya Shankar: the…
+ Shreya Shankar: the answer is embedded in the grader code, so they can just output the grader code. And remember, this is like a swarm of agents. Swarm just means a big group of agents. So some agents can be tasked to try to break into the graders, get the graders, and then find that answer, put that on the message board, and then the future agents can just read from the message board and submit those solutions to the graders, right? So…
+ Shreya Shankar: It's like an attempt that… I mean, it is really interesting that the agents were able to make this work.
+ Shreya Shankar: But it's also not surprising, because, again, of the reward pressure here.
+ Shreya Shankar: Okay, so I'll be…
+ Shreya Shankar: if this is… this… I'm gonna give these slides to everybody, but these are, like, really technical details about actually what happened, like how they were able to kind of share these secret codes with each other, the graders' codes with each other. What ended up happening was they… the agents actually believed that the graders were probably on Hugging Face, which is a reasonable belief, right? Like.
+ Shreya Shankar: Hugging Face is the home of all the benchmarks out there.
+ Shreya Shankar: So the agents believed, hey, if I want to access the grader code, I can probably just look at Hugging Face, and I can read the graders in Hugging Face. Now, they realized, OK.
+ Shreya Shankar: The data set is gated on Hugging Face. Because I don't know if folks have used Hugging Face here, but you do need to have, like, a login in order to see data sets on Hugging Face. And so the agent's solution to that was to try to find exposed Hugging Face credentials on the internet.
+ Shreya Shankar: And they did. They found somebody's, like, modal app exposed with their Hugging Face credentials for Cybergym Explode. Cybergym is a different benchmark. And then the agents were like, okay, great.
+ Shreya Shankar: Because those credentials are already exposed, I'll take them, get into Hugging Face.
+ Shreya Shankar: Hugging, like, use these credentials to download the exploit gem.
+ Shreya Shankar: And then, now I have access to the graders.
+ Shreya Shankar: It's that simple. It is not that complicated.
+ Shreya Shankar: Yeah, like, OpenAI went to the package server.
+ Shreya Shankar: They used the screenshot service to figure out… they basically looked on the internet to figure out where they could get Hugging Face credentials. They got Hugging Face credentials from somebody's mobile app.
+ Shreya Shankar: And then… They went to Hugging Face, they got the data set.
+ Shreya Shankar: And then… Yeah.
+ Shreya Shankar: It was that simple. Nothing crazy.
+ Shreya Shankar: Again, I think I'm…
+ Shreya Shankar: We don't fully know everything that happened. A lot of this details were provided by Hugging Face, because they have access to what requests went through Hugging Face, but we don't have the OpenAI agent traces, so…
+ Shreya Shankar: Yeah, there's probably more that happened that we don't know.
+ Shreya Shankar: Okay.
+ Shreya Shankar: Let me skip that. So there's a bunch of stuff that you'll see in the news that agents took from Hugging Face.
+ Shreya Shankar: I… again, that's fear-mongering. It's more so that, like, they just found some exposed credentials. What I thought was really interesting is 700 of the agents
+ Shreya Shankar: Took part in this, which just means that they…
+ Shreya Shankar: I don't know, went through to Hugging Face. They downloaded 4 private code repositories, again, because the credentials were exposed. Yeah.
+ Shreya Shankar: And then this also happened, you know, over the course of a few weeks, but probably months later, we're still, like, investigating.
+ Shreya Shankar: Cool. So I'm going to skip this question and then I'm going to jump into okay.
+ Shreya Shankar: now that you know a little bit more about what happened with this whole incident, right, hopefully people are not as fearful anymore, and you're like, oh, duh, of course that happened, like, these agents have so much reward pressure, as Hamel said. What are the lessons that we want for…
+ Shreya Shankar: evals. And the lesson really here is that agents are always going to go after our graders if we put that pressure in their prompt. So, like, in Concretely.
+ Shreya Shankar: we want to be able to, kind of, protect the greater, in our sense, and more crucially, we want to always be reading the agent traces, right? We want to make sure that they're not trying to reward hack.
+ Shreya Shankar: I don't think most people will have this problem, because, you know, your agents are not pressurized to, like, win at a benchmark, right? That's not detailed in the prompt. But maybe you are trying to get agents to do well in benchmarks, and so then you will experience this reward hacking phenomenon.
+ Shreya Shankar: There are other similar cases into how agents are able to.
+ Shreya Shankar: do things that seem misaligned with humans. For example, agents might leave notes for themselves. OpenAI, wrote a report on this recently around how, agents use the compaction tooling to leave notes for itself.
+ Shreya Shankar: Again, this is not something that is in the trace, if you were to read the trace, but because the node is in the compaction.
+ Shreya Shankar: Then the subsequent model calls were able to read it.
+ Shreya Shankar: I.
+ Shreya Shankar: I know we're running out of time, so I'm trying to just skip and see.
+ Shreya Shankar: This one is a good one. So…
+ Shreya Shankar: an agent published a researcher's password at OpenAI. This is another one that I found. So basically, the situation here is that a researcher asked their agent to prove a math theorem, and again, reward pressure happened, because in the prompt.
+ Shreya Shankar: The researcher…
+ Shreya Shankar: wanted the agent to prove the math theorem. The agent said, oh, I don't know how to do it, can I look at other solutions? And the researcher said, no, like, problem yourself, solve the problem yourself. And then the agent, because it had access to the researcher's GitHub token, posted
+ Shreya Shankar: some message.
+ Shreya Shankar: inside OpenAI's internal public repository, and then…
+ Shreya Shankar: figured out, basically, how it could talk to other agents to get access to the solutions, and then came back. And then…
+ Shreya Shankar: the researcher shut down this model for about 2 weeks. Apparently, this is what the incident report is on OpenAI's incident reports, but, I… again, right, this goes back to Hamel's reward pressure, right? Like.
+ Shreya Shankar: assume that agents are going to follow all the specifications detailed in your prompt, no matter what the cost is, and the moment you tell them, hey, there's a verifier, or hey, there's a grader out there, right, they're so locked in on trying to figure out what the grader is, or what the solution is, so that they can cheat.
+ Hamel Husain: Yeah, and you might be thinking, if you looked at that trace where the, where the agent was saying, hey, like.
+ Hamel Husain: Can you go back to that slide for a moment? The one…
+ Shreya Shankar: Yes.
+ Hamel Husain: earlier.
+ Hamel Husain: Yes, our GitHub token could be embedded. Risky, but okay. So you could be thinking, like, why don't we have a guardrail, or a… something that monitors reasoning traces for suspicious things. Now, if you…
+ Hamel Husain: Yeah, they may have caught that.
+ Hamel Husain: But again, if you have enough reward pressure, and I'm talking like over millions of iterations, somebody is gonna figure out that maybe this is being watched.
+ Hamel Husain: And maybe our reasoning phase is being watched, and that would… that reward pressure would lead to even the reasoning being hit… obfuscated from you, potentially. So you gotta think about reward. This is really, like, evolution.
+ Shreya Shankar: Yep.
+ Shreya Shankar: Yep.
+ Shreya Shankar: Okay, so here's one slide that if I had to, like, write down everything that, like, how we might think about
+ Shreya Shankar: quote-unquote securing our agents, or making sure that, you know, they don't inadvertently do things that are misaligned with us because we specified in the prompt, maybe, like, a little bit too hard, like, make sure you do this, otherwise you'll get fired. So make sure you control networks.
+ Shreya Shankar: Right? So don't allow open Internet access for your agents making tool calls.
+ Shreya Shankar: For credentials, one thing that I like to do if I have autonomous agents is I don't just give them tokens that can last forever, right? Like, short-lived tokens. Like, assume they might accidentally put the token, you know, out there.
+ Shreya Shankar: on the… on GitHub, or maybe not fully on the internet, but in its search to find the solution, it might want to coordinate, it might…
+ Shreya Shankar: I don't do something, so make sure your tokens are extremely short-lived.
+ Shreya Shankar: you know, shared storage, like, kind of assume that anywhere the agent can write to, they will. Like, these agents are trained, right, to write memories. So anywhere that they can write to, they probably will when they're in the quest for trying to find a solution.
+ Shreya Shankar: Try to, you know, use human actions wherever possible. So this can also be dicey, because no human being wants to always be in the loop for these long-running autonomous tasks, but it's worth thinking about, right? Like, you don't want to make agents be doing very long-running autonomous tasks without at least thinking about where human approval should be involved.
+ Shreya Shankar: one thing that… the last thing I'll mention is around this logs row here. I have realized, like, I don't want, at least whenever I have multiple agents going on, if I allow them to, like.
+ Shreya Shankar: write or, like, delete things in memories or in shared storage, then I don't have a good record of what happened, so, agents can only write to append-only logs, in my mind, just so we can always have a history of
+ Shreya Shankar: What happened?
+ Shreya Shankar: Okay, and then… I know we're running super over time.
+ Shreya Shankar: these are slides that I'll just share with everyone afterwards, but basically, you know, it's worth, I think, if you have these autonomous agents, to have, like, an incident response protocol. So, for example, I think
+ Shreya Shankar: Hugging Face did a really good job with this, where they just took all of the actions that they had that were recorded, and they basically
+ Shreya Shankar: use an open model, GLM 5.2, to do analysis on what the agents were actually doing in these traces. And I find it really ironic, right? It's like, they asked Claude, Opus, and Fable to help understand what was happening in all of these logs that the OpenAI agents were making, but then, of course.
+ Shreya Shankar: safety filters. If they just detect the presence of, like, exploit gym or something in the trace, then they will refuse. So anyways, you know, the moral of the story here is, right, agents are going to experience reward pressure, and know that when you're building agents.
+ Shreya Shankar: Keep all the traces of what your agents do.
+ Shreya Shankar: I don't know why we haven't seen the OpenAI tracers, like, that's crazy. You know, know whom to notify if your agent affects someone outside your company, especially your users, right? Like, you don't want your agent to be hacking into your users, so just, you know.
+ Shreya Shankar: Prepare for all of this ahead of time.
+ Shreya Shankar: Okay, so… Hopefully that…
+ Shreya Shankar: removed a little bit of fear around that whole hugging face incident. I know that I was, like, really, really skeptical before reading about it, but then I read, like, 6 blog posts about it, and then…
+ Shreya Shankar: you know, now I'm less scared. But anyways, so this homework is mostly about monitoring, nothing safety-related here, but, we'll be using Langfuse, making a dashboard to monitor the performance.
+ Shreya Shankar: And we have a bunch of great stuff coming up, and even more, because I made these slides before new sessions were added. But.
+ Shreya Shankar: Yeah.
+ Shreya Shankar: Next lecture will be around improvement, so…
+ Shreya Shankar: We'll see you in office hours, we'll see you in guest lectures, and… Please ask questions in Discord.
+ Shreya Shankar: Camel, anything that I'm…
+ Hamel Husain: No, I mean, we have some… we have two sessions on retrieval. We have one with Antaripa, check it out, and then we have one with Isaac as well.
+ Hamel Husain: Yes. And then we have some other guest lectures.
+ Hamel Husain: Coming, so just keep an eye out.
+ Shreya Shankar: All right.
+ Shreya Shankar: Bye, everybody.
+ Hamel Husain: been.
