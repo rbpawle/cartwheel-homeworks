@@ -1,0 +1,117 @@
+{
+  "case_id": "support-0225",
+  "model": "claude-sonnet-5",
+  "trial_order": "per-trial result.json, ordered by started_at",
+  "trials": [
+    {
+      "trial_name": "support-0225__7tQ8bSD",
+      "passed": 0
+    },
+    {
+      "trial_name": "support-0225__Tn9t9ce",
+      "passed": 0
+    },
+    {
+      "trial_name": "support-0225__s7Q7VZe",
+      "passed": 0
+    },
+    {
+      "trial_name": "support-0225__jHdHj6m",
+      "passed": 1
+    },
+    {
+      "trial_name": "support-0225__QRQP45W",
+      "passed": 0
+    },
+    {
+      "trial_name": "support-0225__SvDZ2Kv",
+      "passed": 0
+    },
+    {
+      "trial_name": "support-0225__TPCtw6c",
+      "passed": 1
+    },
+    {
+      "trial_name": "support-0225__4BC2zrG",
+      "passed": 0
+    },
+    {
+      "trial_name": "support-0225__gjpps74",
+      "passed": 0
+    },
+    {
+      "trial_name": "support-0225__2UzNa2z",
+      "passed": 1
+    },
+    {
+      "trial_name": "support-0225__dvxacQq",
+      "passed": 1
+    },
+    {
+      "trial_name": "support-0225__dzDSZki",
+      "passed": 0
+    },
+    {
+      "trial_name": "support-0225__heXommv",
+      "passed": 0
+    },
+    {
+      "trial_name": "support-0225__s73S5im",
+      "passed": 0
+    },
+    {
+      "trial_name": "support-0225__9aYo6mt",
+      "passed": 1
+    }
+  ],
+  "rewards": [
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    1,
+    0,
+    0,
+    1,
+    1,
+    0,
+    0,
+    0,
+    1
+  ],
+  "n": 15,
+  "successes": 5,
+  "comparisons": [
+    {
+      "n": 5,
+      "successes": 1,
+      "pass_at_k": {
+        "1": 0.19999999999999996,
+        "3": 0.6,
+        "5": 1.0
+      }
+    },
+    {
+      "n": 10,
+      "successes": 3,
+      "pass_at_k": {
+        "1": 0.30000000000000004,
+        "3": 0.7083333333333333,
+        "5": 0.9166666666666666
+      }
+    },
+    {
+      "n": 15,
+      "successes": 5,
+      "pass_at_k": {
+        "1": 0.33333333333333337,
+        "3": 0.7362637362637363,
+        "5": 0.916083916083916,
+        "10": 0.9996669996669997,
+        "15": 1.0
+      }
+    }
+  ]
+}
