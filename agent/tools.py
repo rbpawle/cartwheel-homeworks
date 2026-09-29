@@ -22,7 +22,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from rapidfuzz import process, fuzz
+from rapidfuzz import fuzz
 
 import agent
 from agent import db
@@ -266,25 +266,21 @@ def find_order(ctx: AuthContext, query: str) -> dict[str, Any]:
         (at most 5), each as the dict returned by agent.db. If no orders
         match, return {"ok": True, "orders": []}.
     """
-    scope, params = "", []
     if ctx.role == "shopper":
-        scope, params = "WHERE o.user_id = ?", [ctx.user_id]
+        scope = {"user_id": ctx.user_id}
     elif ctx.role == "merchant":
         if ctx.store_id is None:
             return {"ok": False, "error": "invalid_argument", "reason": "Merchant context is missing a store_id"}
-        scope, params = "WHERE o.store_id = ?", [ctx.store_id]
-    elif ctx.role != "support":
+        scope = {"store_id": ctx.store_id}
+    elif ctx.role == "support":
+        scope = {"all_orders": True}
+    else:
         return {"ok": False, "error": "invalid_argument", "reason": f"Role {ctx.role} cannot search orders"}
 
     with db.connect() as conn:
-        rows = conn.execute(
-            f"SELECT o.*, p.title AS product_title "
-            f"FROM orders o JOIN products p ON o.product_id = p.id {scope}", params
-        ).fetchall()
+        candidates = db.list_order_search_candidates(conn, **scope)
+        titles = {p.id: p.title for p in db.list_products(conn)}
 
-    # rank + top-5 + threshold in one call
-    titles = {i: r["product_title"] for i, r in enumerate(rows)}
-    hits = process.extract(query, titles, scorer=fuzz.WRatio, score_cutoff=70, limit=5)
-    matches = [db._order_from_row(rows[i]) for _, _, i in hits]
-    serialized_orders = [o.to_public_dict() for o in matches]
-    return {"ok": True, "orders": serialized_orders}
+    # match first, keep the helper's newest-first order, then truncate
+    matches = [o for o in candidates if fuzz.WRatio(query, titles.get(o.product_id, "")) >= 70][:5]
+    return {"ok": True, "orders": [o.to_public_dict() for o in matches]}

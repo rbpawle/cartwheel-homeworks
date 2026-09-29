@@ -15,7 +15,13 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - run: uv sync
       - name: Run checks that do not call a model
-        run: uv run pytest tests/eval tests/test_cli.py tests/test_db.py tests/test_hw_holes.py tests/test_harbor_adapter.py tests/test_replay_harness.py -q
+        run: >-
+          uv run pytest tests/eval
+          tests/test_cli.py
+          tests/test_db.py
+          tests/test_hw_holes.py
+          tests/test_harbor_adapter.py
+          tests/test_replay_harness.py -q
 
   complete-evaluations:
     name: Harbor evaluations
