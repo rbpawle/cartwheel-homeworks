@@ -1,0 +1,20 @@
+{
+  "judge_id": "escalation_without_basis-v1",
+  "judge_mode": "escalation_without_basis",
+  "model": "claude-sonnet-5",
+  "random_rate": 0.2,
+  "risk_groups": ["policy_lookup"],
+  "threshold": 0.2,
+  "periods": [
+    {
+      "label": "before",
+      "from": "2026-09-17T17:16:00Z",
+      "to": "2026-09-17T18:23:00Z"
+    },
+    {
+      "label": "after",
+      "from": "2026-09-29T15:49:00Z",
+      "to": "2026-09-29T15:58:00Z"
+    }
+  ]
+}

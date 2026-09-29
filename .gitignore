@@ -22,3 +22,6 @@ scenarios/demo_pilot_gt.json
 
 .idea/
 .sessions.db*
+
+# Local HW7 monitoring output (uploaded as a workflow artifact).
+monitoring/output/
