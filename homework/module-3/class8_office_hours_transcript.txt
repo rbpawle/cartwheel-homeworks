@@ -1,0 +1,657 @@
+Hamel Husain: What's up?
+ Hamel Husain: How's it going?
+ Robert Zych: Hi Hamel.
+ Hamel Husain: Right.
+ Robert Zych: I have a question.
+ Hamel Husain: Yeah, go for it.
+ Hamel Husain: Who was talking? I, like, actually don't know. Oh, it was Robert.
+ Robert Zych: This is Robert.
+ Hamel Husain: Yeah.
+ Robert Zych: I hope I'm not alone in saying that I found that explanation of JEPA a little bit confusing.
+ Hamel Husain: It's a deep topic, yeah. It's probably better, like, it's hard to go over the whole thing in a lecture, and I would say you probably want to step through it in the course reader carefully, because there's a lot of technical details if you want to understand the technical details. I'm not entirely sure if it's useful for you.
+ Hamel Husain: Honestly, to understand the technical details, because I, like, at a high level, what it's doing is trying to iteratively improve a prompt.
+ Hamel Husain: in a loop.
+ Robert Zych: That part I get, it's just the walkthrough that…
+ Robert Zych: What's presented was a little bit difficult to follow, at least for me.
+ Robert Zych: When I was trying… when I was looking at the whiteboard.
+ Robert Zych: And…
+ Robert Zych: I'm trying to understand, like, the… the process. Like, I understand that it's trying to incrementally improve on prompt or whatever, according to the metrics, right, in a more structured way than
+ Robert Zych: Maybe, like, random changes that are in auto research?
+ Robert Zych: But, like, the example that was shown
+ Robert Zych: Didn't quite make a lot of sense to me, like… where it stops
+ Robert Zych: And where it continues, in terms of, like, an iteration.
+ Hamel Husain: Hmm.
+ Robert Zych: Like.
+ Hamel Husain: I.
+ Robert Zych: There's a…
+ Hamel Husain: Yeah, okay, so if you want to know about stopping criteria, there is, there's different choices.
+ Hamel Husain: It's like any other optimization kind of algorithm. You know, you can set maximum number of iterations, or you can say you want… you, like, set, like, an epsilon, which is basically a number that says, like, if it doesn't improve by an X amount.
+ Hamel Husain: Then you stop after a certain number of tries.
+ Hamel Husain: But, you know, like, it's ultimately the stopping criteria is, like, heuristic. There's not too much magic in there.
+ Hamel Husain: But yeah, I don't know if that helps.
+ Robert Zych: Yeah, I guess, yeah, if it's a heuristic and it's… Configurable or custom…
+ Robert Zych: For each, then it may make more sense, because the way she was
+ Robert Zych: Going through each task for each iteration, like, she would…
+ Robert Zych: continue even though it failed on a particular task. Yeah. Other iterations, like if it failed, like after the first two tasks, she would stop and then move on to another iteration.
+ Hamel Husain: Yeah.
+ Robert Zych: That's like, yeah.
+ Hamel Husain: Yeah, it's very, it's all heuristic based. So there's like a, there's a, there's a, there's a loop.
+ Hamel Husain: And then it's like… it's like an exploratory technique, you know? So it's like trying to explore the space of possible prompts. It's gonna fail sometimes, it's gonna succeed sometimes.
+ Hamel Husain: And there's a lot of different… the space of exploration techniques and algorithms is actually fairly quite large. There's all kinds of different approaches, but they all have this, like, idea of
+ Hamel Husain: they're all basically, like, heuristics. You can get kind of fancy, you can get progressively fancier with them, but essentially that's the way it works, is like.
+ Hamel Husain: you know.
+ Hamel Husain: like, retrying…
+ Robert Zych: Right.
+ Hamel Husain: rules.
+ Robert Zych: Right. I guess it comes with, either experience.
+ Robert Zych: Or, trial and error, trying to figure out which heuristic
+ Robert Zych: is, you know, more optimal, right? Like how quickly you achieve.
+ Hamel Husain: Definitely. Yeah, you would need an eval to know. And so, like, you know, all the JEPA stuff, like, you know, I would say it's, like, a starting point. There's a lot of choices made in the paper, in terms of, like, sampling technique.
+ Hamel Husain: the way the, you know, the loop is done, even how the prompt is modified. There's all kinds of different details.
+ Hamel Husain: I don't think… I think the paper is also trying to give you, like… it's trying to, like, explain the concept. There's definitely tools that have defaults, like, the authors have
+ Hamel Husain: Put an open source tool that has defaults, so you can, like, get started with this.
+ Hamel Husain: But I think it's, like, these are all open for experimentation, you know, like.
+ Hamel Husain: Almost everything in the algorithm you could experiment with if you wanted to.
+ Hamel Husain: I'm not sure how much… I mean, yeah, I wouldn't get too…
+ Hamel Husain: nerd snipe by the details. It can be fun, depending on, like, how deeply you want to go into it, though. But I wouldn't… I would just, like, like, have an experimentation mindset with it, for sure.
+ Robert Zych: Yeah, it makes sense, because when I first… today was the first time I heard of this auto research, but I kind of had ideas around this same space. I would kind of worry about it getting stuck in, like, blind alleys, or dead ends, or just randomly just wasting tons of tokens and compute on
+ Robert Zych: That kind of things, but yeah, JEPA seems like a more… logical, structured approach.
+ Robert Zych: than just blindly.
+ Robert Zych: you know.
+ Robert Zych: like you say, playing whack-a-mole.
+ Robert Zych: Thanks. I think I I'm good.
+ Hamel Husain: Oh, cool.
+ Hamel Husain: We can come back to that as well later. Okay, Diana.
+ Diana Pfeil: Hello!
+ Diana Pfeil: Okay, I'd like to go back to the topic of, LLM judges, and I'd just love to hear more of your experiences, just anecdotally, about tuning LLM judges. I found it to be pretty challenging to get the true positive rate and true negative rates.
+ Diana Pfeil: High, and yeah, like, in your experience, what kind of judges
+ Diana Pfeil: can you successfully tune? Have you had cases where you've kind of, like, nothing worked, and what happened there? How many rounds does it take? Yeah, I'd just love to hear more.
+ Hamel Husain: Okay, I could try to take this and Shreya can.
+ Shreya Shankar: Yeah, I can go after. I have so many thoughts, but you do too.
+ Hamel Husain: So, okay.
+ Hamel Husain: One thing I like to do, I'm kind of weird in that I like to manually tune my LLM judge, just because I love reading the prompt and understanding what is going on, and that helps me to make it good.
+ Hamel Husain: And what I usually do is do, like, some kind of error analysis on the judge to understand, like, what examples is it missing and I try to think holistically about, like.
+ Hamel Husain: Why would a human… struggle with this, potentially. Like, what is… what is tricky about this
+ Hamel Husain: situation in which an LLM judge.
+ Hamel Husain: would struggle. And I try to, like, think about, okay, you know, what are some better rules that are not overfit to that particular failing example, but if I, like, how do I generalize this error a little bit? Like, what is possibly confusing? Maybe some errors
+ Hamel Husain: kind of necessitate an example. Some things are, like, way easier to explain with an example, just like it would be with a human. Be like, I don't understand what the hell you're saying, I need an example. You also want to make sure those examples are not overfit.
+ Hamel Husain: to that particular failure. You want to be… you want to think like a teacher, like you are a teacher in, you know, having that.
+ Hamel Husain: And then, generally speaking, like, It's always good to try to scope the LLM judge.
+ Hamel Husain: very specifically to the error. A lot of times, like, when I struggle with the judge, I'm like, oh, this is scope, this is trying to catch too many things. There's, like, there's, like, really, like, 5 different errors in here, 3 different errors, like, distinct errors. And then, you know, I separate that. And that helps a lot.
+ Hamel Husain: I can… yeah, and then, like, you know, there is an upper limit to how good you can get the judge. I mean, we want to get 100% as humans, because we like to, you know, do things the best of our ability, but…
+ Hamel Husain: There's, like, some noise inherent in, the judge, and so,
+ Hamel Husain: Sometimes, I just have to deal with the noise. I have to know, like, what that noise is. You know, I've never had a situation where…
+ Hamel Husain: I couldn't, get the judge…
+ Hamel Husain: To at least be minimally useful.
+ Hamel Husain: In the sense, like, it has enough signal to be useful.
+ Hamel Husain: So I haven't had that experience yet?
+ Hamel Husain: But that being said, like, I, yeah, often re…
+ Hamel Husain: think what the judge is doing if I get stuck. Sometimes I rethink what the product is doing as well.
+ Hamel Husain: I was like, if I don't know how to…
+ Hamel Husain: Evaluate what's going on is, like, too difficult.
+ Hamel Husain: That's a lot of times the smell.
+ Diana Pfeil: Okay, yeah.
+ Shreya Shankar: Yeah, I echo a lot of that experience. So I've never been able to get an LLM judge without, like, a lot of work aligning it, even for the most benign of LLM judges. Maybe… yeah, I don't know, I'm just not.
+ Diana Pfeil: Did you say it takes you a lot of work?
+ Shreya Shankar: It takes me a lot of work for every LLM judge that I do. I've never been able to successfully get an LLM judge a lie, like, good TPR, TNR, very early. Like, I've minimum have had to… yeah, this meme, I, like… this is my favorite meme of Hamel's, because
+ Shreya Shankar: This is just so much headache for me, like, I…
+ Shreya Shankar: I level at least, like, 300 or so traces for alignment.
+ Shreya Shankar: I've just… I've never been able to… to do it. I don't know… I don't know what it is. I feel like, you know.
+ Shreya Shankar: it's very difficult to describe to the LLM judge what to do, especially if it has to consider context in order to make the decision, then I find that the judges are, like, really bad. I found that some judge models are better than others, like the long context model. I, like.
+ Shreya Shankar: I like the Gemini Flash model, but that's, like, a heuristic. Like, I don't think it makes my alignment any easier. The process is still really, really…
+ Shreya Shankar: tedious and painful. I only do it when, like, I really can't see another alternative. A lot of times, I like to just use code-based evaluators, which I find are just really, really precise. Like, if I can come up with, you know, a really big regular expression, or a bunch of keywords that probably flag the error.
+ Shreya Shankar: They might not recall all instances of the error, but they can recall some.
+ Shreya Shankar: then I might just feel like, okay, I'm happy enough with this, because at least I can trust it, but yeah, I'm really not a fan of LLM Judge, unless I absolutely have to. Most recent LLM Judge that I feel like I had to do was, I built, like, a rubric for writing quality for one of my things that I'm building, where the LLM is generating summaries that need to be read by a human.
+ Shreya Shankar: And the quality of the writing is just pretty awful, so I have an LLM judge.
+ Shreya Shankar: So, first of all, my writing quality rubric has, like.
+ Shreya Shankar: 20 points in it, and I would say only 3 of them are evaluated by LLM Judge, and I really don't trust them. Just, I would never, like, have alerts on them. Everything else I've tried to figure out how to express in a code-based evaluator. Sometimes I use an LLM judge.
+ Shreya Shankar: And then end up turning that into a code-based evaluator?
+ Shreya Shankar: But that's the anecdotal experience.
+ Hamel Husain: I don't think I can make a good LLM judge for writing either. I wouldn't even take, if someone gave me that task, I'd be like, I'm out.
+ Shreya Shankar: so.
+ Hamel Husain: I wouldn't say I have.
+ Shreya Shankar: Yeah.
+ Hamel Husain: Do that, that specific one.
+ Shreya Shankar: So writing is very big, and like…
+ Shreya Shankar: this is particularly for summaries for a specific application, and I have broken it down into 20 points. So, like, one of these points
+ Shreya Shankar: or one of these criteria is, every sentence, the subject of the sentence must be either the human being or the agent. So, like, you can't have any other noun be the subject of a sentence. This is an example criteria that I thought, okay, like, I should probably just give this to an LLM judge.
+ Shreya Shankar: And even then, I could not get good alignment. It's so well-defined. I, like…
+ Shreya Shankar: Yeah, I don't know. I found that the LM judge is not very good. So…
+ Shreya Shankar: Yeah, that's just my experience, but, you know, you'll see a bunch of people on the internet love LLM judges, so they must be doing something that I don't know, and I would love to know.
+ Diana Pfeil: Yeah.
+ Hamel Husain: I need to find those people. I want to find those people. That's really interesting.
+ Diana Pfeil: This reflects my experience, and especially when getting an agent to… it's interesting, Hamel, that you said that you write your own prompts.
+ Diana Pfeil: Because with agents, they just, like, bloat the prompt, like, all of a sudden, it's insanely long, there's no way. It just feels so uncomfortable to me to then use a judge.
+ Diana Pfeil: That's feels insanely long.
+ Diana Pfeil: And complicated, so then I go, okay, now start from scratch, but make it really short, and then, but yeah, it just feels like a never-ending loop.
+ Hamel Husain: Yeah, I have a philosophy that the prompt, like, there's so many things that you're not going to look at. You're not going to look at the code.
+ Hamel Husain: You're not gonna look at…
+ Hamel Husain: I mean, yeah, you're not gonna look at the code, but the one thing, like, okay, where do I go to understand, like, what the pre- where the preferences are? Okay, like, I feel like I should be able to look at the prompt somewhere, somebody's prompt somewhere of what is supposed to happen.
+ Hamel Husain: And that's why I feel like…
+ Hamel Husain: These prompts are something that I need to understand.
+ Hamel Husain: Otherwise, like, I don't understand anything. Like, if I don't understand the code, and I don't understand the prompts.
+ Hamel Husain: Like, I don't know, like, you know, so, I try to, like, keep that human. That's, you know.
+ Diana Pfeil: Okay.
+ Hamel Husain: There's different shades of gray there, like, it doesn't have to be, like, 100% human, like, okay, if you have an agent write it, fine, but at least, like, you understand it, but just, like, for whatever reason, when agents write it, like you said.
+ Hamel Husain: I can't understand most things that are written by agents, like, it's just the way it's written, it just…
+ Hamel Husain: makes my brain trigger off if it's, like, the AI-style writing, you know?
+ Hamel Husain: So, yeah, it's hard.
+ Diana Pfeil: And okay, you said you don't like auto research, but Shreya, have you tried to turn auto research onto a judge with any level of success?
+ Shreya Shankar: I usually try to auto-research, actually, the LLM judges, and just…
+ Shreya Shankar: I actually use it as a sanity check, like, if I find that the agent cannot improve in auto research, cannot improve on the LLM judge score, then, like, my LLM judge is too bad, if that makes sense. Like, there should be something to hill climb on, so I use it as a sanity check in that regard, but…
+ Shreya Shankar: Not to, like, deploy it anywhere.
+ Diana Pfeil: Okay, thank you!
+ Hamel Husain: Actually, like, when I heard that Shreya is slightly less pessimistic than me about auto research, that makes me less pessimistic. Like, I'm… I want to… I'm gonna, like, have a go at trying it a little bit more.
+ Hamel Husain: There's certain people that when they tell me things, I'm like, hmm, okay, so you should listen to Shreya a little bit. Like, that's mine. Oh, I listen to Shreya.
+ Diana Pfeil: Yeah. It also makes sense as a sanity check, or even as, like.
+ Diana Pfeil: a brainstorm space, right? Like, you get a brainstorm space that… and some level of evaluation on top of that, and that can help with your own…
+ Diana Pfeil: decisions.
+ Diana Pfeil: Okay, thanks.
+ Hamel Husain: Yeah.
+ Hamel Husain: Good questions.
+ Hamel Husain: Mark?
+ Mark St. John: Thanks. I'm coming with a work-related question based on last week's topic of guardrails.
+ Mark St. John: I'll give the setup, like, a basic version of the setup, and that is, I'm working in a regulated industry, and our app has two agents in it.
+ Mark St. John: One agent can only educate, and the other agent can advise.
+ Mark St. John: And we are enforcing a single policy, and that is the education agent cannot provide advice.
+ Mark St. John: Now, what the POs want is for a question where a user comes in and asks a two-parter.
+ Mark St. John: Right? Wants to know about a topic, and wants advice on something.
+ Mark St. John: The POs want each agent to handle those separate.
+ Mark St. John: Questions, though some questions have prompted.
+ Mark St. John: And then recombine the answer in a way that is compliant.
+ Mark St. John: The challenge is…
+ Mark St. John: In order to do that, they want a third agent that synthesizes the two agent responses into a single response.
+ Mark St. John: Now… Why do you.
+ Hamel Husain: Do you have to break it up into two agents? Like, what's going on? What's the… why are you being forced to do it this way?
+ Mark St. John: So one agent is a RAG app, is a RAG assistant that provides the education answers, so it has access to a knowledge base.
+ Mark St. John: That… that agent must answer based on knowledge base only.
+ Mark St. John: The other agent is hooked up to Deterministic Engine.
+ Mark St. John: That provides, regulated advice, and it can't stray from advice.
+ Mark St. John: From that engine.
+ Mark St. John: So, there are essentially two classes of users that are on the system, and one class has access only to the education agent, and then the one that pays more has access to the advice agent.
+ Hamel Husain: How does the system give deterministic advice? That's really interesting. Like how can you give good advice that's deterministic? Can you tell me more about that?
+ Mark St. John: Oh, good question. So, what it's.
+ Mark St. John: The original intent, when this was dreamt up, was the agent Would…
+ Mark St. John: take from the user's prompt. It would do a structured data extraction to figure out who the user was.
+ Mark St. John: in what they're asking for, and then it would use that information to look up from a deterministic engine.
+ Mark St. John: The information that person's looking for, He would then,
+ Mark St. John: cobble together an answer with a little introductory text, and then a widget would be inserted that has the deterministic information.
+ Mark St. John: Some exit tests would be generated.
+ Mark St. John: So, when the UI served it up, that widget was populated.
+ Mark St. John: the deterministic information.
+ Mark St. John: But the way the, development has gone, is the
+ Mark St. John: They're now showing that widget information to the LLM.
+ Mark St. John: So the LLM is now generating summary text around it in addition.
+ Mark St. John: So now we're having to, within that agent itself, make sure that summary information is grounded.
+ Mark St. John: Which… 5.
+ Hamel Husain: Okay, and why the third agent? To synthesize both answers, or whatever? Like, why, what is it going on?
+ Mark St. John: So, if you have the education agent answering a question, it might give you, you know.
+ Mark St. John: 500 words of text, which is long and a little…
+ Mark St. John: chatbot window, the second agent might do the same. Putting the two together, it becomes more text. Like, if you just patch, you know, one after the other, it becomes more text than they want to serve up in the UI, as well as the answers aren't necessarily cohesive with each other. There's no…
+ Mark St. John: Handoff sentence, if you will.
+ Mark St. John: It doesn't sound like a conversation. It sounds disjointed.
+ Mark St. John: So the POs really want it to be.
+ Mark St. John: They want that text agent to take both pieces of text, make sure it fits into a certain number of characters, and make it
+ Mark St. John: Well, well.
+ Hamel Husain: Yeah, I'm… you know, okay, so… It's, the reason I'm.
+ Hamel Husain: One tension I have, I guess, in hearing your story is you're saying that you have an education agent.
+ Hamel Husain: That's supposed to be separate.
+ Hamel Husain: And then advice agent, that's supposed to be separate.
+ Hamel Husain: But yet, you have an agent
+ Hamel Husain: That is together, like, that bundles them together, so I was like, like, how do we resolve this, like.
+ Mark St. John: It's been… well, it's been proposed, right? So this is the… and as it was proposed and put to my team, it's responsible for the
+ Mark St. John: Thanks, people.
+ Mark St. John: It… we immediately raised this flag. Okay, we have a challenge here.
+ Mark St. John: that… the res… you know, this new text agent. We don't know how to apply policy to it.
+ Mark St. John: It's… It's not.
+ Hamel Husain: Is this a situation where getting advice can be bad, like you don't want to give advice? The user's not asking for advice, okay.
+ Mark St. John: off.
+ Hamel Husain: Okay.
+ Hamel Husain: My first… okay, also, like, what's your question? Sorry, I didn't… I was trying to understand.
+ Mark St. John: Well, so my question is, have you seen this sort of thing before, and what, And is there…
+ Mark St. John: you know, what would be your suggested ways out of this? And suggested ways out of this would include telling the POs, and…
+ Mark St. John: And the system is feeble. They just can't build it this way.
+ Mark St. John: Oh, like, that's an acceptable response.
+ Hamel Husain: Yeah.
+ Hamel Husain: My feeling is… is, like.
+ Hamel Husain: you want to simplify this architecture, because it's going to become unwieldy super fast. You have, like, a separate thing here, you're, like, trying to separate something, then recombine it, and you're kind of fracturing the intelligence.
+ Hamel Husain: Like, if you try to do that to me as a human being, you say, like, Hamel, you are only allowed to, like, do education, then you gave me, like, some kind of drugs where I forget everything. You say, okay, now you can only give advice, then you gave me drugs again.
+ Hamel Husain: I made me forget everything again, you said. And then you said, Hamel, like, combine these two things you said. I'm gonna be so confused, like, when I give the answer, like.
+ Hamel Husain: even, like, as an intelligent… like, as a somewhat intelligent being, like, at least intelligence, it would be very hard. And, like, I would hate for you to have to deal with this…
+ Hamel Husain: This fractured intelligence, because you would be debugging this fractured intelligence.
+ Hamel Husain: That is deeply… Tortured, in a way. Like, from doing these cobbling together.
+ Hamel Husain: And I would say, like, hey, like, can we just push it all into one agent?
+ Hamel Husain: And then say, like, before you give the answer.
+ Hamel Husain: You know, have it reason about, like, the type of answer you want it to give.
+ Hamel Husain: And, like, you know, advice versus education, like, we can't give advice.
+ Hamel Husain: And then I would build some…
+ Hamel Husain: Guardrails and some evals around this split.
+ Hamel Husain: you know, and I would, like, I would kind of put it into one agent, and you, you know, you have these deterministic advice things, like, yeah, you can make… you could think about this agent, this one agent, and say, like, hey, we're not allowed to make those tool calls to do that retrieval.
+ Hamel Husain: If this is… if this is, like, not an advice task, or something.
+ Hamel Husain: That's my first feeling when you say that. And I know you're pushing against, like, some legacy decisions.
+ Hamel Husain: But, you know, a lot… it's like software, like… As your product changes.
+ Hamel Husain: You can't just keep those legacy things in place, so it's like the debt of that is going to crush you.
+ Hamel Husain: So, That's my first thought.
+ Mark St. John: So, if I'm hearing you correctly, it's more or less, rather than two agents, have a single agent that has tool calls available to it, and the education RAG lookup is just one of those tools, and then answer the questions one at a time.
+ Hamel Husain: I think so, yeah. Because, like, you're telling me, you've done some error analysis, even in the loose sense, you already know that the fractured intelligence is hurting you. That, like, this, like, thing that has amnesia and is, like.
+ Hamel Husain: you know, it can't answer coherently. I'm not surprised that it can't answer coherently. So, like, if it's one agent, then you can have it, you know, attend to both items when it's trying to give an answer, and it's more likely to be coherent.
+ Mark St. John: Yep.
+ Mark St. John: Makes sense. Alright.
+ Mark St. John: Thanks, Hamel, appreciate it.
+ Hamel Husain: Yeah.
+ Hamel Husain: All right, Chris.
+ Hamel Husain: I think you're on mute, or… you're not on mute, but the audio isn't coming through.
+ Hamel Husain: I have this problem all the time, by the way. I ask Codex, like, please fix this.
+ Hamel Husain: Because I'm at the point where I also don't know sometimes.
+ Hamel Husain: Okay, you're on mute now. Maybe you're trying to…
+ Hamel Husain: It's a tough one, man. Bluetooth.
+ Shreya Shankar: Mike is connected.
+ Hamel Husain: Yeah.
+ Shreya Shankar: It.
+ Hamel Husain: It says you're on mute, though. Let's see. Try now.
+ Shreya Shankar: No.
+ Hamel Husain: No, no audio.
+ Shreya Shankar: Okay, we can let him debug his setup, and then we can go to Shriram.
+ Shreya Shankar: Okay.
+ Shrirang Moghe: I, thank you for taking my question. Question on LLM judges again.
+ Shrirang Moghe: So, I'll… really working in the CAD space, but I'll try to translate it into some shipping or order space.
+ Shrirang Moghe: So I feel that we create the categories of failure, and the category actually has multiple dimensions, and to write a judge on it, I think I think writing code checks, let's say order.
+ Shrirang Moghe: An order object would have, like, you know, the price, the color, the number of items, quantity, and all that. And those are… those dimensions are very easy to check, but as soon as it
+ Shrirang Moghe: Kind of go into the review object.
+ Shrirang Moghe: That's where text comes in. So, by the nature of it, actually, as LLM as a judge.
+ Shrirang Moghe: If you throw multiple things at the church.
+ Shrirang Moghe: It… it becomes a little tougher to achieve, as long as you have, like, straight number checks, or value checks, or…
+ Shrirang Moghe: I just wanted to understand, where the issues lie, and
+ Shrirang Moghe: what, verifiable is, I think, very easy, is how I see it, but…
+ Shrirang Moghe: As soon as you add more dimensions to a judge, the rubric kind of just goes on increasing, actually.
+ Shrirang Moghe: So I feel that the category itself is at odds with the judge creation, actually.
+ Hamel Husain: Wanna try this one, Shreya?
+ Shreya Shankar: Hold on, my internet kind of…
+ Hamel Husain: I think you're good. I can see you, I can hear you.
+ Shreya Shankar: Hello.
+ Hamel Husain: Yeah, I can hear you, see you. Maybe you can't hear or see us.
+ Shreya Shankar: Hello.
+ Hamel Husain: Yes.
+ Hamel Husain: Okay, I'll try to take this one, no worries.
+ Hamel Husain: So I think your question is, like, where… okay, I… I'm trying to, like, interpret your question. So, like, basically, like, you want to think of LMS Judge, it's not about, like, the dimensions of input you're putting in, it's, like, what is the failure that you're trying to catch, and try to scope the failure to be very, very specific.
+ Hamel Husain: And that's how you can manage complexity of your judge. Your judge might need lots of context from lots of places and lots of different fields from your trace.
+ Hamel Husain: That's not usually the problem. The problem usually is your judge is scoped too large, like, it's trying to catch way too many things, like, too many different kinds of errors.
+ Hamel Husain: You have to think about, when you see your judge, With a pass-fail score.
+ Hamel Husain: Your goal is to make that judge immediately actionable, so, like, you know exactly what to fix. You don't want a judge that says, like.
+ Hamel Husain: some vague error, and you're like, I don't know… I don't know what broke. Like, I don't really know. I have to do a lot of, like, digging to find out what caused this. You don't want that?
+ Hamel Husain: You want to scope the judge.
+ Shrirang Moghe: Mmm.
+ Shreya Shankar: I've okay. Can you hear me? I think I can hear you now. Yeah.
+ Hamel Husain: Yeah, I can hear you.
+ Shreya Shankar: Okay, so I have two more things to add to this. I agree with everything you said. So one is that you want also your judge.
+ Shreya Shankar: criteria to be defined very, very precisely, especially if you have an agent writing these prompts, they can be very ambiguous and, like, extremely convoluted. So maybe going back to even what Hamel always says, it's like, just write the judge prompts yourself and try to be extremely precise in there. The other failure mode I have run into before, and I don't know if that's applicable to your CAD setting, it probably is.
+ Shreya Shankar: Is, like, conflicting context and different inputs. I see this happen a lot, and…
+ Shreya Shankar: Yeah, without going into details, like, if that resonates with you, then think about it, but yeah.
+ Shrirang Moghe: No, it does, it does. I think the point is to get it scoped really tight.
+ Shrirang Moghe: And, not catch a whole bunch of things. Essentially, you split it into a subcategory.
+ Shrirang Moghe: Rather than creating a major category in that area, yeah. Cool.
+ Shrirang Moghe: Makes sense, yeah. I think that was my issue, is that the category is pretty huge, and it has to manage across two different categories, which is a super sad act. Thank you.
+ Hamel Husain: Erik.
+ Erik Krag: Yeah, so I want to take a step… quite a step back in the course. I'm, you know, been looking at some pieces against a previous project I've had, and try to take some lessons learned from that. So I want to get your guys' feedback on it. At a high level, the project was an invoice validation assistant.
+ Erik Krag: for utility, to help people review invoices against contracts and various rules they had. Going into this, you know, didn't have a lot of context, got more over time, but it took a long time to sort of do the error analysis, understand what these things were, and there wasn't a lot of labeled data there. I'm interested to know, you know, there's various tools you guys have talked about, but it, you know, we tried something, which I guess I can get into, but I'm interested to know, like.
+ Erik Krag: you know, we… is there ways you've seen pilot releases work where you get feedback from users that can help guide some of your error analysis and be used as part of that, or what have you seen there? What are sort of best practices with that? Because that was one thing that could have gone better, I think, in the project.
+ Shreya Shankar: Well, it's a good question. I feel like the Anki Hub example is a good example of this, Hamel. Maybe I can talk about that.
+ Hamel Husain: And Isaac is going to go through the Anki Hub example in a whole bonus lesson tomorrow, by the way. He should come to it.
+ Shreya Shankar: Yeah, at a very high level, the idea was that Augie Hub, their product is, like, flashcards, essentially, like, automatically generating flashcards from textbooks, and they found that medical students are, you know, a primary user of such a tool, which kind of makes sense, and
+ Shreya Shankar: Like, I think they did not trust the AI to be able to automatically generate medical questions. Like, it's a difficult domain that a lot of LLMs are not trained on. So they basically contracted several medical student evaluators to come and, like, label the data.
+ Erik Krag: multiple.
+ Shreya Shankar: Custom interface, have them give feedback.
+ Shreya Shankar: I think they tried to… to calculate interrater reliability. I… maybe Hamel knows a lot more there, but, like, from my conversations with them. But the point being here is I think they just, like, really were on it as product people, like, they observed who was using it, and then
+ Shreya Shankar: got them in somehow in the labeling process. And it doesn't have to be that much data. I think it's… you want to be able to watch your users, if they're willing, or you might have to pay them to do error analysis, and that might, you know, trigger, ideas for you to improve on.
+ Shreya Shankar: Maybe I'm misrepresenting the situation, Hamel.
+ Hamel Husain: No, no, that's a pretty good one. Like, you want to… you definitely want to have real users. It's really hard to…
+ Hamel Husain: use synthetic data.
+ Hamel Husain: I mean, it is kind of like a first line of defense, but it's not… it should not be your total, like, solution. And you want to think, like, really carefully, like Shreya said, about designing the products so that
+ Hamel Husain: You can get the end user to help label it.
+ Hamel Husain: And that is a very tricky subject.
+ Hamel Husain: Like, it takes a lot of thought to do that, because you have to balance this idea of, like, you don't want to put friction in the workflow and make your product worse by, like, having someone label.
+ Hamel Husain: But also, like…
+ Hamel Husain: You kind of have to think about it like, how do you bring the human along for the journey? Like, how do you make them confident in your answer that you're giving?
+ Erik Krag: the.
+ Hamel Husain: And then can you have a workflow that does that? That, like, adds value at the same time of you get
+ Hamel Husain: Signals from your user, and you have, again, it's like a design problem.
+ Hamel Husain: But oftentimes, if you do that, that…
+ Hamel Husain: Boost things a lot, because now you can… Debug things a lot easier.
+ Erik Krag: And one last piece here, I guess, is with that, when we're saying, you know, getting people to go through error analysis, the value there is to go through
+ Erik Krag: sort of the entire review of how it got there, not just the end results of, you know, what the AI said for this rule, or what that said there, you know, the value there you're pushing is to go deeper than that in some way, to have them, you know.
+ Erik Krag: you know, maybe remove some of the complexities of the traces and things like that, but at least getting some of the pieces. For this example of going to the contract and wear that hat, or whatever those different pieces are, so it's.
+ Erik Krag: Better data on that, it makes it go quicker. Is that, am I summarizing that correctly or would you push against that?
+ Hamel Husain: Yeah, okay, so one thing I want to clarify here is, like.
+ Hamel Husain: Your job in error analysis is basically issue spotting.
+ Hamel Husain: Now…
+ Hamel Husain: And you want to try to make it as efficient as possible, so you're… you're trying to, like, use your time wisely, and so what you're trying to do is… You're trying to find what is the most important
+ Hamel Husain: Like, is there, number one, is there an issue?
+ Hamel Husain: And secondly, what is the most important problem…
+ Hamel Husain: That I should be focused on in this trace.
+ Hamel Husain: And there's a lot of ways to go about that. When you practice it.
+ Hamel Husain: So, sometimes what I do, depending on the use case, I will, like, look at the…
+ Hamel Husain: I will look at the user query, I'll look at the end result.
+ Hamel Husain: to get just an idea, like, is it obvious, like, something went wrong? And then I'll go all the way back up to the beginning, and I'll start reading.
+ Hamel Husain: And sometimes you get intuitions, like, when you learn about a specific product, you're like, you know, I bet there's a problem here. Or you can start to smell the problem.
+ Hamel Husain: And you get really good at doing this issue spotting of, like, oh, okay, you know what, like, just focus on this, this is a problem, I bet it's here. You know, like, almost where to look in the trace. You're like, I'm gonna look here.
+ Hamel Husain: And you're, like, in your mind, you're like, oh, it's, like, a high probability the error is here, based on, like, because you know your system, you looked at your data, and you're kind of becoming this, like, very intelligent.
+ Hamel Husain: Issue… spotting machine?
+ Hamel Husain: And that's the way it works. We tell you, like, okay, start at the beginning of the trace and start looking down. I'm just giving you a little bit more intuition, like, you're just trying to be, like, very efficient. I mean, we tell people when we're first starting out, like, start at the top and start reading.
+ Hamel Husain: Because you need some training wheels, like, as you begin, but I'm trying to give you, like, what's behind that.
+ Erik Krag: Perfect, thank you.
+ Hamel Husain: Sachin.
+ Sachin P: Yeah, hi. So my question is basically regarding JEPA. So I really like the fact of optimizing prompts. It's also pretty scary in the sense.
+ Sachin P: Because JEPA doesn't have a proper objective function or any kind of safeguards against overfitting. In this particular case, that's my guess. I haven't gone through all the 96 pages.
+ Sachin P: One of the questions for me here is, like.
+ Sachin P: First thing, like, do we need, like, different models?
+ Sachin P: One to kind of grade the prompts and perform the exploratory work.
+ Sachin P: versus the actual agent which is using, right? Like and and what should like which one should be smarter and should have more context of the domain and the subject to get better at this.
+ Shreya Shankar: Cool, yeah, so I can… I can take a stab at these questions. So for the verify… the judge…
+ Shreya Shankar: LLMs, like those evaluators that JEPA is gonna hill climb on, that can be a different LLM than the agent that's doing the JEPA auto research. So think of JEPA as a flavor of auto research.
+ Shreya Shankar: The agent that is proposing the new prompt ideas and reflecting on traces could totally be a different model than the judge or the evaluators.
+ Shreya Shankar: That's fine. It happens all the time. And in practice, actually, people want… you want to have a really powerful model be the auto-research model, because it has to come up with good ideas, right? It has to be powerful enough to read the traces, think, oh, okay, maybe if I add this instruction to the prompt, then I'll be able to tackle this many more tasks, and it has to be that intelligent, so typically people have that be.
+ Shreya Shankar: you know, a Codex, or, like, a GPT-5 plus model, or a Claude Opus model, whereas the LLM judge verifier, right, that needs to run for many different tasks, and often many trials each, so that ends up being a little bit cheaper, so people don't run out of freight limits.
+ Shreya Shankar: I think that was your question. Correct me if I'm wrong.
+ Sachin P: Yeah, so that was, like, the first part, and the second part is, like,
+ Sachin P: The prompts getting better is essentially graded on the results that it produces, right? And that can also, like I've experienced, like when I was trying to build this loop, like without any context of Jeppa, is that like sometimes it was memorized the examples.
+ Shreya Shankar: Yeah.
+ Sachin P: and add it in the prompt and kind of like start, you know, really doing well on the scores, right?
+ Shreya Shankar: totally.
+ Sachin P: So how do we, like, is there some, like, I don't know, multi-arm bandit kind of a, you know, similar mechanism over here to make sure that it randomizes some.
+ Shreya Shankar: I see.
+ Sachin P: you.
+ Shreya Shankar: Yeah, so multi-armed bandit isn't quite the solution. The solution here is to have a separate dev set and a test set, where you run… the agent is looking at traces or rollouts from the dev set to propose new prompts, and then when you consider what the Pareto frontier is.
+ Shreya Shankar: You only calculate the frontier based on scores on the test set. So the agent doesn't have access.
+ Shreya Shankar: To any examples in the test set, or any traces from the test set.
+ Shreya Shankar: by… or even scores, rather. It's just, like, in the step one of JEPA, where we say sample one prompt at random from the frontier, that frontier is calculated by test set scores. It's not perfect in practice. Most people have, like, really tiny dev sets and test sets.
+ Shreya Shankar: But so that's like not great because, you know, you might overfit small samples, etc. But but the dev test split, as long as we have enough examples in each can.
+ Sachin P: Bigger fuck.
+ Shreya Shankar: problem.
+ Sachin P: All right, thanks, thanks.
+ Hamel Husain: Vladimir.
+ Vladimir Rodeski: I have a question about,
+ Vladimir Rodeski: Multi-agents, since we touched upon this.
+ Vladimir Rodeski: Specifically, I'm working on this quantitative research and trading.
+ Vladimir Rodeski: systems using different agents, and one agent is about data acquisition, so finding some market data, downloading it, validating it. Another agent is about research.
+ Vladimir Rodeski: Following methodologies that are, you know, prescribed, and making sure there's no look-ahead bias, and many other things that you can kind of.
+ Vladimir Rodeski: do. And then there is a trading agent. So.
+ Vladimir Rodeski: 2 questions. One is, at what point would you consider separating like one agent into multiple agents.
+ Vladimir Rodeski: And two.
+ Vladimir Rodeski: at what point would you consider doing, sub-agents within one agent to… because, for example, the research agent, it does a lot of different tasks, and usually it's not that common for it to run out of context window. And then what I found was.
+ Vladimir Rodeski: If you use sub-agents to actually do some
+ Vladimir Rodeski: Let's say spikes or mini experiments.
+ Vladimir Rodeski: Then… It's and that's my kind of vibe.
+ Vladimir Rodeski: assessment, it performs better. It keeps… it is on track better, it results more coherent, it doesn't… so…
+ Vladimir Rodeski: So yeah, these two.
+ Shreya Shankar: Is the question, like, whether to split into multi-agent or sub-agent?
+ Vladimir Rodeski: Both. So, yeah, you can have one agent, but then just split into sub-agents when you do, like, long-running tasks, just… versus when it actually makes sense to just do multi-agents.
+ Shreya Shankar: Oh, from the get go? Yeah.
+ Vladimir Rodeski: Yeah, from the get-go.
+ Shreya Shankar: I'll give my answer, and then I'm curious what Hamel says. For me, if I can already tell up front before doing the task what… how to partition the work, then, like, a multi-agent setup.
+ Shreya Shankar: upfront makes sense. Like, for example, if I…
+ Shreya Shankar: for JEPA, you can imagine JEPA is a multi-agent system, because it'll have, like, a proposal agent that is trying to propose new prompts. You know, depending on the components of the architecture, you can have an agent for each one, like, that's what I would call a multi-agent setup. Subagents, I…
+ Shreya Shankar: think are something I would only use, like, if by reasoning the agent realizes that it needs to farm out tasks. then it might invoke sub-agents to do that. So an example might be, like, some sort of data processing task.
+ Shreya Shankar: or, like, a data agent. You know, I… I have one data agent, but then if the data agent receives a question, and that question probably involves, like, calling 10… querying 10 different databases and trying to join those results, then
+ Shreya Shankar: you know, my data agent should probably use subagents to then go reason over the context returned by all of these databases and come up with the answer. So it's actually really, really different in my head, and the way that you program it is also different, like, with subagents, right? Subagent is essentially just a tool call in a harness, like, if you're using Claude Agents SDK or OpenAI SDK, like we are using.
+ Shreya Shankar: But yeah, hopefully that answers… I'm curious what Hamel says, actually.
+ Hamel Husain: No, I mean, that's a really good answer.
+ Hamel Husain: Yeah, I mean, just add on to that. I try to start simple.
+ Hamel Husain: And then increase complexity incrementally on things.
+ Hamel Husain: Sometimes, like, it's simpler to use subagents, like Shreya's saying, like, if a task is inherently parallelizable.
+ Hamel Husain: I mean, you would sit there and get frustrated by one task blocking another task. It would feel, like, more complicated.
+ Hamel Husain: You know, not to use these things.
+ Hamel Husain: Zooming out, I think your intuitions are really good. Like, you are trying things, you have some evals, you're like, oh, the context is getting full, should I use subagents?
+ Hamel Husain: Yes, yeah. And, you know, I think you're going about it the right way, you're thinking about things the right way, it sounds like your intuition.
+ Hamel Husain: Is… you're exploring it correctly, and then, yeah, you can always,
+ Hamel Husain: Use the evals that you have to give you some signal.
+ Vladimir Rodeski: So, I'm using Claude Code a lot for these agents, and one thing that I ran into is there's no easy way to have traces from Claude.
+ Vladimir Rodeski: And if you try, you can use OpenTelemetry, but it doesn't show all of the data, so you have to do some other stuff.
+ Vladimir Rodeski: Do you have that experience? How do you look at traces from cloud code?
+ Shreya Shankar: What do you mean by, like.
+ Vladimir Rodeski: OpenAI, for that matter.
+ Shreya Shankar: In Claude Code, like, my own usage of Claude Code, or… Oh, I don't. I should more.
+ Shreya Shankar: Yeah.
+ Shreya Shankar: I feel… I don't have a good answer.
+ Shreya Shankar: Maybe.
+ Hamel Husain: Yeah, I don't have a good answer either. There's this thing, maybe you want to take a look at it. I don't know if it…
+ Hamel Husain: I mean, I don't know what Trace has exposed.
+ Hamel Husain: Buy it. It does keep track of some history that you can look at. Again, I don't know if that's…
+ Hamel Husain: gonna do it. My intuition is, like, you might want to use the… if you're using Claude, like, try to use, like, the agent's SDK.
+ Hamel Husain: and invoke that from Claude Code, see if you can push it into something you can control more.
+ Shreya Shankar: Yeah, I guess I've never had this need, because I feel like I… I'm not in the business of doing error analysis for, like, Anthropic.
+ Shreya Shankar: So it's never.
+ Shreya Shankar: I don't know if I want to look at my own traces and do error analysis in the way that I would do for, like, an agent that I'm building, if that makes sense? Like…
+ Shreya Shankar: I'm sure I will find a lot of issues, and it's really difficult, I imagine, to look at my own coding, because they're really long-running, long horizon traces, and… Yeah, and what… I don't know what I would gain from it personally, but maybe… Others would… I don't know.
+ Vladimir Rodeski: Cool, thank you.
+ Hamel Husain: All right, Chris, maybe hopefully the audio works.
+ Chris Iverson: I think I finally got it. I don't know, the system didn't recognize the USB three times in a row, but it was still doing the camera. Anyway, it's the same device.
+ Chris Iverson: My question is, approaching JEPA as a new concept, can you share, like, a mental model about the experiment design, in terms of…
+ Chris Iverson: What… Sets of tasks, or how many tasks are you giving it to try to optimize, and what
+ Chris Iverson: I guess… Are you trying to elicit in the experiment?
+ Shreya Shankar: I don't think I follow your question. Can you…
+ Chris Iverson: So… I'm just trying to… project in my mind the table that you had on the whiteboard.
+ Shreya Shankar: from.
+ Chris Iverson: lecture. There's a set of tasks that it's testing a prompt against and then scoring.
+ Chris Iverson: How do you decide which tasks?
+ Shreya Shankar: I see, to put in there. Those, in my mind, are just… they come out of error analysis. So, tasks that triggered the failure modes.
+ Shreya Shankar: Are a really good candidate for.
+ Shreya Shankar: Auto research.
+ Chris Iverson: Okay, so I guess, my follow-up question that I didn't articulate very well is, are you trying to elicit a stark behavior in… Among those tasks of…
+ Chris Iverson: demonstrating the error or passing it.
+ Shreya Shankar: The idea here is I want to take the tasks that I reviewed in error analysis, or the traces I reviewed in error analysis, I know exhibit the failure modes, and it's actually quite hard… for some of these failure modes, I don't know how to fix it.
+ Shreya Shankar: So I keep these tasks in my set, and my hope is that JEPA or Otter Research is going to find some change to the prompts.
+ Shreya Shankar: that will then solve the issue that I saw on those traces.
+ Chris Iverson: Okay, so it's the type of thing you invoke when your normal
+ Chris Iverson: intuition and skill is stuck, basically. Yes, exactly. That's what I was missing. Thank you.
+ Hamel Husain: Atendra.
+ Atendra: I, so I think my question is similar to… On the chairpower.
+ Atendra: And I think I'm just trying to understand from a task point of view, because I might already have, let's say, offline eval, which are again coming from, let's say, this error analysis. So whatever I have found previously in error analysis are now part of my offline eval.
+ Atendra: I was just trying to understand.
+ Atendra: So.
+ Atendra: Which… so, I mean, JEPA sometimes passes, let's say, some tasks, and then fails on some.
+ Atendra: And then we said that if at least pass on one, then that's a Perito.
+ Atendra: But I think I know that I do not want my new prompt to be regress.
+ Atendra: So, I know that on regression tasks, it should pass, all the time, right? Otherwise, the new prompt is a regression. So, I was just thinking that, is it only for capability tasks, where we said that, okay, on regression, we don't want to, lose that one?
+ Shreya Shankar: Yeah, it's a good question. So, you want to separate the search process from the outcome of JEPA. So, during search in JEPA.
+ Shreya Shankar: it should be able to search for… it should be able to consider any candidate on the Pareto frontier. No one is forcing you, hey, you have to take this
+ Shreya Shankar: candidate and use this in your product. It's just purely for the purposes of helping JEPA be able to evolve better solutions. Now, after you finish running JEPA and you have a Pareto frontier, yes, from there, there's a question of which point on the frontier do you actually use in your production application, and then that is based on, you know, does it pass all your regression tasks?
+ Shreya Shankar: And does it… which one has the highest average on your capability tasks? Like, that metric, right, can be up… or that selection criteria can be up to you.
+ Shreya Shankar: Does that make sense?
+ Atendra: Yeah, yeah, that makes sense.
+ Atendra: And also, I was thinking that I really like the suggestion in the lecture also, that take that as a revise, right? And you write and decide for them. I really like that. I was also thinking that, you know.
+ Atendra: When we have, let's say, too many errors already, so I think, I was thinking that sometimes.
+ Atendra: we kind of, you know, prioritize things. We say that, okay, these are the important ones, because that's also the output of error analysis. And I think the ones where it's simple and not that much important, where maybe this auto-research can help us fix the issues faster, so that we can focus on things where it's more difficult.
+ Atendra: So I think that's really a good, good insight for me.
+ Shreya Shankar: One thing I will say, though, is, like, often auto research is more powerful than JEPA, because JEPA has a very rigid way of considering how to evolve a solution. It says you have to focus on a Pareto frontier candidate, and you have to evolve it in some way. In auto research, you can minimally… you can change Andrea's auto research loop. There's no reason that it has to focus
+ Shreya Shankar: just on the most recent experiment version, right? You could say, like, hey, you have access to this whole directory of experiment versions, and if the agent is really, really capable, right, it should be able to reason through all of those, it should be able to go on and on for hundreds of experiment versions. You know, if you're using Fable for auto-research, that might be more capable. So it really, like, depends on your setup, right? None of these setups, I think.
+ Shreya Shankar: are hard and fast, right? You should take it, internalize what is useful to you, adapt it for your use case, know that the agents are getting better. So at the time that Andre Karpathy did auto research.
+ Shreya Shankar: probably the agent got confused with all these experiment versions, and so he decided, no, I will just give it one. Because agents just weren't as powerful at the time, right? So, like, kind of… yeah, don't follow anything extremely rigidly, especially in this fast-moving space, my advice.
+ Atendra: Yeah, and just to follow up on this, like, these days, a lot of this eval, or let's say, brain test, or ICE, kind of.
+ Atendra: Give this promise of self-improving agents. Is it on the same line of auto research? They are doing similar thing in background?
+ Shreya Shankar: I have no idea what they're doing, and I also don't know how they're doing this without having good evaluators. So…
+ Shreya Shankar: yeah, like, what are they hill climbing on? I don't know. Like, as you could see today in lecture, right, the hard part should not be auto research. It's defining the evaluators and the tasks, which comes from error analysis and LLM judge alignment.
+ Atendra: Thank you so much.
+ Hamel Husain: Catherine.
+ Catherine Alvarado: Hey, I have two questions. Hopefully the first one's quicker, because I'm curious about the second one. Okay, so for axial coding, I think I had mentioned this in a previous session.
+ Catherine Alvarado: But I implemented, like, at my company, we have a trace… we… I implemented the UI to see the traces. So, you know, you see the… all the tool calls, the conversation, etc. But what we're missing is the axial coding, like, the actual… and I would love to make
+ Catherine Alvarado: put that in there as an addition. And I'm kind of having a hard time, like, I can see how…
+ Catherine Alvarado: Doing implementing that for something that I only use is fairly straightforward. But then for a team that's collaborating and where various people are looking at these traces, have you folks.
+ Catherine Alvarado: observed, kind of, like, patterns that work well when we implement the ability to axial code on, like, an internal place where you observe traces.
+ Catherine Alvarado: Yeah, I'm I'm yeah, I've like gone through different iterations in my mind of like, okay, maybe I put a cache and it's temporary. But then I was like, maybe what if people want to see what I axial coded, and but then I don't want to influence them. I want them to come up with so I'm just curious to hear like what you folks have observed works well in in teams that are actively using these.
+ Catherine Alvarado: up.
+ Catherine Alvarado: Yeah, like, the traces.
+ Hamel Husain: Yeah, I try to keep it super simple, like, I tried to have a dictator that is saying, like, look, these are the categories. The point of the axial code is to decide what to work on next.
+ Hamel Husain: So the point is, like, hey, here's the failure we want to prioritize.
+ Hamel Husain: And different people may have different interpretations of that. You know, you can get…
+ Hamel Husain: really deep in the rabbit hole of creating your own SaaS platform for collaborative axial coding with permissions and versioning, and you could go crazy with it. I would discourage you from doing that.
+ Hamel Husain: you know.
+ Hamel Husain: you could have people just give you their axial codes. Like, you could just have it be single player or something, or not have this, like, stuff, and then say, like, give me your axial codes, and you can have one person aggregate them.
+ Hamel Husain: And, like, consider them. I know it's, like, can be uncomfortable to…
+ Hamel Husain: have this idea of one person making the call. But… It's always…
+ Hamel Husain: that's the thing. Like, you need… because it's gonna become very expensive with too much… you have to, like, balance this, like, idea, somehow.
+ Hamel Husain: I think you're on mute.
+ Catherine Alvarado: Yeah.
+ Hamel Husain: Oh, there you go.
+ Catherine Alvarado: Okay, I see.
+ Catherine Alvarado: Yeah, I think having the one-person review, or I guess one person with an agent review the Axial codes makes me… makes me a little nervous, but I guess it is progress, because right now.
+ Catherine Alvarado: It's many people not… not following, like, the consistent approach, so if anything, it leads to, like, a teacher. Hopefully that'll then, kind of.
+ Hamel Husain: Yeah, yeah. Shreya put in the chat, benevolent dictator is totally… that's what we're talking about here. So, yeah, you want to have a benevolent dictator, and the benevolent dictator, the idea is, like, hopefully they're not using an agent, hopefully they're, like, a little bit stressed out.
+ Hamel Husain: They're like, hey, I want to make sure that I'm, like, consistent with my team here. And they do, like, the human work of, like, making sure they understand, like, what their team understands, and hopefully they…
+ Hamel Husain: Kind of learn, and then people kind of trust to delegate to that person.
+ Catherine Alvarado: Okay, okay, I see. Okay, awesome. And then my I know we're like pretty much at time, but I'm just curious to get any.
+ Hamel Husain: No, I can stay longer, it's fine.
+ Catherine Alvarado: Thank you. Let's say you're joining a team for, like, a brand new I guess in my case, it wouldn't be a company, but you're joining, like, a brand new company or team, and you're trying to you're on the evals team, or you're like, I wanna go deeper into this.
+ Catherine Alvarado: And there are already evals in place. And you know that those evals were not implemented following any of the criteria that we've kind of learned in this course. Some of them are generated through agents and just kind of they just go up and they're just running.
+ Catherine Alvarado: How do you, like, what do you do in that case? Like, do you go through and try to understand what evals exist, and, like, try to reduce costs by removing ones that aren't high quality? Do you come in and, like, try to create your own evals to add to the existing evals? Do you, like, find monitoring in place? Yeah, curious to get your, like, where do you start?
+ Hamel Husain: So I always start with error analysis. Error analysis is so valuable, you can just make a career just doing error analysis. Like, if you were… if you just were, like, an error analysis expert, it sounds really funny, and be like, how can that be?
+ Hamel Husain: I'm serious, like, you could, you would really surprise people with the kinds of things you uncover. And the reason I would start with error analysis is, like, I would find, like, what things are actually broken, and use that as the foundation upon which to
+ Hamel Husain: J…
+ Hamel Husain: evaluate the evals. I can't think of a different word, so I know it's like a pun, but, like, you know, I would use that to say, like, hey, these are the biggest errors I know about from looking at the data.
+ Hamel Husain: Is that being caught by the system at all? If it's not being caught by the system, we know, like, just ignore it. Ignore the system.
+ Hamel Husain: Okay, like, you kind of have to…
+ Hamel Husain: Sometimes, you know, this gets into, like, how to manage people, whatever, you have to, like… people might have…
+ Hamel Husain: emotional attachment to the current eval system, you have to navigate that. But, you know, the way I go about it is presenting the findings from the data, and saying, like, hey, these are the current errors that exist. I think we have to think about the way we are doing evals, so we're not distracted by these other metrics.
+ Hamel Husain: So on and so forth.
+ Hamel Husain: But I always start with error analysis, and I just, like, present.
+ Hamel Husain: These are the most burning problems.
+ Hamel Husain: In terms of… your product.
+ Catherine Alvarado: Okay.
+ Catherine Alvarado: Got it.
+ Hamel Husain: I don't even, like, say the word evals. I mean, it's hard not to, because people come to me for evals, but I… I just start with, like, hey, these are the… these are, like, the product issues that we have right now.
+ Hamel Husain: That you… I glean from.
+ Catherine Alvarado: But.
+ Hamel Husain: Both error analysis and maybe, like, other knowledge you have, maybe customer interviews and things like that, and then blend it together.
+ Catherine Alvarado: And how do you choose what traces to start? Like, I like, would you go immediately to the negative feedback traces or, like.
+ Catherine Alvarado: Because if you have a multi-turn agent, there's… There's many.
+ Hamel Husain: Yeah, I would like spend a long time doing air analysis. So it would be like, I would do some random sampling.
+ Hamel Husain: I would look at negative feedback, I would use, like, the error analysis discovery skill that we have in the course, you know, that, like, clusters traces and, like, helps you explore them. And I would start, like, getting an idea of the landscape of, like, different kinds of errors.
+ Hamel Husain: And I would spend a long time in there, like.
+ Hamel Husain: learning, until I feel like I have a good picture about… What the major problems are.
+ Catherine Alvarado: Got it. Thank you.
+ Hamel Husain: Yeah.
+ Hamel Husain: Jigish.
+ Jigish Patel: Hey, thank you. I know we're over time. This will probably be a quick one.
+ Jigish Patel: So.
+ Jigish Patel: the traces, line fuse, and all what we use, right? So, in… we already use
+ Jigish Patel: have a stack, like, we have to define our stack, and we self… we have a self-hosted version of that. But now, introducing traces, like, this will live somewhere else, right? Like, there isn't a consolidated one place for traces to go and can lose
+ Jigish Patel: like, do I need to set up a separate, like, Langfuse instance that's…
+ Jigish Patel: So maybe Agentic Traces, because of all the met… rich metadata that you get, that you don't get in a standardist.
+ Jigish Patel: Let's say, what are you using today?
+ Hamel Husain: Sorry, so what you… you… why can't you put it in the Langfuse instance you have already? Like, the traces that you want?
+ Jigish Patel: So in, in the homework, I have it.
+ Jigish Patel: But for work projects, we have a self-hosted Grafana instance. It's a standard hotel. It's not agent… it doesn't have anything agentic in that today.
+ Jigish Patel: I'm trying to figure out how to bring that in, so is that a separate system to set up, or is that something that I… like, so I maintain two, like, the Grafana stack, and then the Agentic observability stack, or…
+ Jigish Patel: Is there a…
+ Shreya Shankar: I think, at least I've always seen it as two right now, it's just that these agentic observability tools have more features that are helpful for agents. You could, in theory, do all of these metrics and counters and everything in Grafana.
+ Shreya Shankar: But, like, you have to implement all that application logic, right? And… I mean, it's up to you. I think, like, at least knowing that Langfuse have it off the shelf is, like, nice.
+ Jigish Patel: Okay.
+ Shreya Shankar: Or or some other observability tool. So that's why I like to just have some observability tool for Agentic traces.
+ Jigish Patel: you.
+ Shreya Shankar: I will say, though, that part is easy. The hard part is in the LLM judges and the metrics that you will define that are the error analysis metrics after that. And I think it's nice that a lot of, like, Langfuse, for example, provides functionality to be able to run that, whereas, like.
+ Shreya Shankar: For example, Grafana is like a dashboarding tool, but like.
+ Shreya Shankar: Yeah, on top of, like, some traditional, like, Prometheus or something will not do that.
+ Jigish Patel: Yeah, I really like what we used in the course. So yeah, I just want to know, I'm new to this, so I just want to know what the general.
+ Shreya Shankar: Yeah.
+ Jigish Patel: I can write now. Yeah.
+ Jigish Patel: Yeah, I think that covers it. Thank you.
+ Shreya Shankar: Nice. Yeah.
+ Hamel Husain: Anyone else?
+ Jigish Patel: Actually, I just remembered, on the same topic, the harness traces themselves, do they also…
+ Jigish Patel: go with the Agentic traces in Langfuse, or is that more common to.
+ Shreya Shankar: What's the hardest trace?
+ Jigish Patel: So, I mean, like, if you have a…
+ Jigish Patel: Your own, like, what we have with our… OpenAI SDK, right?
+ Shreya Shankar: Yeah.
+ Jigish Patel: There will be traces that come out of that as well, right? Not just,
+ Shreya Shankar: accepted.
+ Jigish Patel: That is part of the…
+ Shreya Shankar: But those will live in OpenAI, right? Like if you want to.
+ Jigish Patel: the,
+ Shreya Shankar: do your own instrumentation and logging, like, that's separate. I don't know how you get the traces directly out of OpenAI. And I imagine that they… they have a hosted SDK, something, as well as their… currently, we are using the OpenSDK, right? So…
+ Shreya Shankar: They're probably not hosting… they're not storing our traces, right? We have not sent any…
+ Shreya Shankar: Like, setup key here.
+ Jigish Patel: Okay.
+ Jigish Patel: Cool, thank you.
+ Hamel Husain: Robert?
+ Robert Zych: Yeah, so, like, the common theme of some of these questions and some of the questions I have as well is, like.
+ Robert Zych: failure analysis, picking the right axial codes, failure modes that are relevant to your agent system, or kind of, like, based off of your own experience and skill. Like, there's this also, you know.
+ Robert Zych: The trust in the benevolent dictator, whether or not that person can guide
+ Robert Zych: the team, right, to provide, you know, the right guidance to improve said system over time, right? So, like, some people are asking myself, well, am I doing the right things? Am I, you know, am I improving the system overall? And…
+ Robert Zych: I think what I was saying in my comment… question, right, is that ultimately, we have to correlate this back to end-user customer feedback.
+ Robert Zych: Right? And metrics. There should be some correlation between our, like, eval metrics, right?
+ Robert Zych: That are improving over time, and, like, how well the system is doing in production, right, based off of user feedback.
+ Hamel Husain: That's right, yeah. I mean, you should want to have a correlation. There's all kinds of metrics at play when you're building a product.
+ Hamel Husain: You know, even aside from evals, a lot of people like to measure lines of code nowadays.
+ Hamel Husain: Like, oh, I'm, like, merging more PRs than ever. I'm writing 10x lines of code.
+ Hamel Husain: That's, like, a metric people love.
+ Hamel Husain: Is that… is that correlated with, product outcomes? No.
+ Hamel Husain: Often it's not.
+ Hamel Husain: Maybe he's even negatively correlated with product outcomes.
+ Hamel Husain: And so…
+ Robert Zych: If you're doing.
+ Hamel Husain: Yeah, like, meaning, like, okay, I'm running, like, 10x more lines of code every day, you go on Twitter, be like, I have this agent swarm, look at me, I got, like, 5…
+ Hamel Husain: Codex plans on separate emails, and I'm, like, token maxing.
+ Hamel Husain: I'm just doing this because it's very clear, right? Like, so you can… you, you can get to, let's say, like.
+ Hamel Husain: you know, nerd sniped by a particular metric, and it sees, you know, it doesn't make sense. And then, like, in that case, it probably doesn't even make sense even from the beginning. So, like.
+ Hamel Husain: You know, that being said, these evals, like, the idea is, like, they are helping you chase, like, what you know for sure is wrong.
+ Hamel Husain: Hopefully. Like, if something is wrong.
+ Hamel Husain: like, the bad user experience, and it's very obvious to you that it's happening, that evals… okay, I should have captured that. Now…
+ Hamel Husain: Product metrics are a totally different situation. Like, measuring churn, measuring, you know, the ability of your.
+ Robert Zych: Sentiment analysis?
+ Robert Zych: Sentiment analysis? Sentiment analysis, for example, right?
+ Hamel Husain: Yes.
+ Robert Zych: Another metric to judge.
+ Robert Zych: Or look at when assessing you know.
+ Hamel Husain: Sentiment isn't a tricky one. That's, like, that might not be a product metric. It might… that's, like, a middle ground of, like… a lot of people have sentiment analysis.
+ Robert Zych: talking.
+ Hamel Husain: sentiment analysis, and I can tell you, like, nobody is happy with Comcast.
+ Hamel Husain: You know?
+ Robert Zych: Yeah, that's more of a service question, but, like, we're talking about, like, about the software or the AI itself. Like, if you had an AI agent, right, that had the ability to collect user feedback, right? Like, how well did I answer your question, right? Type things.
+ Robert Zych: Be able to judge that and feed that back into the eval, right?
+ Robert Zych: is my.
+ Hamel Husain: Oh, yeah, yeah, I mean, you can definitely, try to… like, that's a part of, like, one of the sampling techniques when you do error analysis, is, like, maybe you do want to sample by explicit feedback signals, implicit or explicit feedback signals from your user.
+ Hamel Husain: That's definitely a valid way to go about it.
+ Hamel Husain: So… does that… does that make sense?
+ Robert Zych: Yeah.
+ Hamel Husain: Cool.
+ Hamel Husain: All right, Mark.
+ Hamel Husain: Probably make this the last one.
+ Mark St. John: Yeah, sorry, I'm gonna sneak in another one about guardrails if I can.
+ Hamel Husain: Yeah.
+ Mark St. John: So…
+ Mark St. John: another tension on the project, let's say, you know, I had provided to me a bunch of different policy constraints for the agent, and I've whittled them down to 10 that just can't be solved by
+ Mark St. John: programmatically, or the system architectures tend that need an LLM as a judge.
+ Mark St. John: The options available to me, as I see at this point, is
+ Mark St. John: one monolithic LLM as a judge that evaluates across.
+ Mark St. John: 10 policies, saving on tokens, one single model call, and away you go, but very brittle.
+ Mark St. John: Parallel calls to all 10… for all 10 policies.
+ Mark St. John: More tokens… Possibly a little more latency, but you parallelize.
+ Mark St. John: Oh.
+ Mark St. John: Or a combination of… training up encoder models, or maybe something like JEV.
+ Mark St. John: Can handle some of the decisions with the NLM as a judge fallback.
+ Mark St. John: Okay.
+ Hamel Husain: Yeah.
+ Mark St. John: Like, should we really just…
+ Mark St. John: Not even, like, abandon the idea of you trying to do a single judge call with
+ Mark St. John: 10 different policies because I see it's it's the 10 different decisions that the judge has to make.
+ Hamel Husain: I think it's gonna be hard for you to debug that, you know? If you have 10 different things, you're like…
+ Hamel Husain: It's gonna get… he's gonna cost… he's gonna be expensive in your time.
+ Hamel Husain: The tokens are one thing, right? But your time.
+ Shreya Shankar: Alignment time.
+ Hamel Husain: Yeah.
+ Hamel Husain: And then, like, yeah, if your evals are good, and if you scope them, then you should totally hill-climb the cost, and say, like, what is the cheapest judge I can do to have, acceptable performance?
+ Hamel Husain: You know, like, yeah, what is the smallest model you can use?
+ Hamel Husain: the fastest model you can use, including JEV.
+ Hamel Husain: Or whatever you want. And you might find, like, the smallest model is great, does fine.
+ Hamel Husain: But then you'll be able to debug that. If it's just one, like, monolith, It's gonna be hard.
+ Hamel Husain: I suspect, my guess is, if you had 10 different ones, you could hill climb them all towards cost much more effectively, and it might come out cheaper.
+ Mark St. John: Okay.
+ Mark St. John: Great.
+ Mark St. John: Thanks.
+ Hamel Husain: Yeah.
+ Hamel Husain: Alright, well, thank you, everybody. I think that's… that's it for this one. We'll see you on Saturday, but we have a bunch of other guests.
+ Shreya Shankar: lecture.
+ Hamel Husain: So check those out.
+ Shreya Shankar: you Cool.
+ Vladimir Rodeski: Thank you.
+ Hamel Husain: Alright, thanks. See ya.

@@ -1,0 +1,498 @@
+Shreya Shankar: Hey, can you hear me?
+ Hamel Husain: I can, yeah. Okay.
+ Shreya Shankar: Well, I can't hear you…
+ Hamel Husain: Can you hear me?
+ Shreya Shankar: Not the greatest thing.
+ Shreya Shankar: Let's see.
+ Shreya Shankar: Bluetooth.
+ Shreya Shankar: My Airpods Pro.
+ Hamel Husain: Testing, testing. Can you hear me?
+ Shreya Shankar: Okay.
+ Shreya Shankar: Not good.
+ Shreya Shankar: Okay.
+ Hamel Husain: Can you hear me now?
+ Shreya Shankar: Is it okay if I use my Mac speakers? I think my AirPods are not working.
+ Hamel Husain: Yeah, I use my Mac speakers.
+ Shreya Shankar: Oh, okay. And you can hear me and everything's fine.
+ Shreya Shankar: Perfect. Okay, then let's just do that.
+ Shreya Shankar: Sorry, technical difficulties, everybody. Anyways, we have made it. Let's share a screen.
+ Shreya Shankar: Don't need to show you this.
+ Shreya Shankar: Cool.
+ Shreya Shankar: All right, let's get started.
+ Shreya Shankar: So today, we're gonna finally make our way into the improvement part of building agents. So we talked about error analysis, we talked about measuring, the failure modes that you find via error analysis, and finally, we've made it to improvement. So I thought it would also be nice to do a little bit of a recap on what we've done so far, because we have quite…
+ Shreya Shankar: Done a lot.
+ Shreya Shankar: We spent the first four lectures kind of set… setting up our foundations, as well as doing error analysis. So, concretely, what that meant, right, is that we traced our agent, we logged our traces to Langfuse.
+ Shreya Shankar: We generated synthetic data, and then we learned what it meant to look at our data, to do open coding, axial coding, to end up finding failure modes, where
+ Shreya Shankar: Axial code essentially means failure mode.
+ Shreya Shankar: Then we pivoted into the measure part of the lifecycle, which is, given all these failure modes, you know, how prevalent are they, and how can we, you know, measure them repeatedly as we make fixes to our application or deploy them over time?
+ Shreya Shankar: So we talked about how we can build automated evaluators, so Lecture 5 was all about LLM judges as one type of
+ Shreya Shankar: Automated evaluator.
+ Shreya Shankar: In Lecture 6, we talked about how to kind of use these LLM judges in… turn those into eval cases in continuous integration.
+ Shreya Shankar: And then in our previous lecture, we talked about creating a dashboard in Langfuse, and we also talked a little bit about agent safety. We talked about that hugging face incident, so kind of a side or tangent that I thought was interesting.
+ Shreya Shankar: And so what we're gonna end up doing for today and Saturday is talking about improvements. So, high level, think about it as today we're going to talk about improving agent accuracy and how we can think about that, and
+ Shreya Shankar: On Saturday, we'll think about improving agent costs, so that means how do we reduce the cost of our agents while trying to maintain the same accuracy as what we had before.
+ Shreya Shankar: And for improvement, hopefully you'll notice that because you've done all the work with error analysis and in measurement, hopefully improvement is actually the easiest part of evals, because as we'll talk about today, it should be as simple as, you know, handing our application to an agent to do auto research, or…
+ Shreya Shankar: some other automated optimization algorithm, like, we'll talk about Jeffpa today. But we want to be able to get to a point with evals where, you know, we are not playing whack-a-mole. I think Hamel has a really great meme around playing whack-a-mole. He should send it in the chat if he can find it. But we really want to get to this point where we're not playing whack-a-mole and just trying to think, oh, let me… how do I improve my agent? I'm just gonna guess out of thin air to try to
+ Shreya Shankar: improve it. No, we want to, like, actually know, okay, based on our error analysis and our measurement, we found particular failure modes we want to improve on, and then because we have implemented automated evaluators, we can finally trigger auto-research loops.
+ Shreya Shankar: If what I said just now doesn't make any sense, no worries at all, because that's what we'll talk about today. We're going to talk about how we begin to fix Accuracy. So, step one being, there are going to be a number of obvious fixes that you'll want to make to your application as a result of Analyze and Measure.
+ Shreya Shankar: Then, we'll… you'll realize some of the errors are not obvious to fix. It's actually difficult. You try a number of ideas, and then after some time, you're like, oh, but my performance is not improving, my accuracy… I didn't fix the failure.
+ Shreya Shankar: So we'll talk a little bit about auto research, which is a method to try to invoke coding agents to help you hill climb on your evaluators in an automated way. So we'll talk about Karpathy's auto research project.
+ Shreya Shankar: folks are familiar, I'm sure, with Andre Karpathy. We'll talk about lessons we can port over to building agents. He doesn't quite do it for agents, but we'll talk about that. And then, we'll do a whiteboard exercise on JEPA. So, folks, I'm sure some folks have heard of JEPA, you know, feel free to post in the chat if…
+ Shreya Shankar: If that is,
+ Shreya Shankar: if you've heard about it. But anyway, so we'll talk a little bit about JEPA and, you know, where methods like auto-research blindly might fail, and then the kind of intellectual ideas behind JEPA and what you can get out of that.
+ Shreya Shankar: So this is today's agenda. Hamel, do you have any administrative stuff to add? I know that there's, like, your evals session around interviews, and there's some other stuff going, so…
+ Hamel Husain: No, nothing else. Just keep an eye on the course calendar for the bonus sessions.
+ Shreya Shankar: Yes, I'm really excited.
+ Shreya Shankar: I feel like I'm gonna learn so much from those
+ Shreya Shankar: Cool, so let's talk about obvious fixes. Okay, so this slide I've been kind of bringing repeatedly in different lectures. Remember, imagine that this is the failure modes that arise from your axial coding.
+ Shreya Shankar: So here, actually, 4, 8, 8 different failure modes, so they're all of different prevalences.
+ Shreya Shankar: So we did this exercise last time, but just want to recap, not all failure modes are going to lead to LLM judges, right? This should be a key takeaway from the whole course. Some of these failure modes are gonna be things that you can obviously try to fix.
+ Shreya Shankar: And some of these things are going to be things that, you know.
+ Shreya Shankar: someone else, or like, you know, you can imagine what the fix might be, and then hand it off to somebody else on the team to fix, that also makes sense.
+ Shreya Shankar: And some of these are going to be things that you have no clear fix for.
+ Shreya Shankar: And what are the kind of smells over here for no clear fix? Actually, maybe let's talk about how do you know if something… if a failure mode is something you can immediately fix with, like, a line, or an edit to a prompt, or an edit to a tool?
+ Shreya Shankar: Hamel, do you have any heuristics for this? I can… I have some of my own, but…
+ Hamel Husain: Of like how many failure modes?
+ Shreya Shankar: No, like, how do you know if a failure mode is something you can obviously fix in a prompt? Because I know we get questions.
+ Hamel Husain: Mmm.
+ Shreya Shankar: this.
+ Hamel Husain: Oh yeah.
+ Shreya Shankar: And, you know, vibes and experience.
+ Hamel Husain: Yeah, a lot of his experience.
+ Hamel Husain: You know, it'll be obvious to you, like.
+ Hamel Husain: if you know your application well enough, or, like, if you've been working with your product long enough, it'll be obvious, like, hey, we're just missing this entire, like, document store. Like, we weren't even able to retrieve the right thing in the first place. Okay, that's, like, a bug, go fix that first, like…
+ Hamel Husain: You know, or, hey, like, we didn't… we, like, have this tool call, or this tool wired up incorrectly. Okay, like, go fix that first. So those are the kinds of things that are obvious to me that, okay, just go fix it.
+ Shreya Shankar: Yeah, other heuristics that I like to have is if you used a spec MD or you tried to write some document that your application that describes your application's behavior.
+ Shreya Shankar: Go and check these failure modes. Is it in the spec Md. Or not? If not, you probably have specification issue golf of specification issue. Another
+ Shreya Shankar: heuristic that I like to use is.
+ Shreya Shankar: is… maybe this is what Hamel said, but is there, like, a tool that, you know, if we magically had it, it would fix the application? And then we should just go and, like, try to
+ Shreya Shankar: include that context, or include that tool. Often, I find a lot of agent failures are just, you know, not having enough context to reason about the problem, like, especially as agents are getting more and more accurate at some of these knowledge work tasks.
+ Shreya Shankar: So, it's a question of, like, figuring out, does your agent have all the context needed in order to get the right answer? If not, how can you provide that via a tool?
+ Shreya Shankar: So you… another rule of thumb for myself, at least, is, like, if I can timebox my involve… or my fix ideas, maybe I'll have 2 or 3 ideas to fix the failure mode, I'll timebox it to a couple of hours, and if I'm not able to fix it in a couple of hours, I move on to auto-research, which I'll talk about.
+ Shreya Shankar: And the other thing is, once you do try to fix your application, you know, you'll have to generate new traces, right? You'll have to generate new sample synthetic traces, do a little bit of error analysis on it, and then try to actually measure the prevalence of a failure in that.
+ Shreya Shankar: Yeah, so it's a little bit involved, so that's why I usually just try one or two different ideas. If they work, great, and if they don't work, then that's not great.
+ Shreya Shankar: Okay, so… let me skip this.
+ Shreya Shankar: let's imagine that, you know, we've gotten to a point in our development cycle where, you know, we tried to fix the failure mode, it didn't quite work, and so we need some… a little bit more power to try to fix it. So this gets into the auto research part of today's lecture.
+ Shreya Shankar: So, what do you need… before we define auto-research, let's talk about the prerequisites, or what we need before using… invoking auto-research. So here, we need some sort of automated evaluators to measure the failure, and it's totally fine if this is LLM judges.
+ Shreya Shankar: It's fine if it's code checks. If it is LLM judges, you need to make sure that you've gone through some alignment process to make sure it actually aligns with your human labels, because this is the easiest way to, like, have your agent go off the rails in auto research. So, essentially, you need to have some automated evaluators you can trust here.
+ Shreya Shankar: And today, I'll try to do a demo with two different failure modes, but this morning, I found that I ran out of credits in my OpenAI API key, and so maybe, unfortunately, we will have to do a theoretical exercise.
+ Shreya Shankar: And, we can maybe have a follow-up session later about actually doing this.
+ Shreya Shankar: So let's think about one of our failure modes, uninformative replies, that maybe might be hard to fix. So, a concrete example that has triggered this, you know, maybe the user said, has my Bluetooth speaker shift?
+ Shreya Shankar: Shipped, sorry. The agent said yes, did that, you know, and then it… I don't know if you remember this kind of failure mode that always occurred, but it kind of just had this massive list of
+ Shreya Shankar: you know, lots and lots of different things that Hamel really did not like, so, you know, it wasn't… had a little bit too much in there. And at least I tried to fix this issue by editing the prompt to have another instruction, answer only the question asked.
+ Shreya Shankar: It didn't quite work for me.
+ Shreya Shankar: So, I also tried to change the getOrder tool to return fewer fields, right? It doesn't need to return, like, all 12 fields that showed up in the list.
+ Shreya Shankar: I hesitate to, like, prescribe to people, you know, you should edit the tools, but I just want to demonstrate that in this case, you know, you did… we did try several things.
+ Shreya Shankar: And then we also… I also tried to change the model to GLM 5.2, other than OpenAI.
+ Shreya Shankar: TLDR is that none of these really worked, and when I say none of these worked, I actually ran the newly updated ATIC configuration on a bunch of samples.
+ Shreya Shankar: on at least 10 different samples, looked at those outputs, and then found that, you know, it didn't quite change the agent response.
+ Shreya Shankar: So this is a good candidate for using auto research. What is auto research? So if anyone has followed Andrej Karpathy, they're probably familiar with this. Actually, I can probably click on this tweet, because… Why not?
+ Shreya Shankar: Yeah.
+ Shreya Shankar: Hopefully people can see my screen.
+ Hamel Husain: I can, yeah, I can see the tweet.
+ Shreya Shankar: Yeah, great. So Andrej Karpathy in the context of trying to train his own LLM, okay, so it's not about agents. He's trying to train an LLM. It's called NanoGPT. What he found is that if he asked his AI coding agent.
+ Shreya Shankar: To try to edit the training code, it produced
+ Shreya Shankar: Training code, that was very good.
+ Shreya Shankar: So, concretely, what that meant is he was able to have his own agent train a small model with very little loss. And this is the kind of graph that he.
+ Shreya Shankar: showed here, so he started out in Xero with, you know, some sort of baseline training code, and then he instructed his agent, you know, improve on the training code.
+ Shreya Shankar: And over time, right, this metric that he had defined, which I won't get into.
+ Shreya Shankar: That really, really went down.
+ Shreya Shankar: So…
+ Shreya Shankar: These experiments are all about, you know, training a model, that's fine, but the core insight that he had here was, after every iteration of the agent proposing something, he ran his validator, which measured validation bits per byte, which is a metric specific for his NanoGPT, and then he kept at it.
+ Shreya Shankar: Basically, he kept the experiment if the validation bits per byte improved.
+ Shreya Shankar: Otherwise, he reverted back to the previous experiment and had the agent try again.
+ Shreya Shankar: And so this kind of idea of, in a loop, invoking an agent to improve on your versions, you know, you can do this for 100-plus experiments. This is something that a human might, you know, not really want to do. I don't know about you, but I don't want to, like, try to whack-a-mole 100 different prompt edits.
+ Shreya Shankar: So you can have an agent do this, and I want to point out that this kind of idea extends beyond model training into improving agents generally, right? You can imagine, as long as you have some validation number and way to measure it, ideally deterministic.
+ Shreya Shankar: However, if you need to have an LLM agent, like, so be it.
+ Shreya Shankar: Ideally, if you have this… if you have this metric, and you have this automated evaluator, you can, in a loop, invoke your agent. So, concretely, if we were to look at his actual auto research project, I wanna… this is the auto research project, by the way. I think it's really great to… to look into, so maybe I'll just copy-paste this.
+ Shreya Shankar: into the chat so folks can look at it while I'm talking. Here.
+ Shreya Shankar: Paste.
+ Hamel Husain: One thing to call out, you know, when this first was, like, announced, a lot of people got nerd sniped immediately, and they, like, tried to use auto-research on every single thing you can imagine.
+ Hamel Husain: like, you want a metric that you have put a lot of work into, and that you think is really solid. And so, it's worth noting, like, this auto-research task that Andrej did.
+ Hamel Husain: You know, this loss that he's optimizing against, that is a very carefully crafted thing.
+ Shreya Shankar: deterministic.
+ Hamel Husain: Yeah, and there's a data set.
+ Hamel Husain: And basically, what I'm trying to say is, you know, you want your evals, like, all that work that you did with evals, like, that is the work of auto-research. Like, you know, him preparing the data, that metric, those, like, you know, like, getting this, like, data set used to train this model.
+ Hamel Husain: You know, basically, in this metric, this deterministic.
+ Shreya Shankar: don't.
+ Hamel Husain: you know, basically, like, gave him a stable foundation on which to do this. So don't… like, you don't want to jump to this too fast.
+ Shreya Shankar: No.
+ Shreya Shankar: I'm actually gonna go into some…
+ Shreya Shankar: cases in which auto research totally failed for people, so you don't make all those mistakes. So Hamel read my mind. Anyway, so looking at this auto research repo, I think the README is pretty nice, but I really like how he structured the repo.
+ Shreya Shankar: So, he has created only 3 files that are useful, and actually, let me go back to my slides here. And the idea here
+ Shreya Shankar: is that there's one file, only one file, that the agent is allowed to edit, and you can kind of instruct your coding agent, say, only edit train.py in your prompt, and also you could even have some sort of guardrails or hooks.
+ Shreya Shankar: To actually enforce that the agent only edits one file, that works.
+ Shreya Shankar: Then, he has this program.md, which I'll show you his example, and this instructions is what is edited by the human. So in there, he's put in a lot of instructions for how to guide his coding agent up front.
+ Shreya Shankar: And then there's this prepare.py, which is very, very sacred. It's the evaluator code and the data that no one is allowed to touch, neither the agent nor the human being. It programmed, like, it's just something that is fixed up front.
+ Shreya Shankar: And, I can't remember how… where it might… here.
+ Shreya Shankar: Yeah, so fixed constants, one-time data preparation, just downloads the training data, trains the tokenizer. So this is something that's not modified, and you want to make sure that, you know, no one can modify it.
+ Shreya Shankar: So those are the three files that are important in his repo. And I want to talk about this program.md. I really like he's externalized all of, kind of, the context of how to hill climb. Hill climb means, you know, how to try to improve on the metric.
+ Shreya Shankar: He's externalized all this context into this markdown file. So, let's see what he's said. So, first he's talked about the setup, so how one can set up a new experiment, how an agent can. So.
+ Shreya Shankar: Stuff that can go in your setup is something like, you know, make sure you have all the data that exists. If not, then you need to run prepare.py.
+ Shreya Shankar: Right? You need to, like, download it to make sure we have the data. Maybe you want to check out a new branch, right? In Karpathy's auto research, he publishes every experiment as a commit, so that way he has versioning. I think that's quite important, so… and unfortunately, you know, you do need to specify those instructions for versioning.
+ Shreya Shankar: Such as he has in step two here. Otherwise the agent won't automatically do it.
+ Shreya Shankar: Then he talks about experimentation, and here what I really like is stuff that… he separates things into what agent can do and what agent cannot do, right? So, these are the different ways the agent can try to modify train.py.
+ Shreya Shankar: And he says everything is fair game. So, hopefully the agent that's looking at this, you know, can actually see this, can actually reason about what these objects are and try to improve on it.
+ Shreya Shankar: Of course, he says, you know, don't modify these things.
+ Shreya Shankar: The goal is simple, get the lowest validation, bits per byte.
+ Shreya Shankar: Is it called bits per byte? Actually, I Can't remember.
+ Shreya Shankar: The.
+ Shreya Shankar: Let me go back.
+ Shreya Shankar: Yeah, MITS provides.
+ Shreya Shankar: So the goal is to get the lowest validation bits per byte. And then there's some other soft constraints that, in my experience, the agent has never really.
+ Shreya Shankar: kind of optimized, but maybe it works in this particular use case, like, that's fine. And then some other kind of stylistic guides that he has. So, simplicity criterion, so all else being equal, simpler is better.
+ Shreya Shankar: You know.
+ Shreya Shankar: If you just improve a very little bit.
+ Shreya Shankar: Maybe by adding hacky code, probably not worth it. If you're able to simplify and get… maintain the same validation bits per byte, or improve on it, then that's great.
+ Shreya Shankar: Anyways, so you can kind of imagine that, you know, there's concrete what the agent can do, what the agent cannot do, and then also some stylistic things that Andre would like the agent to be able to follow, but might not.
+ Shreya Shankar: And then he talks about output format, which is basically every experiment that the agent tries. Log.
+ Shreya Shankar: And some metrics that are useful, and you'll realize that these are task-specific metrics, okay? So for your agent, for the failure mode you are trying to print, you know.
+ Shreya Shankar: They're gonna be metric specific to you.
+ Shreya Shankar: And then he also has a format for which he wants to log the results, so there's, like, a results.tsv, which we adopt for our homework. But anyways, so here, imagine this is a log of all the experiment results that have happened over time.
+ Shreya Shankar: Okay, so he has here, loop forever, do all of this, right? Look at the git state, make some edit to train.py, commit that experiment, run the experiment, read out the results.
+ Shreya Shankar: Record the results in the TSV. If the validation metric has improved.
+ Shreya Shankar: then advance the branch, keeping the Git commit. Otherwise, if the validation bits per byte is equal or worse, you get reset back to where you started. So, if you don't… if you're not familiar with Git, that's totally fine. All he's saying here is, if the metric did not improve, we're gonna throw away this experiment and not iterate on it.
+ Shreya Shankar: And then he has a bunch of prompt engineering instructions that, I'm not gonna get into. So hopefully, you know, people see this program.md. This is the important part of auto research, okay? If you don't have a good program.md, then…
+ Shreya Shankar: your agent is gonna kinda go off the rails, so this is the important part, and hopefully you realize it's also totally approachable, right? It's not too long, it's something that you could totally write, and these are all the different facets you want to reason about when doing auto research.
+ Shreya Shankar: So I kind of walked through this loop already, and some other things I want to call out is whenever… the human is the one that writes program.md, okay? So I've seen people have agents write the program.md, and so they don't have any idea, kind of.
+ Shreya Shankar: The humans don't have any idea what the agent is auto-researching on, so it's really important that you write the program.md, it doesn't take too long.
+ Shreya Shankar: And you also…
+ Shreya Shankar: I also want to call out this point here that Andre says, which is, essentially, any metric we care about
+ Shreya Shankar: that is reasonably efficient to evaluate can be auto-research. So there's two components to this that are important. So one is any metric. So I totally agree with this. If you can codify your failure mode as a metric, which you do in automated evaluators, you can have an agent hill climb on it. So that powerful.
+ Shreya Shankar: Then, efficient is the other term here that I think is important. So, you want to make sure that, you know, your validator can actually run, so, you know, you have the sample data ready to run the validator. You can imagine, you know, if this
+ Shreya Shankar: if you were trying to auto-research on, like, biology or chemistry or something that needs a wet lab, that's not a very efficient way to validate, right? It might take days or months or a very long time to run that experiment. So efficiency is quite important, you know, not…
+ Shreya Shankar: Any metric in any domain, especially if human in the loop is involved directly in that validator, auto research might not be a good fit for that.
+ Shreya Shankar: Okay, so before I get into some failure modes in auto research, Hamel, I have a question for you if there are tasks that you feel like are a particularly good fit for auto research that…
+ Shreya Shankar: You've kind of discovered.
+ Hamel Husain: A spicy question for me.
+ Hamel Husain: I tend to not like it.
+ Shreya Shankar: Yeah, I think.
+ Hamel Husain: This is great.
+ Shreya Shankar: I want you to talk about why you don't like auto research.
+ Hamel Husain: Yeah. I feel like, it seems really cool, right? Like, okay, I'm just gonna unleash the magic on…
+ Hamel Husain: you know, my system, I did this eval work.
+ Hamel Husain: But I find that, like, anytime I've done auto, like, this, like, auto research, or JEPA, or anything else, my prompts become weird.
+ Shreya Shankar: And.
+ Hamel Husain: And
+ Hamel Husain: they are, they feel like they're overfit a bit in the language, even though, like, the metrics might work out or something like that. I'm like, I don't feel comfortable with this prompt. It feels like it's just trying to hack its way… it is trying to hack its way towards something.
+ Hamel Husain: And so, you know, I haven't really… and I've been able to
+ Hamel Husain: what I do… what I do think is useful is to look at the prompt from the auto-research and learn something from it. Like, oh, okay, that's a good idea, like, that's a good idea to, like, I forgot to explain this thing, or whatever, and then, like, just rewrite it in my own way without the bloat.
+ Hamel Husain: You know what I mean? So I try to learn from the AI and not just let the AI take the wheel.
+ Shreya Shankar: Yeah, let's just…
+ Shreya Shankar: ship it directly. Yeah, I think that's a good point. So, I think of auto research as, like, also a
+ Shreya Shankar: You get it for free, right? If you've done all the work of writing really good evaluators.
+ Hamel Husain: you.
+ Shreya Shankar: then you might as well just run auto research and see what it comes up with, right? If a hill climbed on your metrics, like, that's amazing, surely it did something. And so you can exactly, as Hamel said, learn from that, even if you don't directly use that prompt. But the point is, right, that, like.
+ Shreya Shankar: This should be very simple.
+ Shreya Shankar: Doing the evaluator definition and the metrics, and coming up with those test cases, that's the hard part, which you've spent all the other time doing.
+ Shreya Shankar: There's also a couple of questions in the chat that I think are pretty good. So, one is that auto research looks pretty greedy. Is that a concern? Is it worth it to explore from earlier commits?
+ Shreya Shankar: Yes, that's exactly why we're gonna motivate Jeppa in a few minutes, so hang tight. And then another question of how does auto research keep track of bad branches so it doesn't revisit them? I am not particularly sure how it's done in NanoChat or in Andreas Auto Research.
+ Shreya Shankar: repository, I don't know if it does anything for it, like, it might be that the agent does hypothesize bad ideas it had in the past, but you can imagine a simpler, like, a simple extension you could do to auto-research is just to keep track
+ Shreya Shankar: of all the bad experiments in some sort of markdown file, so your agent can just read those and make sure not to propose that in future experiment iterations. So this is highly extensible and configurable, right? Like, you shouldn't just adopt auto-research blindly, like, you can actually think about it, you can put files in there, you can think about how to extend it to be a little bit smarter for your use case.
+ Shreya Shankar: Alright, so hopefully folks got a sense of what auto research is, and, you know, it is exciting, but don't nerd snipe yourself, of course, as Hamel says.
+ Shreya Shankar: And let's talk a little bit about case studies of, you know, where is auto research not gonna work? So there's a bunch of them out on the internet. So some of them work and some of them don't. I think most of the auto research experiments come from Shopify, so that's why you'll see a lot of them. There's a couple of them that I thought were quite interesting.
+ Shreya Shankar: There's.
+ Shreya Shankar: basically, people are finding that if you just have some sort of metric, right, that is efficient, the agent will find a way to hill climb on it, you know, by hook or by crook. So, you kind of do need to keep it on a tight leash. And in some of these, you know, for example, in Shopify, when they invoked auto research.
+ Shreya Shankar: some of… somebody actually said in the poll request, like, I think this metric is probably somewhat overfit.
+ Shreya Shankar: Another problem that was reported is, you know, they wanted to hill climb on how fast the codebase could build. So Shopify CI
+ Shreya Shankar: they found, after auto research, that it got 65% faster build, but then they went and actually looked into what the agent actually did in auto research and found that the agent deleted files to cut build time. So this might mimic some of the stuff we were talking about in the Hugging Face incident in the last lecture, right? Like.
+ Shreya Shankar: You know, assume that your agent is going to do whatever it is because of reward pressure.
+ Shreya Shankar: Some other auto research not being a silver bullet, you know, I love looking at some of these failure cases. So, in this meter study.
+ Shreya Shankar: they found that their agent actually edited the evaluator in 30% of the runs. So, you know, you want to have some sort of guardrails to make sure that your agent doesn't edit your evaluator files.
+ Shreya Shankar: I don't know if they used Andre's repo of auto research directly or that method, but they probably just used some generic idea of having an agent hill climb on a metric.
+ Shreya Shankar: Agent extending its own timeouts, you know.
+ Shreya Shankar: that happens. Hard coding answers per test case, so Codex had this.
+ Shreya Shankar: what else? Oh, Cerebras did auto research. I think this is a fun, article that I've linked in the slides that you should also look into in your own time, but basically, yeah, it's about how to stop your auto research loop from cheating. And so it talks about a bunch of things, so…
+ Shreya Shankar: Going back to this, you need to set a run budget, so agent just spent a lot of compute on experiments that might not be a good idea. And then there's also this failure mode that they observed, where the agent stopped working on the experiment that the original
+ Shreya Shankar: engineer asked it to do, and then proposed, like, a totally different experiment. I think they mention here.
+ Shreya Shankar: Yeah. Well, this might be, you know…
+ Shreya Shankar: very hype-y. By morning, it had abandoned our experiment and started its own. But you can get the point here, right? Like, the agents will do whatever they can, right, to hill climb on your metric. Often, that is, they will edit the metric directly, unless you have a guardrail there.
+ Hamel Husain: Same idea as the reward pressure as we discussed earlier in safety.
+ Shreya Shankar: Exactly, right? So don't just blindly use these things, we see all the time where people blindly use them, and then their prompts devolve into something that's not intelligible, as Hamel said, and also, you know.
+ Shreya Shankar: there's reward pressure, reward hacking, and it's actually very difficult to catch that at scale. So don't trigger too many auto research agents on your agents.
+ Shreya Shankar: Alright, so… Oh, we have someone accidentally annotate the screen. Hopefully I can… Delete that.
+ Hamel Husain: Really, that blue line?
+ Shreya Shankar: Yeah.
+ Hamel Husain: Wow, I didn't know that was a thing.
+ Hamel Husain: Let me see if I can help.
+ Shreya Shankar: Yeah.
+ Hamel Husain: area.
+ Shreya Shankar: Oh, it went away. Okay, perfect.
+ Shreya Shankar: Cool.
+ Shreya Shankar: All right, so.
+ Shreya Shankar: I… part of the homework is to invoke… we wrote this skill called Improve Loop, that is going to tell your coding agent to hill climb on the dev set for your, for your cartwheel agent.
+ Shreya Shankar: And I went through the auto research in a little bit more detail because
+ Shreya Shankar: we probably won't do… we're not going to do this demo, my OpenAI key is not working right now. The one thing I'll want to highlight here that we need to do that other, auto research agents probably don't do is that we need to kind of split our data sets into this train dev test, or this dev and test. So we want to make sure that, you know, whatever
+ Shreya Shankar: edits the agent is proposing to our harness, you know, they generalize to a held-out test set beyond whatever the auto research agent has access to. So that way we can prevent overfitting. So again, it's the same kind of issue around overfitting we've been talking about in lectures.
+ Shreya Shankar: So let's skip this part, and then let's go into JEPA now. Hamel, any last thoughts you have on, kind of, auto research?
+ Hamel Husain: No, I mean, I just want to, I'm actually curious about your experience. I gave you like.
+ Shreya Shankar: Yeah.
+ Hamel Husain: Like my opinion, like what happens to me? What about you? How do you feel?
+ Shreya Shankar: I, okay, I really like auto research, and my opinions have really come around, and I think it's because I have…
+ Shreya Shankar: I spend a lot more time developing evaluators that I can trust, and I have a lot of confidence in those. So for LLM judges, for example, like, I know I have aligned them, and I've aligned them on lots and lots of examples, you know, so I feel very confident in them. And so therefore, like.
+ Shreya Shankar: I don't know, for me, I feel like auto research is this free thing that will just, like, try edits, and then I will see what auto research did, and if auto research couldn't hill climb on the metric, then, you know, I don't feel too bad, because
+ Shreya Shankar: I didn't spend my time on it, I just spent my, like, Codex subscription on it. And then if auto-research does improve the metric, which it always has in my experience, you know, I just… I check it for smells of reward hacking or reward pressure. But even if so.
+ Shreya Shankar: I… there's still something I can learn from it. Like, maybe there are parts of the prompt, or maybe, you know, there's a part of the code base that is obviously bad and worth my human attention to fix. So I'll give a concrete example of, like, if I'm building a computer system, like, I'm building a query engine in my research group.
+ Shreya Shankar: often my auto-research loop is profiling parts of the query engine in order to figure out what part is slow, and then try to propose edits to fix… to improve it. Even if the edits are quite hacky, the profiling that it has done is very nice.
+ Shreya Shankar: So I can see that and learn something from it. So… so maybe this all ties back to Evals, where it's, like, you know, I really like it, but I also really read the logs and the traces of what the auto research agent does, and I treat it, like, as another engineer or collaborator where I'm learning.
+ Hamel Husain: Have you used it for quail?
+ Shreya Shankar: I am using it for Quail right now, which is very exciting. So Quail is a research project that I'm working on in my lab. It's an open source AI SQL query engine. And so we're trying to, like, have AI help us build parts of it, and… and.
+ Shreya Shankar: I mean, it's a great fit for that, because also the evaluators are deterministic, they're not LLM judges, you know?
+ Shreya Shankar: the evaluators are, like, truly, like, measuring the performance of a particular component in it, like system performance. I would love to be able to have LLM judge metrics in it. Like, I think we can… I can have LLM judge metrics around judging, like, the simplicity or elegance of edits, but then I would…
+ Shreya Shankar: do a lot of work to make sure that those LLM judges are calibrated with my preference. Other… I wouldn't just, like.
+ Shreya Shankar: You know, let the… let the auto research agent run amok.
+ Shreya Shankar: Yeah.
+ Hamel Husain: Nice. Thanks for sharing.
+ Shreya Shankar: Yeah, yeah.
+ Shreya Shankar: There are not that many questions, so I don't know, maybe people are
+ Shreya Shankar: Either everything makes total sense, or people are tuned out second to last lecture, which, you know, is totally understandable.
+ Shreya Shankar: Okay.
+ Shreya Shankar: So that was auto research, and now I want to talk last, you know, 20 minutes or so about JEPA. So…
+ Shreya Shankar: To motivate JEPA, let's talk about limits of improved loop or auto research. And one thing that… that is bad about this naive approach is that the coding agent kind of has so much leeway to decide what is next. And often, the coding agent might even be overwhelmed, or might, you know.
+ Shreya Shankar: think about the surface area of places where it has to do improvements, right? The agent has to figure out, oh, like, I think this place is the right place to make the edit. Like, I think I should edit the system prompt, or I think I should edit the tool call surface, or I think I should create a new skill, or, like, you can imagine the surface area is really massive, and
+ Shreya Shankar: Maybe the coding agent is not well equipped to figure out what to try next, because all it has, right, is the previous experiment that did well.
+ Shreya Shankar: So…
+ Shreya Shankar: Why is this coding agent also limited? Well, it's only keeping one good experiment at a time, essentially, so one candidate version of the agent at a time.
+ Shreya Shankar: And, as somebody mentioned in the comments, right, like, we… the auto-research loop throws away edits that could be good for some cases, but are bad overall, right? Because it just doesn't do well on our metric for our particular dev set. So those edits get thrown away, but maybe there are some things in those edits that we would use to help us come up with an even better
+ Shreya Shankar: of edit.
+ Shreya Shankar: So this motivates.
+ Shreya Shankar: JEPA. So JEPA is, called Genetic Pareto. It was initially introduced as a prompt optimizer, but again, right, in this class, I want to generalize, you know, the idea. It might be specific to a prompt, it might be specific to a particular task, like in Karpathi's auto research, but we could generalize it to our agent setting.
+ Shreya Shankar: JEPA came out of UC Berkeley, came out of, honestly, some folks that I work with in my PhD, but the idea here is that let's equip our.
+ Shreya Shankar: Agent that is making edits, with the ability to read traces, and also reflect on them, as well as reflect on multiple different candidate configurations of the agent, so that it can propose better edits.
+ Shreya Shankar: Okay, so it actually keeps several candidate
+ Shreya Shankar: agent configurations, or in the paper, they only do prompt optimization, but it keeps several prompts, not just the current best version, like the auto research loop did.
+ Shreya Shankar: And it supposedly does quite well. I think Databricks has tried to deploy it. JEPA has also talked about, you know, how even in recently, even though the paper is, like, over a year old, they've talked about how they've applied, you know, JEPA to.
+ Shreya Shankar: more recent benchmarks, like Frontier CS. Auto Research did very well on it. JEPA, by itself, not so good, but JEPA combined with Auto Research, which I honestly don't know what it means, but they have reported good progress on this.
+ Shreya Shankar: So I think it's quite interesting, and I will now go over…
+ Shreya Shankar: what JEPA is in a whiteboard.
+ Shreya Shankar: Can people see my whiteboard?
+ Hamel Husain: Yes, I can.
+ Shreya Shankar: Cool. Actually some questions so far.
+ Shreya Shankar: Is… Is JEPA an actual tool or a methodology? It is both. I'm going to teach about the methodology, but there is an open source version of it that you could use. However, as I will show you, it is actually not that complicated, so, you know, you could probably vibe code it yourself. Alright.
+ Shreya Shankar: Let's talk about Joppa.
+ Shreya Shankar: Chip. Oh, that's too small.
+ Shreya Shankar: Is this too small, or we want it bigger?
+ Hamel Husain: Mmm… a little bit bigger. Yeah, that's good.
+ Shreya Shankar: How about that? Perfect. Okay.
+ Shreya Shankar: Jepa. And then, let's say goal is, to find… I'm gonna only limit myself to prompt optimization when teaching this, because I think that it'll just make it a little bit easier. So, to find a more optimal prompt.
+ Shreya Shankar: by providing It's structured.
+ Shreya Shankar: search, procedure to And… Agent.
+ Shreya Shankar: Okay? So, that's what you can think of JEPA as, and how we start out with JEPA.
+ Shreya Shankar: Start with… Development set.
+ Shreya Shankar: So this can be, you know… you can even JEPA your… I would hesitate… I don't recommend JEPA-ing on your, actual dev set and, like… or sorry, actual test set and CI.
+ Shreya Shankar: I recommend you having a dev set that's not something that you're using in CI, so that way, you know, you don't overfit. But let's just say that this is 30 or so different tasks. Remember that a task is, like, a user request or a prompt that is designed to, you know, trigger your failure modes.
+ Shreya Shankar: So, let me make a table here, then. So, we'll have something like Task 1, Task 2, dot dot dot…
+ Shreya Shankar: Actually, Task 3.
+ Shreya Shankar: 4… Task N.
+ Shreya Shankar: Okay.
+ Shreya Shankar: And we're gonna start out with… Actually, let me make this… table.
+ Shreya Shankar: But Let's do this.
+ Shreya Shankar: We're gonna start out with P0.
+ Shreya Shankar: Okay, which is in the 1st version of the prompt.
+ Shreya Shankar: actually.
+ Shreya Shankar: Everyone, hopefully, with me so far?
+ Hamel Husain: Yep.
+ Hamel Husain: A lot of… a lot of positive comments about the whiteboard style.
+ Shreya Shankar: Hamel has been, for reference, Hamel has been pushing me every time, more whiteboard, more whiteboard. So I'm really trying to do it. All right, so we have a first prompt version, P0, and then I'm going to maybe put the algorithm of Gempa.
+ Shreya Shankar: Let's make this blue, because this is what I'm going to build up incrementally.
+ Shreya Shankar: Okay, so… 2, Oh.
+ Shreya Shankar: And I'm also gonna build up this visual of how Jumbo's gonna work. So this is gonna be P0.
+ Shreya Shankar: No, that is not nice.
+ Shreya Shankar: Let's make this video.
+ Shreya Shankar: This part will become clear in a moment, but it's just a visual of kind of what we're building up.
+ Shreya Shankar: Okay, so the last concept I need to introduce before we actually walk through what JEPA is, is this concept of the frontier.
+ Shreya Shankar: for a task. Or, sorry, Frontier for a prompt. So, Frontier… Put it here.
+ Shreya Shankar: So… I keep forgetting an Excalidraw that I need to…
+ Shreya Shankar: The frontier basically is… Collection of prompts that are… that, Lead to highest.
+ Shreya Shankar: Accuracy
+ Shreya Shankar: For at least one.
+ Shreya Shankar: Or how do I say it?
+ Shreya Shankar: I should have thought about a better way to say this, but essentially, what it means is that a prompt is on the frontier if it has the highest accuracy for at least one of the tasks.
+ Shreya Shankar: Maybe that's how I will say it.
+ Shreya Shankar: But…
+ Shreya Shankar: Actually, this is probably good enough. Does that make sense to people?
+ Hamel Husain: Yeah.
+ Shreya Shankar: So.
+ Hamel Husain: It's kind of like tying into this Pareto frontier idea of like.
+ Shreya Shankar: Yeah.
+ Hamel Husain: tests.
+ Shreya Shankar: Exactly, but in this case, the Pareto frontier.
+ Shreya Shankar: if Frontier is over tasks, like, typically what you'll see Frontier Labs talking about the Frontier, they'll be talking about this trade-off between accuracy and cost. Here, there's nothing about cost. It's just trying to maintain the best prompt configuration per task, because
+ Shreya Shankar: Prompts will do well on some tasks, but not others, and it's going to be different per prompt.
+ Shreya Shankar: Okay, so now we can go into the JEPA algorithm.
+ Shreya Shankar: So, for step one is to select prompt from Frontier.
+ Hamel Husain: There's some confusion about what is a task.
+ Shreya Shankar: So, a task is, like, a user request. And coupled with, like, the evaluators. So, it's something that, like, you can run your agent on and get a score out of. Maybe I should write that.
+ Hamel Husain: And concretely, it's like one session, or, you know, it's not a collection of sessions.
+ Shreya Shankar: It's one trace, yeah.
+ Shreya Shankar: And you could generalize this, like, we don't do it in the JEPA paper, but you absolutely could have it… each task could actually be, like, the average of multiple different tasks. Like, there's nothing stopping you from that. This is just the abstraction.
+ Shreya Shankar: Task equals one user request.
+ Shreya Shankar: Session.
+ Shreya Shankar: with evaluators.
+ Shreya Shankar: Okay, so the evaluators part is key, okay? Like, don't go into JEPA. A lot of people do this, they go into JEPA without having evaluators. You want to have evaluators.
+ Shreya Shankar: Alright, so step one is we select prompt P from the frontier. Obviously, right, when we just have P0, we're gonna select P0. Then, what we're gonna do is run P on, a sample of tasks. This part is key, just a sample here.
+ Shreya Shankar: So, when we do that.
+ Shreya Shankar: We're gonna have some Very good.
+ Shreya Shankar: I don't know, I'm just making this up.
+ Shreya Shankar: Okay.
+ Shreya Shankar: So imagine that P0
+ Shreya Shankar: And when I say check or X, right, like, I'm just making it binary here, but you can imagine if you run many different trials, which JEPA will run many different trials per task, you actually get a non-1-0 score. You'll get, like.
+ Shreya Shankar: 0.75, or, like, 0.8, or something.
+ Shreya Shankar: But for illustrative purposes, I'll just do check and X.
+ Shreya Shankar: So this…
+ Shreya Shankar: We've done this, right? We've run P on a sample of tasks, and we get the scores. Then…
+ Shreya Shankar: We're going to ask Agent to mutate.
+ Shreya Shankar: P.
+ Shreya Shankar: To come up… with I'm going to call it P. Prime. So
+ Shreya Shankar: All that… oh, run P on a sample of tasks, and this is key, log traces.
+ Shreya Shankar: Then, step 3 is you're going to ask the agent to look at the traces, look at the metrics, do some reflection on it, I don't know, think.
+ Shreya Shankar: And then come up with P prime.
+ Shreya Shankar: Okay, then step four.
+ Shreya Shankar: Actually, before I do that… Let's go back here.
+ Shreya Shankar: And we could make a new… column.
+ Shreya Shankar: And let's say now we're in P1.
+ Shreya Shankar: And we've done our mutation.
+ Shreya Shankar: Okay, so… here we are.
+ Shreya Shankar: Let's come up with P. 1.
+ Hamel Husain: And what kind of mutation happens? Is it like random? You just tell LLM, try your best to like come up with a new one?
+ Shreya Shankar: workplace.
+ Hamel Husain: Whatever, like, what's going on?
+ Shreya Shankar: Good question. You literally tell LLM to read the tasks… sorry, read the traces, and read the metrics, and try to improve.
+ Shreya Shankar: That's it.
+ Shreya Shankar: Just like auto research would do. So step 3 is extremely similar as auto research, no difference. The difference here was select
+ Shreya Shankar: the prompt P from Frontier at random.
+ Shreya Shankar: Okay, so the difference is that rather than having the agent try to improve on the previous version.
+ Shreya Shankar: We have… we are using a random sampling procedure, it's a sample from the frontier, and then force the agent to improve on that.
+ Shreya Shankar: That's the difference with a lot of research. Okay, so we can ask the agent to mutate P to come up with P prime, which now is P1. Then we run P prime on a tiny sample.
+ Shreya Shankar: And, of course, all the numbers are…
+ Shreya Shankar: you know, you can… it all… it could be… when I say tiny sample, it could be two tasks, it could be four tasks, like, this is up to you. There are defaults in the code base. But essentially, maybe the tiny sample is two. So…
+ Shreya Shankar: I'll run it on the first two tasks, maybe I see…
+ Shreya Shankar: That looks good. Then, I can go back.
+ Shreya Shankar: 5. If… P prime.
+ Shreya Shankar: Is Pareto optimal?
+ Shreya Shankar: In the tiny sample.
+ Shreya Shankar: Run P. Prime on the bigger sample.
+ Hamel Husain: Okay.
+ Shreya Shankar: So this is… step 5 is really nice, because for efficiency purposes, like, if P' is bad already on the tiny sample, like, the agent proposed some garbage, you know, you can cut that out early, you don't have to bother running it on all tasks.
+ Hamel Husain: And here Pareto Optimal means in that sample, this prompt is the best prompt so far.
+ Hamel Husain: Like within that sample, across those tasks that it's handled.
+ Shreya Shankar: There's at least one task for which it has the highest metric.
+ Hamel Husain: Okay.
+ Shreya Shankar: That's it.
+ Hamel Husain: Got it.
+ Shreya Shankar: Yeah.
+ Shreya Shankar: Great question.
+ Shreya Shankar: Alright, so I've announced at 5.
+ Shreya Shankar: And then I'm also gonna make this up, of course, so maybe I said that…
+ Shreya Shankar: you know, Task 3, he won it very nicely, and Task 4…
+ Shreya Shankar: Actually, you know what I'll do here? I'll make it more interesting. Let's…
+ Hamel Husain: So if it is a… if the Pareto optimal is referring to just one task.
+ Shreya Shankar: Isn't there…
+ Hamel Husain: there are many, could we end up in a situation where there's many options that are Pareto optimal?
+ Shreya Shankar: Absolutely.
+ Hamel Husain: Does it just sample from that, or what is it going on?
+ Shreya Shankar: It will sample… yeah, step one will sample from that frontier, Pareto frontier at random.
+ Hamel Husain: Okay.
+ Shreya Shankar: So now…
+ Shreya Shankar: you know, imagine we… our small sample is just Task 1 and Task 2, and we ran P1, and it passed Task 1, and it failed Task 2. It's still on the Pareto frontier, because it matches the highest accuracy on at least one task.
+ Shreya Shankar: So we would run it, continue to run it on, you know, everything.
+ Hamel Husain: And in this example, this teaching example, to get highest accuracy on one task, you just have to pass.
+ Hamel Husain: Yeah. Okay.
+ Shreya Shankar: Exactly. You just have to, like, yeah, get it correctly. In practice, a DREPA will run multiple trials. So, it'll… it won't just be 1-0.
+ Shreya Shankar: So now I've checked the nodes, each of which is on the Pareto frontier. P0 is on the frontier, right? Why is P0 on the front… T. Okay, P0 is on the frontier, right, because there's…
+ Shreya Shankar: At least one task for which it has the highest accuracy.
+ Shreya Shankar: And then P1 is on the frontier, right? Because it's also there as at least one task for which it has the highest accuracy.
+ Shreya Shankar: And then you can imagine, right, we just keep going through this algorithm. So…
+ Shreya Shankar: Now I'm back to step one. Select prompt P from Frontier at random. Suppose I have…
+ Shreya Shankar: So that means I select one of these two at random. Maybe I've selected P0 again, I don't know, so…
+ Shreya Shankar: We'll select P0.
+ Shreya Shankar: And so that ends up being P2.
+ Shreya Shankar: And then now I'm back here.
+ Shreya Shankar: I've made a P2.
+ Shreya Shankar: Then.
+ Shreya Shankar: I'm gonna… imagine I've already run P0 on a sample of tasks, I already have the traces and the metrics, right? I did that. Now I'm gonna ask the agent to mutate P2.
+ Shreya Shankar: Or sorry, we're already there. We got P2 by mutation from P0.
+ Shreya Shankar: Hopefully I didn't confuse anyone there. So we've selected P0, we already ran it on a sample of task, we mutated it to get P2 from the agent, then we want to run P2 on the tiny sample. What does that end up looking like? Well, perhaps it…
+ Shreya Shankar: Fails both of these.
+ Shreya Shankar: So what does that mean? Well, it's not Pareto Optimal anywhere, we don't even need to run it at all for the rest.
+ Shreya Shankar: And I can just… big X right here.
+ Shreya Shankar: Then I go to the next.
+ Shreya Shankar: And you can keep doing this until, in practice, a maximum number of trials, so, like.
+ Shreya Shankar: between, like, 30 and 50 different loops of this. So, select prompt P from the frontier at random. Again, remember, our frontier is just P0 and P1.
+ Hamel Husain: Can you — there's some confusion about the term Pareto optimal.
+ Hamel Husain: You know, because a lot… like you said.
+ Hamel Husain: In your mind, when you hear the word Pareto Optimal, you're imagining this, like, XY axis, and then, like, there's, like, some…
+ Hamel Husain: Choice of things that do well on.
+ Hamel Husain: All the examples?
+ Hamel Husain: How does that relate to this? Like, can you just maybe talk about that a little bit? Just to clarify.
+ Shreya Shankar: Pareto frontier, like, okay, so a frontier means that there's just… a Pareto frontier means that there's multiple axes for it to be dominant in. So you can think about the situation in this case, where I actually have…
+ Shreya Shankar: On one axis, I have… my metric.
+ Shreya Shankar: Okay, this is difficult to… to write.
+ Shreya Shankar: On one axis, I have my… Accuracy metric.
+ Shreya Shankar: On the other axis, I have… different… Tasks.
+ Shreya Shankar: So, each… Prompt is essentially, like.
+ Shreya Shankar: Has, so, let's say P0, I'm gonna color it orange, okay?
+ Shreya Shankar: So… Each tasks end up being something like this.
+ Shreya Shankar: Like, the x-axis is truly, like, task 1, task 2, task 3, task 4, something like that. And then when I have another.
+ Shreya Shankar: Let's say I have this one be red.
+ Shreya Shankar: I have… Something like this.
+ Shreya Shankar: Making this up.
+ Shreya Shankar: Okay, so Pareto Optimal means What colors have at least one task?
+ Shreya Shankar: where it's the highest accuracy. So both red and orange are Pareto optimal, right, because there's at least one task with the highest accuracy.
+ Shreya Shankar: Does that make.
+ Hamel Husain: Makes sense.
+ Shreya Shankar: box.
+ Hamel Husain: Yeah, that makes sense. Yeah, the Pareto frontier is like jagged because whatever is not this smooth, like we are, like you know, whatever, like you see with like people advertising their models, like we beat everything all the time, so you just have to spike on one test to be on the frontier for that.
+ Hamel Husain: Yeah, quite literally on the frontier for that specific task.
+ Shreya Shankar: Exactly. And this is different from, like, OpenAI's plots and all, because for them, they have accuracy and cost as their axes. Jetpod's not about cost.
+ Shreya Shankar: The other axis is just the tasks.
+ Shreya Shankar: But the concept of Pareto, like, just all you need is two axes.
+ Shreya Shankar: Okay, I know we're running out of time, so maybe I'll just do one more here.
+ Shreya Shankar: So we did P0, we did P1, P2.
+ Shreya Shankar: Now.
+ Shreya Shankar: We want to do the sampling again, right? Select prompt P from the frontier at random. Maybe this time we've randomly selected P1.
+ Shreya Shankar: Oh, let's do this.
+ Shreya Shankar: And so, this ends up being P3.
+ Shreya Shankar: Put P. 3 here.
+ Shreya Shankar: And then we do the same thing again, right? We've… Kind of check an X.
+ Shreya Shankar: Maybe some of these are good.
+ Shreya Shankar: I don't know.
+ Shreya Shankar: and some of these are bad.
+ Shreya Shankar: You can kind of see.
+ Shreya Shankar: So this one is also Pareto optimal.
+ Shreya Shankar: So, we are happy with it, and then we keep going.
+ Shreya Shankar: Right, so by the end of this, right, we just have built out this Pareto frontier, we have some set of nodes that's on the frontier, and then you can just take the prompt that has the highest average accuracy across all of the tasks.
+ Shreya Shankar: That's all.
+ Shreya Shankar: Let me check the comments.
+ Shreya Shankar: Okay.
+ Shreya Shankar: We can go over this more in office hours. I feel like…
+ Shreya Shankar: There's a bunch of comments here that are technical details.
+ Shreya Shankar: Hamel, is there anything that came up in the comments that you're like?
+ Hamel Husain: Yeah, so one thing is, so it is easy to, like, get really, zoned in on the technical details. I wouldn't actually focus on technical details, like, let's, like, what is going on?
+ Hamel Husain: You know, the algorithm is sampling, is, like, trying to improve the prompt.
+ Hamel Husain: Then, you know, it's, having… getting a small sample of tasks and saying, can we improve on the small sample of tasks? If we can.
+ Hamel Husain: Then… it will try a larger set of data. And it's like, can we improve on… did we improve on that? Great. And then it keeps iterating, using prompts.
+ Hamel Husain: From, like, known prompts that are good.
+ Shreya Shankar: Yep.
+ Hamel Husain: And that's really, that's…
+ Shreya Shankar: In at least one task. That's the thing.
+ Shreya Shankar: Yeah.
+ Shreya Shankar: the key idea here… so let's contrast this with auto research. What would auto research do? It would just compute the average across all tasks, and only keep the prompt with the highest average, and then try to kind of mutate or evolve from that. So JEPA just, like.
+ Shreya Shankar: again, gives it a more structured search to the agent. So it allows the agent to consider multiple options rather than just one. And then those options, you know, are Pareto optimal.
+ Hamel Husain: And Shreya said at the beginning, like, you could probably vibe code this.
+ Shreya Shankar: Yes.
+ Hamel Husain: You totally can vibe code this. And actually, you could, like, experiment with your own different sampling procedures and your own whatever, because these are kind of just choices. There's no, like, deep magic here.
+ Shreya Shankar: Yes. Yeah, like, I really hope that people realize that this is all approachable.
+ Shreya Shankar: You know, there's a great paper that has a lot of details in it, it's 96 pages. You don't need to read all 96 pages.
+ Shreya Shankar: It's okay, I just… just kind of… you know, it's not too complicated. That's my only…
+ Shreya Shankar: That's what I hope the takeaway is, okay?
+ Shreya Shankar: All right, so I know that we're running well over time, so Homework 8 is going to be about accuracy improvement, so choosing a failure mode, running other auto research, which we just
+ Shreya Shankar: turn into an improved loop skill, or JEPA, pick your favorite pick, we'll do both, it doesn't matter. Just to get intuition for this, right? Like, we know that these are small sample sizes, we know that this is a fictitious task of Cartwheel, but the point here is to just get practice with these concepts.
+ Shreya Shankar: And the homework should be out, I believe, if not merged already, I'll just check that afterwards. And the course reader is also updated with Module 5, so that is today's content, as well as Saturday's content. And there is stuff in the course reader that we don't get to cover in lecture, by the way, so if you're, like, super excited by these ideas, you should definitely check out the course reader for even more details.
+ Shreya Shankar: And with that, I think that's it. Oh, we don't need that.
+ Shreya Shankar: Hamel, anything that I missed, or… Let's say goodbye to everybody.
+ Hamel Husain: No, I think we got it. We'll have office hours in 30 minutes.
+ Hamel Husain: Yes, 30 minutes.
+ Shreya Shankar: Sorry.
+ Hamel Husain: 9:30 AM Pacific.
+ Shreya Shankar: Yep, 26 minutes, I guess. Great, thanks everybody!

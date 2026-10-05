@@ -1,846 +1,495 @@
-Hamel Husain: Hello!
- Hamel Husain: Can you hear me?
- JMunoz: Yes.
- Hamel Husain: Great.
- Hamel Husain: I'm here a little bit early, but that's fine.
- Hamel Husain: Just wait. I think it's just gonna be me, giving this alone. I'm not… I don't think Shreya's coming.
- Hamel Husain: Although she might surprise us if she frees up.
- Hamel Husain: All right, I think we can get started. We'll wait another minute or so, I think.
- Hamel Husain: So, anyone to miss out?
- Hamel Husain: Okay, I think Antaripa is here. That's actually really helpful. Antaripa, if you don't mind monitoring the chat, and then, like, if you see a question.
- Hamel Husain: I should answer. Just let me know. Just feel free to unmute yourself and just say.
- Antaripa Saha: Showing them.
- Hamel Husain: Thanks. Okay. So, before I get started.
- Hamel Husain: I just want to get a sense, like, I'm gonna… this one's gonna be highly interactive. This is the first time I've done this particular talk.
- Hamel Husain: So I don't actually know what people want, but what I'm going to do is talk about things I think are important when you're going into an interview that has an Evals component.
- Hamel Husain: And an increasing number of jobs have an evals component to it. Like, when I look at jobs online.
- Hamel Husain: around, like, half of the AI jobs I see nowadays mention evals, and I'm hearing increasingly that, like, they're kind of, like, a weed-out part of the interview.
- Hamel Husain: Just to, like, understand.
- Hamel Husain: just if you could share in the chat, and this… I won't share the chat with anyone. Like, who might be…
- Hamel Husain: looking for a job, or, like, considering interviewing for AI jobs? Anybody?
- Hamel Husain: Okay.
- Manasi Dharmadhikari: I am doing it actively.
- Hamel Husain: Okay, great.
- Hamel Husain: Always looking for a job, that's a good attitude. I think that you should always.
- Hamel Husain: Always be looking. I mean, you should always, always know. Okay, so see, like, a lot of people are looking for jobs.
- Hamel Husain: And has anyone encountered evals?
- Hamel Husain: In an interview yet?
- Hamel Husain: Anyone has, like, encountered any kind of questions around this? Okay, Ashta has already, Elizabeth has.
- Hamel Husain: Jordan?
- Hamel Husain: Okay, great.
- Hamel Husain: Funny answer, Aishwarya said more like a checkbox, that's really interesting, I'm gonna hear more about that later.
- Hamel Husain: Okay, Emily asks about Evals as an interviewer. That's really cool to see. I might have to bring Emily on as well, if she's down to stay. I know Emily.
- Hamel Husain: She is an OG Evals.
- Hamel Husain: team member.
- Hamel Husain: And Encore says it's seeing eval-specific roles as well. Cool. Okay, so let's, like, get into this.
- Hamel Husain: I'm gonna share my screen, and I won't be able to see the chat, but, Antaripa will interrupt me if…
- Hamel Husain: If something… I need to say something. Okay, so let me make sure I'm sharing my screen here.
- Hamel Husain: Can you see the slides?
- Hamel Husain: Yes? Okay, great. Alright, these are interview tips. Now, I'm coming at it, this is, like.
- Hamel Husain: So just to give you a little bit of background, I do consulting around evals, and I help a lot of companies on evals, and one of the questions that keep coming up is, like, hey, can you help us design an interview?
- Hamel Husain: And also, like, sometimes I take interviews, believe it or not, on these topics, just for fun, because I'm, like, just curious sometimes. And.
- Hamel Husain: There's definitely some patterns, and I want to, like, see if I can give you a way to think about it, because it can be very daunting if you've never seen this before, and I think it's a lot like a data… oops.
- Hamel Husain: Where did my slides go? There we go. It's a lot like data science interviews. Okay, so I'm gonna just, like.
- Hamel Husain: kind of walk through an example. Now, this is… I can't go into detail, into a super… like, into a specific
- Hamel Husain: Thing, from a specific company, obviously, because that would be…
- Hamel Husain: That would be violating confidentiality, I don't want to do that. But there are some patterns that I see. So… oops.
- Hamel Husain: Let me go back. Okay.
- Hamel Husain: So, let's say you have a take-home exam, and you get a data set. So, this is how it usually goes.
- Hamel Husain: It's not always a take-home exam, but often it is.
- Hamel Husain: Nowadays.
- Hamel Husain: The time where you have to do, like, a whiteboard thing, where you, like, write code on a whiteboard, or do something live, is kind of…
- Hamel Husain: Over.
- Hamel Husain: Usually, a lot of times, if you're asked to do something around evals, you get a take-home, or you're asked to do something in the office. They give you, like, 3 or 4 hours, and you do an interview. So let's assume, like, okay, so the way it usually goes is you get a data set.
- Hamel Husain: You're asked, like, to do some kind of evals, and we'll get into this.
- Hamel Husain: I put this meme here. Just please, for the love of God, don't do this. Don't just ask Claude to find all the errors. It's very tempting. This is where a lot of the interviews are designed.
- Hamel Husain: To booby trap you?
- Hamel Husain: If you are gonna do this, like, it's designed to find… to smell people that are doing this and not thinking about emails.
- Hamel Husain: Okay, and hopefully you're taking this course, like, that's not what you're gonna do, I hope.
- Hamel Husain: Okay. So, the hypothetical example is Tree Buddy. This is a very Oregon-coded thing, I live in Portland.
- Hamel Husain: So, let's say there is a TreeBuddy app.
- Hamel Husain: The TreeBuddy app.
- Hamel Husain: Allows you to take a picture of a tree.
- Hamel Husain: And understand, if that tree is healthy, how you should care for that tree, etc.
- Hamel Husain: Again, very Oregon coded use case.
- Hamel Husain: And, okay, like.
- Hamel Husain: The app has, like, different components, you know, you don't want people to abuse the thing, so you want to make sure the inputs are actually trees, and the outputs
- Hamel Husain: Don't, you know, people can't, like, do things with your application that might open you up to liability, but you want to, and you want to give people, like, facts about the tree, any health.
- Hamel Husain: findings, A summary of what they should do, and, like, along with recommendations, etc.
- Hamel Husain: Okay.
- Hamel Husain: And… In this particular example, you might get something that looks like this.
- Hamel Husain: And, Surprisingly, So, in this course, we used to have a recipe bot.
- Hamel Husain: Before we had this e-commerce thing, the cartwheel example.
- Hamel Husain: And a surprising number of Evals Interview examples were recipe.
- Hamel Husain: That we found.
- Hamel Husain: Maybe now you will find e-commerce if you do an interview. But they all kind of, they were like very similar.
- Hamel Husain: So you get a dataset, okay? That dataset usually has different components to it. You'll get some labeled data. So, like, let's say you'll get a bunch of trees.
- Hamel Husain: And it'll, you know, you'll get some labeled data, maybe around the guardrails they want you to build, so…
- Hamel Husain: You know, examples of bad inputs, like where it should pass or fail.
- Hamel Husain: Oftentimes, they won't give you any label inputs at all.
- Hamel Husain: And we'll talk about that. There's gonna be a lot of traps in the data.
- Hamel Husain: And I'll give you some examples.
- Hamel Husain: You'll be asked to, potentially do some data extraction, okay? So, like, here we have photos, and we're gonna do data extraction
- Hamel Husain: You know, of some kind. And data extraction is a favorite thing that people like to do in evals, because it's highly verifiable, or it's like, it feels more verifiable, because you can compare data. They can give you some data that they want you to extract, and then compare the data you extracted to
- Hamel Husain: Some golden set.
- Hamel Husain: And then, sometimes, there's unlabeled data. There's… although there's always labeled… unlabeled data as well. In this case.
- Hamel Husain: you might have, like, the summary and recommendation, just like text. And they may be labeling that, they may not be labeling it, but usually there's some form of unlabeled data somewhere.
- Hamel Husain: And then, a lot of times, what you are asked to do as a PM or AI engineer is, like, build an agent that can perform well.
- Hamel Husain: And they'll give you some evals, they'll give you some metrics that they want you to, like, think about.
- Hamel Husain: Now, we're not going to go into, like, how do you build an agent?
- Hamel Husain: That's, like, outside the scope of this course.
- Hamel Husain: But… and I'm gonna focus on the eval part of it.
- Hamel Husain: But I don't think, like, the building the agent part is actually that interesting, because…
- Hamel Husain: Coding engines are pretty good, generally speaking, and a lot of the interview
- Hamel Husain: Nowadays, tends to focus on these evals.
- Hamel Husain: what I've seen. Not so much around your code, like, no, but your interviewer usually is not reading the code. There is, like, people out there that will read the code and focus on it, but again, this is an evals course, so I'm going to focus on evals.
- Hamel Husain: Okay, so this is what I recommend.
- Hamel Husain: These slides are uploaded already to Maven, by the way, so don't worry, and of course, the recording is always available for anyone that is, you know, wants to know. The recording will be made available within 48 hours, usually sooner.
- Hamel Husain: But you want to produce a structure.
- Hamel Husain: You want to produce an artifact.
- Hamel Husain: So, you have, this is the way I like to structure it. I like to have, like, an executive summary up front. I'll go through these sections.
- Hamel Husain: One section I would like to talk about before you talk about anything.
- Hamel Husain: Like, how you built the app, what the results, whatever. Talk about the data. You always want to focus on the data. What data exists, what issues are in the data. Then you want to talk about experiments you ran.
- Hamel Husain: Then you want to talk… you want to summarize the results.
- Hamel Husain: You then want to talk about what you learned, and then next steps, and you always want to then have a little bit disclaimer of any AI tools you use.
- Hamel Husain: Depends. It's always good to have that.
- Hamel Husain: It just kind of protects you against anyone, you know.
- Hamel Husain: It depends. You might not need this if, like, they clearly say you can use AI tools, but I always like to do that.
- Hamel Husain: And this is kind of like, why… where did I get this from?
- Hamel Husain: So I got this… this is kind of…
- Hamel Husain: the way I like to do data science interviews. Anytime I give me a take-home exam from a data science interview, or in-office
- Hamel Husain: sort of… Interview
- Hamel Husain: let's say, where I'm asked to do some data analysis and present my results, I kind of follow this structure.
- Hamel Husain: Funny story, Ankur was in the audience somewhere.
- Hamel Husain: When I interviewed at Airbnb, I did an in-office example, and I followed this structure, and he interviewed me, one of our students here, so that's a fun story, and we can talk about that later.
- Hamel Husain: But I gave a presentation that was like this when I interviewed Airbnb many years ago.
- Hamel Husain: So the executive summary, I might have spent too much time on this. You want to keep it to a third of a page or less.
- Hamel Husain: You wanted to say, like, what you built in the results, so think about, like, a short paragraph, right? And there's gonna be some repetition in this, like, artifact that you create.
- Hamel Husain: But you want to… okay, so you want to go directly into the data, and this is, like, where the meat of it is, and someone who has not taken this class
- Hamel Husain: They would… a lot of people skip this section.
- Hamel Husain: So this is, like, this is, like, the most important section. This is where…
- Hamel Husain: Sort of, it separates people who understand Evals and people that don't.
- Hamel Husain: Okay.
- Hamel Husain: So, I say, spend 50-70% of your time here.
- Hamel Husain: And here are some things you want to look at.
- Hamel Husain: Okay, there's a lot of things you want to look for, but these are, like, some main things.
- Hamel Husain: So you're gonna get this data set of trees, okay, in this example.
- Hamel Husain: You want to look for things like missing or inconsistent labels.
- Hamel Husain: You want to look at insufficiently… insufficient label data? Like, maybe it's not labeled correctly, or maybe the labels don't make sense.
- Hamel Husain: So don't assume, never assume a data set you are given.
- Hamel Husain: In… in, real life, And especially in an interview is quote correct.
- Hamel Husain: Because the person… Is trying to simulate your ability to be skeptical.
- Hamel Husain: And, like, really look at the data, and that's what they're doing here.
- Hamel Husain: And also, yeah, you want to think about how noisy is the data. Like, is the data noisy? And these are all, like, very related, but you basically want to see, okay, what are the issues in this data? And let me show you some examples.
- Hamel Husain: So let's say here's an example of a data set. There's 120 examples, 120 pictures of trees. Okay.
- Hamel Husain: And, there are some attributes.
- Hamel Husain: of this data, that they, like, some metadata attached to these photos. And they have, like, species.
- Hamel Husain: Like, what species the tree is. Every, every example is labeled, okay? But, like, only 96 of those examples have a health finding at all. Maybe only 24 of them have height, maybe only 8 of them have age. I just made this up.
- Hamel Husain: And then, like, we talked about guardrails.
- Hamel Husain: Let's assume, like, there is no…
- Hamel Husain: This gives you a data set.
- Hamel Husain: But they had a, like, a guardrail pass, or is this, is this violating a policy of, like, what pictures can be input?
- Hamel Husain: And they all say, False. None of them violate. So the whole dataset doesn't have any violations at all.
- Hamel Husain: Okay.
- Hamel Husain: So you'll get examples like this, you might be wondering.
- Hamel Husain: Well, how the hell am I supposed to build this if I don't have examples of what is pass and fail? That is exactly the problem you will have to solve. That is the mess that they're gonna throw into here. If you just try to benchmax this.
- Hamel Husain: You'll get, like, 100% accuracy on input policy, because there's not… Any example, bad examples?
- Hamel Husain: So they're trying to test you. They're trying to test you to see, like, how you handle this data, where you get, like, incomplete data. Okay?
- Hamel Husain: So, okay, I should not go into the next slide, so I kind of gave the answer, but just in case you didn't see that, okay, what would you do?
- Hamel Husain: Anyone? Anyone want to put in the chat? Like, what would you do? What would you do in this situation? You just…
- Hamel Husain: Any ideas?
- Hamel Husain: A look at the pictures, label your own data.
- Hamel Husain: Check variation and values… okay.
- Hamel Husain: Synthetic data for input policy.
- Hamel Husain: Yes, very good, very good. People are learning something in the class.
- Hamel Husain: These are all good, intuitions.
- Hamel Husain: So, one thing you might want to do… Even before doing synthetic data.
- Hamel Husain: Is… instead, yeah, it might work.
- Hamel Husain: What I like to do is…
- Hamel Husain: Be as resourceful as you can, okay? So what I mean by that is, if you're given a problem like this that feels…
- Hamel Husain: Like, oops. Okay, if you're given a problem with this tree thing.
- Hamel Husain: Maybe there is…
- Hamel Husain: data, like a trustworthy data set that someone already has, somehow, for some of these dimensions. Like.
- Hamel Husain: you know, if you think about it, like, it's kind of hard, right? Like, height, age.
- Hamel Husain: Like, where are you gonna find that? You're just gonna synthetically generate pictures of trees and know what the height and age are? It's a little bit tricky, like, I don't know, like, I… wouldn't necessarily do that. So you want to try to be… show off your resourcefulness, and what I would do is, like.
- Hamel Husain: think about outside data, where possible. Not always, but, like, in the outside data, it doesn't necessarily help you solve everything.
- Hamel Husain: But it can expand the dataset.
- Hamel Husain: And sort of say, okay, like, where can…
- Hamel Husain: Can I have, like, a reference data set?
- Hamel Husain: that I can…
- Hamel Husain: like, test with, and use the data set that they gave me as the test set. As, like, the final, sort of.
- Hamel Husain: like, readout on how it's going. Because, like, you're gonna get these, like, data… you're gonna get this incomplete data. And so, for this case, you know, you might think, oh, that's nice, Hamel, it's trees, whatever.
- Hamel Husain: The reason I'm, like, constructing this hypothetical example with the trees.
- Hamel Husain: I found that, like, 80% of take-home exams and examples, like.
- Hamel Husain: you could always leverage outside data. Because, they're trying to give you an example that's, like.
- Hamel Husain: Amenable to an interview a lot of times, and, like, a lot of times it's, like, you can leverage a toy example.
- Hamel Husain: Not always the case, but always think about how you can be resourceful. Is there any other data that you can use, to augment?
- Hamel Husain: what you're doing. And it's like, okay, these are two datasets, actually. There's this tree, Curio tree data on Hugging Face, there's also this research data archive on trees.
- Hamel Husain: And, like, for the guardrail, we mentioned synthetic data, that's exactly right. I would say, okay, like, I would…
+Hamel Husain: Alright, what's going on, guys? Maybe I'll pick on somebody.
+ Hamel Husain: Angela, how's it going?
+ AngelaPaap: Very good. I'm so glad that, we're able to join the next session, because I'm not done.
+ Hamel Husain: Absolutely.
+ AngelaPaap: So.
+ Hamel Husain: That's why we did it.
+ AngelaPaap: Yeah, I really appreciate it.
+ AngelaPaap: The stuff that you were talking about today.
+ AngelaPaap: I think… in concept, I was following.
+ AngelaPaap: But could you give me an example of.
+ AngelaPaap: When you guys were saying that we shouldn't make changes in the middle of… like, you're talking about, don't make changes when?
+ AngelaPaap: But that's different.
+ AngelaPaap: Can you give me like a real life example you should not be making those?
+ AngelaPaap: those alterations.
+ Hamel Husain: Yeah.
+ AngelaPaap: say.
+ Hamel Husain: Okay, let's say, yeah, yeah, let's say, for example.
+ Hamel Husain: you have… you asking AI to summarize the meeting transcript, and you have this, like, large meeting transcript, right?
+ Hamel Husain: And
+ Hamel Husain: And then you just keep asking questions for hours on this meeting transcript, like, hey, what happened here? I don't understand this, blah blah, whatever.
+ Hamel Husain: Or, like, the course reader.
+ Hamel Husain: Like, you know, you might be putting the course reader in ChatGPT, and saying, like, hey, like, can you help me, like, go through this? Which is actually something you should do. Now, like, imagine a world where you were, like, engineering it.
+ Hamel Husain: And you decided to change, like, so, what do models receive?
+ Hamel Husain: Models receive a blob of tokens.
+ Hamel Husain: And that can be, like, the context, like, let's say it's PDF course reader. Like, your harness has to, like, parse it, whatever, and turn it into tokens, but everything is turned into tokens before it gets sent to the model, and they get… and it's sent, like, in a particular order.
+ Hamel Husain: Sometimes the order is arbitrary, and it depends.
+ Hamel Husain: But basically, like.
+ Hamel Husain: If you change anything… so, like, so if you keep having this conversation, right, with this, model.
+ Hamel Husain: the beginning stays the same, and you just keep appending onto it, right? Like, you keep asking questions, your old questions are still there, you keep appending onto it.
+ Hamel Husain: And that's sort of this intuition behind the KV cache. That's why it's so important, because wouldn't it be a tragedy if you had to recompute
+ Hamel Husain: KV every single time you append.
+ Hamel Husain: You add a new turn. You just like recompute all that stuff.
+ Hamel Husain: Right? You don't want to do that. Now, one really good way to mess that up.
+ Hamel Husain: Is to go all the way back here in the beginning if you just said, like
+ Hamel Husain: on the very beginning, you decided, like, I'm gonna say… hello, or my name is Angela. At the very beginning of that, you wouldn't invalidate the entire cache. You would blow it up.
+ Hamel Husain: And so, like, you know, you have to be strategic, like, if you're gonna make a change, okay, where do you do it? Now, you might not have to worry about that, that might not be.
+ Hamel Husain: Situation that you need to worry about?
+ Hamel Husain: But… you probably encounter it at some point. Like, oh, why did the cost of this session blow up like crazy? What happened here? And then you'll see, like, some documentation that mentions KV cache, and you'll be like, I don't understand that, but after this class, hopefully, now you understand, like, what's going on, conceptually.
+ AngelaPaap: So, that… okay, so let me answer that. So, in this class, I've been using Claude, and it's, And not the most expensive model, and I don't pay for it, but I haven't got yelled at yet, so I was just trying to… I don't know which one I'm on, I think we were signing or something.
+ AngelaPaap: But I have kept everything in one project under one thing. Like, I don't leave… This…
+ AngelaPaap: this AI evals project, so I keep going back and forth, back and forth, and spending a lot of money at this point. Is that a sample of what you mean, where I… is that a good thing that I'm seeing?
+ Hamel Husain: Okay, so you're talking about two, like, okay, when you're talking about, like.
+ AngelaPaap: Two different things.
+ Hamel Husain: Operating, operating your own coding agent. Of course, like you're susceptible to the same issue. It's some it's like, you know, the harness is doing a lot of work for you, and you'll still encounter it, like we said, like, okay, if you change your model in the middle of the whatever.
+ Hamel Husain: Or if you install somebody's plugin that does compaction.
+ Hamel Husain: And you're like, oh, like, why did this session all… like, this thing, this, conversation I've been having for one month? So you have a Claude Code thing that has been going on forever, and it's, like, at the maximum of its context window, right before compaction. If you figure out… you can figure out a way to invalidate your cache. Maybe you wait too long?
+ Hamel Husain: So the cache is invalidated? Maybe.
+ Hamel Husain: Maybe something else. Maybe you changed the model. But, like, let's say you changed the model, right? But it's, like, full context window, 1 million. Yeah, you're gonna get hit with a large bill, potentially. So that's where it impacts you, but also, if you're engineering a product.
+ Hamel Husain: Right? Then you have to think about that, because now you have more control.
+ AngelaPaap: That's.
+ Hamel Husain: That's where it comes.
+ AngelaPaap: Two different things, but it's similar as far as, like, what happens. Okay, that's… because it does compact right now, it says it's, like, kind of compressed for, like, memory. I didn't enable anything, I know you guys talked about it today, I didn't enable anything, but it does it. So, yeah, we'll need to find out what my bill looks like, just for context.
+ Hamel Husain: If it's not something you don't worry about it unless you have to.
+ Hamel Husain: Okay. Cheryl?
+ Shrirang Moghe: Alright.
+ Shrirang Moghe: So you folks have definitely made us dangerous, actually. I would say that.
+ Shrirang Moghe: So, I work for Siemens, and this is my… almost finished one year there, and I use a skill called Siemens Slide.
+ Shrirang Moghe: I make a whole bunch of slides.
+ Shrirang Moghe: Looking at AI and creating slides, Siemens type is my the skill that I've built over a period of time. So what I decided to do when Jev came.
+ Shrirang Moghe: Is to make a position paper.
+ Shrirang Moghe: to get Chev class models into the company. So what I did is made Claude Code analyze that skill.
+ Shrirang Moghe: And said, what are the decisions we are taking at this point in time, in this, in this? So it came up with 18 decision points.
+ Shrirang Moghe: Correct.
+ Shrirang Moghe: And… and build a whole set of evals on it, too, actually.
+ Shrirang Moghe: On that slide scale. And found out that on the 18, decision points, 6 were deterministic, 11 were type judgments, and 1 was generation.
+ Shrirang Moghe: And finally, the whole thing, I'll kind of just show… my screen a little bit, and I am still trying to understand the results, actually. It came up with all kinds of stuff that I'm trying to area under the curve, and essentially error analysis. So, Jev…
+ Shrirang Moghe: versus Cloud Sonnet versus Cloud Opus. So I compared it with Cloud Sonnet also.
+ Shrirang Moghe: So, the results at this point in time, there are multiple dimensions in which it was checked.
+ Shrirang Moghe: So, phenomenal results came out, and latency in the cost, 30… 33 times slower with clots on it, 72 times slower, and 542x dearer, I mean, in terms of the cost.
+ Shrirang Moghe: So, I'm myself trying to… this results came out just yesterday. We prepared this document. I'm still trying to understand these results, but I feel that there is enough position paper here.
+ Shrirang Moghe: And the next thing I'm trying to build.
+ Shrirang Moghe: Hamel and Shreya is to actually a whole bunch of evals that I created on the skills.
+ Shrirang Moghe: So I want to regularly check my slide skills against those evals and try to see whether I can move to a, you know, cheaper model or, you know, just those models. But, so it is essentially what I'm trying to say is that that Jeb plus
+ Shrirang Moghe: can be brought in for decision, at least for people to, you know, start playing with it and understand where this is headed. But just wanted to let you know that.
+ Shrirang Moghe: You… this is with your class, we are becoming dangerous at the same time becoming.
+ Shrirang Moghe: Kind of learn it too, based on the evals to make sure that, you know.
+ Hamel Husain: Do you have a question behind this? Is this something you just want to show?
+ Shrirang Moghe: I'm trying to say is that you have made us dangerous. Actually, there was no question.
+ Hamel Husain: So here's my reaction.
+ Shreya Shankar: That's not a question.
+ Hamel Husain: Yeah.
+ Shrirang Moghe: You.
+ Hamel Husain: So here's my reaction to this. I'm actually really concerned.
+ Shrirang Moghe: Yeah.
+ Hamel Husain: I'm concerned… I'm extremely concerned, actually.
+ Hamel Husain: On different dimensions. So, one is, the last thing you want to do is, like, point Claude at a thing and say, like, just do… make a report, and evaluate it based on a thing. You're gonna get a whole bunch of…
+ Hamel Husain: Stuff.
+ Hamel Husain: Probably a lot of slop, and probably a lot of over-analysis of what you're trying.
+ Shrirang Moghe: making.
+ Hamel Husain: you And I'm also a little bit concerned about this case of, like, generating slides, like, over-engineering it.
+ Shrirang Moghe: important.
+ Hamel Husain: altogether has nothing to do with evals, but I am also concerned with that.
+ Hamel Husain: I would say, like, do error analysis on the slide, and, like, keep it simple. Don't go into…
+ Hamel Husain: You I.
+ Hamel Husain: You know, I could be wrong.
+ Hamel Husain: And every engineer is susceptible to this. You could be suffering from, and I say this with love, some, tool psychosis.
+ Hamel Husain: And just keep it simple, like…
+ Hamel Husain: you know, Jeb is exciting, and you should totally use Jeb, but just, like.
+ Hamel Husain: If it's for slides, you know, and you have all… like, don't over-engineer your workflow, like, focus on the actual
+ Hamel Husain: Sort of, things that you…
+ Hamel Husain: that are going wrong in the slide workflow. And, like, just keep it super simple to that. Don't go to this level. When I see this, I'm like, okay, this is the recipe for wasting your time.
+ Hamel Husain: That's my… that's my initial interaction, my initial reaction. Of course, I know I don't do what you do, so there's probably a lot of more narrative there.
+ Hamel Husain: But I'm just giving you…
+ Hamel Husain: how I feel after you told me this. And maybe some of it is useful for you, maybe some of it you're like, okay.
+ Shrirang Moghe: Yeah, yeah, yeah, got it, got it, yeah. I will actually, I mean, I made… that was an interesting part. I made Cloud Core analyze that.
+ Shrirang Moghe: I've probably made Codex analyze the same thing and see, yeah. I'm just trying to see, how much of this can be moved to chat. I was just trying to see how many decision points are there, and, you know, am I overusing a particular model for some of the things that it does?
+ Shrirang Moghe: Yeah.
+ Shrirang Moghe: And yeah, great. Thank you. Yeah.
+ Hamel Husain: Yeah, no problem.
+ Hamel Husain: Anyone else?
+ Hamel Husain: Zara, you have a question?
+ Hamel Husain: Maybe.
+ Hamel Husain: I know I'm just picking up.
+ Shreya Shankar: Muted.
+ zarakhan: Am I muted? I was gonna say, I couldn't find the hand raise button. Question for you guys, at the end, Trey, you had the slide where you were talking about fine-tuning and reinforcement learning, and they were two separate bullets.
+ zarakhan: Do you all position those to customers as two separate activities, or do you think that they kind of fall in the same post-training bucket? I wanted to just a high level, how do you talk about it with customers?
+ Shreya Shankar: Yeah, so, okay, to be more precise, it's supervised fine-tuning, or SFT, versus RL, and they're both… you're correct in that they're both examples or instances of post-training. However, in SFT, you need golden trajectories, so you need some reference
+ Shreya Shankar: trace of all the step-by-step to get to the correct answer. You absolutely need that to fine-tune on, whereas in RL, you don't need the golden trace, you just need some sort of function or evaluator that gives you some sort of score, so this could be the binary 1 or 0, based on whether a certain criteria holds or not. So there are two different ways that you do post-training.
+ Shreya Shankar: Though they may actually, they… yeah, it's unclear. For certain cases, one might be better than the other. Actually, in practice, in most cases, people do SFT before RL, so…
+ zarakhan: That's helpful. I… I… because I was… just the terminology, I wanted to make sure I understood. The context behind this is, having worked with, like, frontier models, where
+ zarakhan: that decision that Hamel you talked about, where you spend a lot of time doing the fine-tuning.
+ zarakhan: on your own model, and then the Frontier one comes out, and it just blows it out of the… like, you're just like, I did all this work to make this custom thing, and now I can just use this off the shelf. That's what I'm trying to assess, like, I'm trying to figure out with customers, there's some customers who want to do fine-tuning reinforcement learning because they need to have it hosted within a certain environment, they can't have cloud hosted, they need certain latency. There's a thousand other things. Maybe they have classified data from government that they can't
+ zarakhan: share out. But for the traditional commercial customer.
+ zarakhan: Are you guys still bullish on Frontier?
+ zarakhan: heard in the conversation?
+ zarakhan: Or do you think it's a time for, like, customer support? Should we still be doing customer support with Frontier, or can we just move to, like, some GLM Kimmy…
+ zarakhan: Fine-tuned. And if this is, like, too controversial.
+ Shreya Shankar: No, no, I don't think it's too hard for yourself. I'm curious what Hamel was going to say. I think we, let me think about my.
+ Hamel Husain: Yeah, I would say, okay, like, okay, first of all, as you know, because a very predictable answer for me, it's like, have your evals, have the evals, and, like, find the best, like, the cheapest model on that, on that curve, like, the cost versus quality.
+ Hamel Husain: Like, what is the best for your thing? And, yeah, to whatever extent, like.
+ Hamel Husain: you know, I don't have… I would say, like, be completely agnostic. Don't have any religious affiliation with one…
  Hamel Husain: you know.
- Hamel Husain: I would actually create these negative examples here. I would, like… and these are not real people and real things. You can see that this is AI-generated, but it's better than nothing. Like, I don't know who any of these people are, and they're not real people. But, like, these are examples, like, in this specific homework example, you would…
- Hamel Husain: Think about, like, generating synthetic data.
- Hamel Husain: Again, you're trying to show off your resourcefulness, because, like, you are given limited resources when it comes to data, and you are trying to be creative on how you fill those gaps. Sometimes with synthetic data, maybe sometimes with
- Hamel Husain: external data, whatever it may be. You tried to choose, like, what is the best proxy here?
- Hamel Husain: But most importantly, you want to actually look at the data, okay?
- Hamel Husain: And you want to find things like inconsistent labels.
- Hamel Husain: Okay, so what is the example of how would an inconsistent label would look like? Okay, like, the tree on the left.
- Hamel Husain: It says, species English oak.
- Hamel Husain: And then the tree on the right says species pine, pine, period, long needles, orange bark, okay? And then the height, you see, is not normalized, so you have, like, height, 12 meters.
- Hamel Husain: I don't even know if that's a reasonable height for that tree, honestly. And then there's height 50. 50 what? God knows, I don't know, okay? And you will get stuff exactly like this. Like, if it's a good Evals interview.
- Hamel Husain: And, you know, they're going to challenge your… they're gonna give you this.
- Hamel Husain: To try to frustrate you.
- Hamel Husain: And this is where you will have to either… you have to think about what to do here. You have to think about either label this yourself, or get an LLM to try to do your best job to normalize these labels.
- Hamel Husain: You gotta try your best. There's no such thing as perfection. The whole idea of the artifact that you give them
- Hamel Husain: It's like you discuss it. You say like, hey, this is the issue that I found in the data, and this is what I tried to do to overcome it.
- Hamel Husain: Okay, there's gonna be… you might not be able to perfectly overcome this.
- Hamel Husain: Now, we do have that data set.
- Hamel Husain: where maybe we can have more trust, because it is normalized, those external data sets on Hugging Face and the other one.
- Hamel Husain: You know, where everything is normalized.
- Hamel Husain: And you can say, hey, like, because this data had these problems, I use this data set as a way to… as a proxy to, like, try to get things started.
- Hamel Husain: So again, like, it's a job interview, and you want to show off your resourcefulness, and you want to show that you're paying attention, and you're looking into the details, and you're understanding the data. And you're not just haphazardly
- Hamel Husain: Pointing your agent at this.
- Hamel Husain: Because this… they're trying to simulate, like, what actual product work is going to look like, what you are going to encounter.
- Hamel Husain: Okay. And then, like, you want to also pay attention to noise. Like, this is… you can tell I generated this AI, but I'm trying to drive home the point.
- Hamel Husain: It's like, okay, you might get, like, you might… you want to see these examples.
- Hamel Husain: And, you'll see, like, oh, okay, like…
- Hamel Husain: There's real trees, and then there's Bonsai trees, these, like, miniature trees.
- Hamel Husain: And that might introduce… like, that's… do we want that? Do we want these bonsai trees in the dataset? A lot of times, there'll be things in the dataset that shouldn't be there, and you want to call that out when you write up this
- Hamel Husain: artifact, to say, like, hey, like, I took these out of the data set because it didn't belong, or, you have to make some product judgment, like, how you want to handle this, but there's these traps, okay?
- Hamel Husain: That you want to think about.
- Hamel Husain: Any questions so far?
- Antaripa Saha: Yeah, there are some questions related to like, is the synthetic data compared with the actual data that is given in the interview? Or is it like a combination that like in order to just balance out the label data? When when should we use that? Or when should we think about like adding more synthetic data is one question that I can see. Another question is, when will an interviewer approve of this strategy?
- Antaripa Saha: Like of adding this, because like there are like different types of.
- Hamel Husain: Okay, okay, yeah, that's a good question. Okay, so one is, like, okay, when do you use synthetic data? It's when you think it's the best alternative.
- Hamel Husain: That's a kind of a vague answer. But, as you see here, sometimes, you know, like, maybe some of this data doesn't have any problems at all, like, maybe this species is fine, and you can just correct the labels or normalize them, but sometimes, like, you know, with the input policy.
- Hamel Husain: I really don't see another way
- Hamel Husain: To start making progress on this problem.
- Hamel Husain: Other than using synthetic data. Now, it could be a situation where you can ask your interviewer.
- Hamel Husain: Sometimes they want you to do that, ask questions, but sometimes it's… sometimes it's, like, apparent that they don't want you to. They want you to just, like.
- Hamel Husain: come with your best approach and actually, like, pose your open questions, okay? So it's… you kind of need to read the room a little bit, you need to understand your interviewer, so I can't give you, like, a formulaic
- Hamel Husain: what you should do, but just keep in mind, like, try to… try to, like, see, okay, like, synthetic data.
- Hamel Husain: Is synthetic data better than external data?
- Hamel Husain: And.
- Hamel Husain: I would use all the opportunities to, like, show off your resourcefulness. So, like, I love including,
- Hamel Husain: You know, if there's a really good match between external data and internal data that is incomplete.
- Hamel Husain: I love including them.
- Hamel Husain: Because a lot of people don't do that.
- Hamel Husain: And that really shows off.
- Hamel Husain: How we're social with this.
- Hamel Husain: How resourceful you are.
- Hamel Husain: Keep in mind, this is a job interview, so it's not just like, did you get the best score on the evals? That is not what they're looking for. They're not stack ranking you. There'll be maybe some rare situations where they'll stack rank your score against other people, but that's not really what's going on here.
- Hamel Husain: What's really going on is like, are you thinking properly? And they're trying to simulate what it would be like to work with you. Okay.
- Hamel Husain: And, okay, so that's that question.
- Hamel Husain: What was the other question?
- Antaripa Saha: I think like you have answered both the questions.
- Hamel Husain: Okay, okay, okay.
- Hamel Husain: Okay, so we talked about inconsistent labels and, like, noise that might be there.
- Hamel Husain: So, when you look at this data, and you see what's going on here, you will find issues.
- Hamel Husain: And, you just want to summarize those issues. You want to, like, maybe have bulleted lists, what do they look like, what's going on in this data, and you want to, you know, use your skills of communication to
- Hamel Husain: Talk about what the data issues are.
- Hamel Husain: Okay, so next, moving on to an experiment. So, once you, like, understand the data.
- Hamel Husain: And you have some…
- Hamel Husain: reasonable solution that you, you know, thought about, and you've looked at it, and you've, like, summarized the issues, then you can move into an experiment. So what are experiments? Experiments are sort of your attempts
- Hamel Husain: to… Make this agent… Better at solving this problem that they pose to you, okay?
- Hamel Husain: So, what is an experiment? You want to kind of frame it like this. You want the goal.
- Hamel Husain: What is the goal of experiment?
- Hamel Husain: what you tried.
- Hamel Husain: And then any methods and findings that you… that came out of that experiment, okay? So, an example goal could be species identification, the trees.
- Hamel Husain: And… You want to classify the species correctly, okay?
- Hamel Husain: And so, this is what an experiment… what you would… what I recommend you do.
- Hamel Husain: Is to have a table of results, okay?
- Hamel Husain: Now, you might be thinking, what is F1 score? Just give me a moment and let's walk through it. So, what you want is a table of results.
- Hamel Husain: They will give you a metric that they want you to.
- Hamel Husain: Express.
- Hamel Husain: And it may not be TPR, TNR, whatever, it may be something that they have, okay?
- Hamel Husain: Whether you argue with that metric.
- Hamel Husain: is up to you. We'll get to that in a moment. Sometimes you do… you might want to argue with that metric.
- Hamel Husain: But, only if you think it's…
- Hamel Husain: if it's wrong, and I'll show you an example of
- Hamel Husain: Where the metric might be a bad idea.
- Hamel Husain: But what you want to do is say, okay, like.
- Hamel Husain: You want to show a table of different experiments.
- Hamel Husain: that you ran, and you can organize the table in any way you want, doesn't have to look like this. But you want to say, hey, I tried this thing, so for example, in this table, it's like, okay, I tried GPT-6 Luna with just a prompt.
- Hamel Husain: I tried GPT-6 Luna with this external tree database, where, like, when I look up the answer, I also try to get, the most similar tree in the database, and I use that to inform my answer. I'm just making this up, okay? You might have different experiments, this is experiments.
- Hamel Husain: You might just, you know, V3 is like, hey, I'm doing the same thing as V1, I just changed the model to Soul. Or V4 is, like.
- Hamel Husain: Again, SOL with the external database.
- Hamel Husain: V7 here is, like.
- Hamel Husain: using automated prop tuning, like JEPA or something like that, alright? And the idea is, like, you want to show the different things you tried.
- Hamel Husain: Basically. Like, how did you try to improve this? You want to have a baseline, so you want to make sure you have, like, a simple baseline. That's why I have, on this slide, I have prompt only.
- Hamel Husain: Which is… I'm trying to…
- Hamel Husain: Just, like, illustrate, like, you want the simplest, dumbest thing you can as your baseline.
- Hamel Husain: I think you want to try different ideas you might have to improve your agent.
- Hamel Husain: And there's no formulaic way to go about this. This has to be informed by your judgment, what things you want to try.
- Hamel Husain: You know, I like to…
- Hamel Husain: I mean, okay, so it depends on your level of expertise, right? Like, I like to try.
- Hamel Husain: You know, this is all an opportunity to showcase your knowledge.
- Hamel Husain: And it's a nuanced thing. So, like, if I had to do one of these today.
- Hamel Husain: Okay, like, if Jeb just came out, I would try Jeb. I'm like, let me try Jeb.
- Hamel Husain: It depends. If I'm interviewing at…
- Hamel Husain: whatever, Anthropic, then I may not use Jeff, because I'll just use their stuff. You have to think about, like, what they want to see, and what approaches they might want to see, whatever. And they might tell you, like, they might give you parameters of things to try, or they might tell you use a certain SDK, or use this, use that, whatever.
- Hamel Husain: But this is something to think about. Think about having a table of results where you can quickly show, sort of, things you tried, and then you want some narrative under the table. I tried this.
- Hamel Husain: This is what this means.
- Hamel Husain: I found this approach to be good.
- Hamel Husain: This is, you know, basically you want to see… and what you want to show is…
- Hamel Husain: You want to show some thinking of trade-offs.
- Hamel Husain: So, when you have a table like this, you might have something that has, like, the highest score.
- Hamel Husain: But maybe that's not the one you want, because it's slower, it's more expensive, it's more complicated.
- Hamel Husain: And what kind of the next level is to, like, talk about, okay, like, I actually like this
- Hamel Husain: certain example, because I think It has the best trade-off in terms of complexity and performance.
- Hamel Husain: And there's also, if you notice on this table, there's this validation and test. So that's a… that's kind of a thing we discussed in this class. People won't tell you to do validation tests. You want to pay attention to overfitting.
- Hamel Husain: Right, so you find… you might find, like, see this, like, V6 row here has a very high test score on the validation set. Actually, there's both the V5 and V6,
- Hamel Husain: You know, they have a very high score in the validation set, but the test set score drops significantly.
- Hamel Husain: So something is being overfitted, Like, the score is not consistent, and we don't like that.
- Hamel Husain: So these are the kinds of things you want to discuss, like, you want… it's not just about number, score maxing. It's like, bring your…
- Hamel Husain: Judgment, and talk about, oh, like.
- Hamel Husain: This is the kind of trade-offs I think about, and this is what I would like.
- Hamel Husain: Okay.
- Hamel Husain: So, like, again, you want, sort of… you want to have your methods underneath the table, and you want your findings. So, like, an example finding would be.
- Hamel Husain: you know, Soul and Rag seems like the best trade-off.
- Hamel Husain: Astra is overfitting.
- Hamel Husain: and automated prompt tuning do not help. These are the kind of findings you might want to say in there.
- Hamel Husain: To kind of give, like,
- Hamel Husain: And again, you're trying to, like, show off.
- Hamel Husain: Your judgment?
- Hamel Husain: Your ability to think about trade-offs and
- Hamel Husain: Also, showcase that you know a little bit about different approaches to improving the agent.
- Hamel Husain: Okay? But you want to write.
- Hamel Husain: Don't let AI do all this stuff for you, you're gonna get into trouble. You're gonna be like this person in the photo. Don't do that.
- Hamel Husain: Okay.
- Hamel Husain: Now, sometimes, you will be asked… this is a kind of insidious thing to do.
- Hamel Husain: Borderline… Kind of borderline evil, but… It will happen.
- Hamel Husain: I mean, people are trying to filter people out, what can I say, okay? They're, like, pushing the limit.
- Hamel Husain: In these interviews.
- Hamel Husain: Honestly.
- Hamel Husain: And they will put stuff in here that, in the interview sometimes, they will ask you to do things that you shouldn't be doing. Like, they will just tell you, like.
- Hamel Husain: Okay, like, you know, like, let's say, for example.
- Hamel Husain: You have this tree.
- Hamel Husain: Never mind that the tree, the picture sucks, because it's not… can't even see the whole tree. So, I mean, that's a problem. But, okay, like, your app produces this.
- Hamel Husain: Summary, the brown leaf edges mean your tree is drought stressed, give it extra water.
- Hamel Husain: This week and watch for more browning. It's clear you've been neglecting your tree. Okay.
- Hamel Husain: So… You know, let's say in the interviewer gives you this direction, grade helpfulness and tone of this.
- Hamel Husain: On a scale of 1 to 5,
- Hamel Husain: And combine the, helpfulness and tone score into a composite score from 0 to 100.
- Hamel Husain: Like, they'll give you the math, like, take this helpfulness score, take this tone score, they'll do something like that.
- Hamel Husain: How do you… how do you feel about being asked to do this?
- Hamel Husain: Let's put it in the chat.
- Hamel Husain: What do you think?
- Hamel Husain: Want to get some reactions.
- Hamel Husain: Let me see if I can see the chat. Hold on a second.
- Hamel Husain: And maybe Antaripa can tell me what people are saying.
- Antaripa Saha: Yeah, binary score. Not a fan of numeric scales, just then someone has written like one to five orthogonal metrics.
- Antaripa Saha: Mostly it's around like 1 to 5 or binary, but yeah.
- Hamel Husain: Yeah.
- Hamel Husain: So yeah, don't do 1 to 5, don't do about… yeah, 1 to 5, what… like, that's a bad idea. I hope you learned that in the class.
- Hamel Husain: And, like, composite scores, like, you want the score to be actionable and interpretable. Like, what the hell is this?
- Hamel Husain: This is a little bit tricky area, we'll come down to this.
- Hamel Husain: Now, sometimes this is a very insidious question meant to… Trap you? Sometimes.
- Hamel Husain: People are just stupid.
- Hamel Husain: They don't know evals. They're interviewing for evals, and they don't know evals. Okay?
- Hamel Husain: Either way.
- Hamel Husain: It's okay, you should still… the safest thing to do is to say, hey, like, you wouldn't do this, and this is why, and write your answer.
- Hamel Husain: Diplomatically, and say, like, hey, you don't think this is a good approach?
- Hamel Husain: You would, you know, I would always just compute the score, But then also explain, hey,
- Hamel Husain: for, you know, in… this is not the way I would do it. I would think about refactoring this metric to blah blah blah.
- Hamel Husain: That always goes over really well. So, like, in the…
- Hamel Husain: So, like, there's only two… there's two possible outcomes from that. One is.
- Hamel Husain: You avoided the trap that they set for you.
- Hamel Husain: If they're stupid.
- Hamel Husain: I know I'm being harsh on that language, but… whatever. If they're stupid, you're gonna teach them something. They're gonna be like, oh, you know, that's a very thoughtful comment. If you explain properly, like, why, you don't… you know, you have… can't just be… you have to be nice about it, and you have to explain yourself, like, give the reasoning behind that.
- Hamel Husain: They will learn something, and that will put you at a completely different level.
- Hamel Husain: Then anyone else doing… This interview.
- Hamel Husain: And that's what you need. You need to be at a completely different level.
- Hamel Husain: AI interviews nowadays, or job interviews in general, they just have way too many people they're considering, and way too many applicants, okay?
- Hamel Husain: So, basically, like, what are some… so, like, from this specific example, what are some examples of evals that I would create?
- Hamel Husain: In lieu of helpfulness and tone from 1 to 5, blah blah blah.
- Hamel Husain: I would say, like, okay, is a full-length picture taken?
- Hamel Husain: Is the watering advice, maybe it needs to check soil moisture, like, why are they giving that to me? Like, you know, can we do that? Can we make sure it's grounded?
- Hamel Husain: No blame or scolding. You see, like.
- Hamel Husain: Saying you have been neglecting your tree. Why is the head telling you you're neglecting your tree? That's…
- Hamel Husain: That's harsh.
- Hamel Husain: You know? So, like, I would describe why these are better, okay?
- Hamel Husain: Because you don't want to be caught in a situation where your interviewer is like, oh, like, how do you trust, like, how do you know that the score is good?
- Hamel Husain: Okay.
- Raymond Weitekamp: on…
- Hamel Husain: I think somebody's not on mute. I would say, like, let's… if someone wants to come off mute, let's do that at the end.
- Hamel Husain: Okay, let me go back to my slides.
- Hamel Husain: Okay. So, experiments. You want to put it all together, okay? You want to have, like I said, the goal. You want your table of experiments.
- Hamel Husain: And then you want those methods and findings.
- Hamel Husain: And there will be lots… expect to have lots of experiments, okay? So, you would want to break those experiments down by different features that they want you to tackle. So, like, you know, they had, if you recall.
- Hamel Husain: They have, like, guardrails, they want you to classify the species, they want to… you get, like, health recommendations of the tree.
- Hamel Husain: Okay, there's a lot of things going on here, and you want different experiments for those different areas.
- Hamel Husain: Okay.
- Hamel Husain: So you have different experiments.
- Hamel Husain: And then let's go into results. Is there any questions, Antaripa?
- Antaripa Saha: It's more of, like, I would say at the end it might fit better, like, the things that you have talked so far around metrics and experiments and all, a few people found it a lot relatable to data science. Then the question was basically, do they need to take a data science class separately, or how does this intuition comes?
- Hamel Husain: Hmm, okay.
- Hamel Husain: Yeah, the intuition is, like.
- Hamel Husain: you know, You just need to make sure that this metric.
- Hamel Husain: actually makes sense. Like, you know, we told you in this class when we created an eval.
- Hamel Husain: It needs to be scoped to a specific failure.
- Hamel Husain: It needs to be specific to something you found in error analysis.
- Hamel Husain: Okay.
- Hamel Husain: Helpfulness and tone and whatever, that is completely going against that. It's not, it's actually ironically, the helpfulness metric is not helpful.
- Hamel Husain: Because what are you going to do with that? What does that even mean? It's not helpful.
- Hamel Husain: Like, yeah, helpfulness score of 3.5.
- Hamel Husain: Okay, like…
- Hamel Husain: I don't know, I have to go look at the prompt. They're like, I have to figure out now why it's not helpful. So, it comes with practice, I would say. But we can talk about that. I think that's a good question to discuss, at the end.
- Hamel Husain: Okay, so we went over… we have the data, the experiments, then we get into the results.
- Hamel Husain: So this one is quick.
- Hamel Husain: You want to just synthesize your experiments, so you're going to have all these experiments that you run.
- Hamel Husain: Okay, like, you have many different tables, like, probably one experiment per feature.
- Hamel Husain: So you're gonna have a lot of information in that experiment section.
- Hamel Husain: what you're gonna wanna do is, like, condense it to results. You wanna, like, you wanna say, like, okay, what is the winning combination of these experiments? How would you go about it?
- Hamel Husain: And you want to, like, kind of synthesize it and say, okay, these are your recommendations on how you proceed.
- Hamel Husain: Sort of based on all these experiments, you want to reiterate, like, what the baseline is?
- Hamel Husain: what the final eval scores is across these different evals they want to, they gave you. And you want to also think about, like, the cost and latency trade-offs. So remember, I talked about trade-offs. It's not just benchmaxing.
- Hamel Husain: Are getting the highest score you.
- Hamel Husain: You can. You want to demonstrate this opportunity for you to demonstrate your product thinking and your judgment.
- Hamel Husain: Because usually… and I would go as far to say.
- Hamel Husain: You should have something in your table of results with a higher score.
- Hamel Husain: that you… Decide not to do.
- Hamel Husain: Does it have to be, like, so unrealistic, so heavy-handed, it's, like, expensive, it's overcomplicated? It's really good to have that. So you can demonstrate, you can showcase this.
- Hamel Husain: This quality of yours.
- Hamel Husain: Of judgment, like, no, I'm not going to go for the highest score, that would be bad for my product, this other alternative is better, because
- Hamel Husain: It's just a little bit lower, but it's so much faster, so much cheaper, so much more stable, whatever.
- Hamel Husain: And then after results, I would talk about what you learned, and you could… there's some repetition in this.
- Hamel Husain: And some repetition is good.
- Hamel Husain: People don't read… People don't read.
- Hamel Husain: So, there's some amount of repetition that you need when you submit these
- Hamel Husain: artifacts, okay? And so what you learned kind of should talk a lot about, like, what worked well, like, what experiments you tried.
- Hamel Husain: what didn't work. So, like, one example of what worked well, maybe synthetic data was really effective. Maybe this external data was effective with retrieval. Maybe… maybe you caught overfitting. Talk about all the things that you learned.
- Hamel Husain: While you were building this, application, okay? Like, Talk about what didn't work.
- Hamel Husain: You know, of those experiments, like, kind of synthesize, like, oh, okay, yeah, maybe prompt tuning didn't work, maybe larger models didn't work.
- Hamel Husain: Okay? Then talk about limitations. So you want to talk, also, you want to, like, reiterate the limitations of their data.
- Hamel Husain: So what I do here is, like, repeat any, quote, bad things.
- Hamel Husain: That you were forced to do, maybe they were telling you to, like.
- Hamel Husain: You know, take, like, 10 generic metrics and combine them into a single score.
- Hamel Husain: I have been… I have seen this on a real take-home exam.
- Hamel Husain: By very reputable companies.
- Hamel Husain: of, like, hey, let's take these 5, 10 metrics that are super generic and combine them to single score. So I would say, okay, like.
- Hamel Husain: you know, whatever. In cases where you are asked to compute something from text data.
- Hamel Husain: And… you know.
- Hamel Husain: You don't have labels?
- Hamel Husain: And you can't get labels?
- Hamel Husain: do your best. You might say… you might even go as far as to say, hey, these LM judge, they asked me to create, but not validate against human labels, because of, like, this… this… our other limitation. Try to get labels if you can. Try to label it yourself if you can. But hey, you might not be able to if they give you something
- Hamel Husain: They, if they give you a data set, keep in mind.
- Hamel Husain: that when you encounter interviews, it will be a mixture of people trying to set a deliberate trap. and people who are stupid. Like, they don't understand evals, they're just getting an AI.
- Hamel Husain: To generate an eval interview.
- Hamel Husain: And it's not… they didn't think through it, okay? That happens a lot.
- Hamel Husain: But you still want to.
- Hamel Husain: You still want to showcase your knowledge here.
- Hamel Husain: And you want to, like, show… like, you want to teach the interview or something, in that case. That's the best outcome.
- Hamel Husain: And again, you want to repeat any limitations of the data that you saw, or the approach.
- Hamel Husain: Okay, so this is, like, where you exercise some humility and say, okay, like, this is kind of, like, where…
- Hamel Husain: We were limited.
- Hamel Husain: And then, always like to have a next step section. So, like, again, you want to put your product hat on, it's like, oh, okay, like, if you had more time.
- Hamel Husain: What are… based upon what you learned, like, what are ideas you would have for improving performance?
- Hamel Husain: And it is always the case.
- Hamel Husain: 100% of the time that you can have better data. Everyone can have better data.
- Hamel Husain: And so you should always mention, oh, like, I will try to get better data on XYZ ABC, okay?
- Hamel Husain: And also, I'd like to talk about product improvements. So I would… this is, again, another opportunity for you to showcase
- Hamel Husain: How… Good you are by thinking outside the box.
- Hamel Husain: In helping that person envision working with you, you talk about, oh, you know what, you gave me this tree app.
- Hamel Husain: I would actually redesign the app.
- Hamel Husain: to do this thing instead, or, like, you know, have these other functionalities.
- Hamel Husain: that will make it easier for you to evaluate. Now, that one's a little bit tricky. I have that blog post that I've shared many times, and I can dig it up, and maybe Antaripa can dig it up about, hey, like, how to think about, product.
- Hamel Husain: Design for Evals?
- Hamel Husain: But, okay, make sure if you do this, if you talk about better data or product improvements, you discuss the details. So don't just say better data.
- Hamel Husain: talk about, like, what exactly do you mean? Like, what's wrong with the data? What kind of data would you get exactly? And then, like, product improvements, like, what are the product… like, what are some product improvements you might try to make?
- Hamel Husain: And that's it. That's kind of my synthesis of… You know.
- Hamel Husain: How you should think about framing the problem.
- Hamel Husain: If you're gonna do an interview like this, if you're gonna sort of think about evals.
- Hamel Husain: You know, this kind of maybe a little bit more… might structure your thinking, so you can de-risk it a little bit.
- Hamel Husain: So I'm gonna stop sharing.
- Hamel Husain: And…
- Antaripa Saha: Few questions there have been around the experiments that you have been talking. How does it differentiate with A/B testing that normally software engineers do?
- Antaripa Saha: This is one of the questions that someone had, somewhere in top.
- Hamel Husain: Okay, okay, I'll do… I'll do one at a time, because I have, like, a very small cache in my brain. I can only do one, keep one.
- Hamel Husain: In my… in my memory. Yeah, so the…
- Hamel Husain: I would say, okay, yeah, don't worry about A-B testing. This is, like, you're usually gonna get a… unless it's a data science interview, they're not going to usually do that. They're gonna give you a data set.
- Hamel Husain: And ask you to compute some evals.
- Hamel Husain: And compute some metrics.
- Antaripa Saha: Next is you have talked about this resourcefulness. So I think Conor had this question that will it be helpful to present the results in, in kind of like UI, or is it too extra to go?
- Hamel Husain: Be very careful with that, so…
- Hamel Husain: you know, it depends what they ask for. Usually they ask for something. They're like, hey, please give us a report in a PDF. Please give us whatever, a GitHub repo.
- Hamel Husain: Do you want to follow that?
- Hamel Husain: Be careful about UIs presenting stuff, like, you don't want to become a slop cannon.
- Hamel Husain: The easiest way to turn someone off in an interview is becoming a slop cannon. So if you… if you…
- Hamel Husain: The reason I say this is, like, I can't tell you how many slides and stuff I see all day that are just… I can't read.
- Hamel Husain: And so, just don't… don't do that to yourself, like, you know, write it thoughtfully. So there's a temptation when creating, like, these UIs to present things, that they become slop, so just be careful.
- Antaripa Saha: Another question, this… it's from Ankur. So, in the cart village and related to the homeworks, I have seen those questions in Discord, too. Like, many have spent, like, tens of hours in the cart village and reading the traces and so forth. Like, ideally, when it's too much to, like, even for interviews, when the task is given.
- Antaripa Saha: when should someone stop, or, like, when should I identify, okay, it's too much? Or maybe, like, does it improve with time, that currently it's taking 10 hours to read or go through the traces? Eventually, with intuition, does it get better, or… so this is the question.
- Hamel Husain: That's an excellent question, Ankur. So this is kind of thing like it takes practice.
- Hamel Husain: And it's like, you have a time budget.
- Hamel Husain: And, you have to decide.
- Hamel Husain: You have to keep in mind.
- Hamel Husain: That you are trying to showcase yourself.
- Hamel Husain: And.
- Hamel Husain: If you can find enough issues in the data.
- Hamel Husain: You've probably showcased your ability.
- Hamel Husain: Enough.
- Hamel Husain: Does that make sense? You don't need to find every single issue in the data. Now.
- Hamel Husain: Yeah, if it started taking a long time.
- Hamel Husain: Hopefully that's not the case. This is kind of a messy subject, like, a lot of times people will give you a take-home exam, and they'll say 4 hours, or this should only take you a couple hours. I have never seen a take-home exam in my entire life!
- Hamel Husain: Where it says, like, oh, this is only 2 hours.
- Hamel Husain: Everyone spends, like, 20 hours, okay?
- Hamel Husain: Like, so I don't know what to do about that. That's an endemic problem in the industry. I have some friends that will fight me on this and say like, no, like I want you to only take two hours. That's like a, that's a very like rare quality that I see in people. But yeah, no, tell me.
- Ankur Bhatia: I think it's just, like, finding the cases where I can keep practicing, because it probably comes with experience to be able to identify, like, where to dive into.
- Ankur Bhatia: And right now, I'm at the place where, like, oh, everything sounds interesting, or, like, there's… like, I don't know where the gold is hidden. So, you know, it's, like, 2 hours on each part, and then just basically keeping… sharpening those skills so that I can
- Ankur Bhatia: quickly identify, like, this is what I want to dive into, this… this holds value, versus, like, I'm not… it's not going to be fruitful to, like, spend an hour here, or whatever.
- Hamel Husain: Yeah, So, I would say, okay.
- Hamel Husain: So what I presented today is like the gold standard. I guarantee you nobody's looking at the data.
- Hamel Husain: Like, nobody. Like, 90% of the people are not gonna bother looking at the data.
- Hamel Husain: They'd be like, wow, this person looked at the data.
- Hamel Husain: That's really interesting.
- Hamel Husain: I know that's surprising, but it's, like, true, okay? Most people are just pointing Claude at it and saying, like, hey, like, whatever, do this thing.
- Hamel Husain: Yeah, it does take practice.
- Hamel Husain: I would say you have an advantage.
- Hamel Husain: That you don't know about is like you're a data scientist.
- Hamel Husain: So, you know, It's kind of the same as, like, it's very similar to data science interviews.
- Hamel Husain: In that, like, you remember the Airbnb interview, so we talked about Airbnb interview,
- Hamel Husain: Airbnb Interview was like, they give you a data set of homes.
- Hamel Husain: Like… It was, like, different dimensions, like number of bedrooms, square footage, location…
- Hamel Husain: description, I don't even remember all the features, and it was like, predict the price.
- Hamel Husain: And you could go crazy with it if you wanted to. They only gave you, like, 4 hours.
- Hamel Husain: And there is no way.
- Hamel Husain: That you can go, like, you could spend, like, a week on that if you wanted to.
- Hamel Husain: But they only gave you 4 hours, so it's like…
- Hamel Husain: Okay, like, what do you do in those 4 hours? It's like, well…
- Hamel Husain: You don't want, like, the best model in the world.
- Hamel Husain: You have to, like, simulate what is that person looking for. They're looking for someone who's, like, looked at the data, thoughtful about it.
- Hamel Husain: you know, Can talk about trade-offs.
- Hamel Husain: And so you just had to do enough.
- Hamel Husain: To, like, get to that point where I had something to present.
- Hamel Husain: And that's what I did.
- Hamel Husain: And it was still… it was stressful, actually, like, it was pretty stressful, like, I remember when I did that, Encore.
- Hamel Husain: It's the same thing here. Like, I don't want to, like, make people feel like you have to be a data scientist to do these interviews. Because ultimately, what we're talking about here is, like, showing enough of your skills
- Hamel Husain: to where…
- Hamel Husain: It's clear that you looked at the data and it's clear that you thought about the problem. That's what we're going for here and you have to manage your time.
- Hamel Husain: There's a, you know, and like, how do you do that? You need to do some interviews.
- Hamel Husain: You probably need to do some practice interviews, just like anything else, you know, to get your feet wet. You know, I don't know if there's, like.
- Hamel Husain: I wouldn't necessarily recommend trying to…
- Hamel Husain: Do a leet code for evals.
- Hamel Husain: In general.
- Hamel Husain: Okay, sorry, I went off on a tangent there.
- Hamel Husain: Anyone? Any other questions in the chat that happened?
- Antaripa Saha: Yeah, would you be able to create a take-home Evals Interview Test for the… People in the cohort.
- Hamel Husain: I don't think so, only because it's the… it'll be too… Leaky.
- Hamel Husain: Because I've looked at several take-homes and done several take-homes, and I don't… it'll just.
- Hamel Husain: Yeah, I think it might… be too much… Yeah.
- Hamel Husain: So, I mean, I did my best here to try to give you, like.
- Hamel Husain: And I'm confident that if you do… if you try to do what I said here, especially looking at the data, and you have that data section.
- Hamel Husain: You're gonna be, like, really far ahead.
- Antaripa Saha: And whatever you have covered so far, it was more of like very much technical topics for a few. So what is the normal bar for PMs into the eval space?
- Antaripa Saha: like Interview for Pm's.
- Hamel Husain: So I would say, like, it look it doesn't, it's not as technical as it might sound. So if it's a PM interview, they're not gonna like hammer you on like calculate F1 score.
- Hamel Husain: They probably won't even ask you for an F1 score.
- Hamel Husain: But they will tell you to, like, look at the data, and…
- Hamel Husain: Tell us how you might go about this. They might ask you to vibe code something.
- Hamel Husain: They usually do nowadays, and
- Hamel Husain: They might give you a data set along with that, and what you should do is try to, like.
- Hamel Husain: Look at that data, Applying some of these principles, and showcase
- Hamel Husain: Like, all of the nuanced thinking that you have.
- Antaripa Saha: What do you think about Kaggle competitions and Kaggle, practicing on Kaggle? Like there was a question related to that.
- Hamel Husain: Yeah,
- Hamel Husain: It can be okay.
- Hamel Husain: It's kind of like practicing how to run.
- Hamel Husain: By playing tennis.
- Hamel Husain: There's some overlap.
- Hamel Husain: But remember, there's many different parts of these interviews that are not about just… Getting the best score.
- Hamel Husain: you know, there's some things in Kaggle that I like, of, like, how to detect leakage, how to detect bad data.
- Hamel Husain: You know, there's a lot of skills that are really good, but…
- Hamel Husain: There's a lot of other things in the Interview you're looking for too, is your ability to communicate, your ability to write clearly.
- Hamel Husain: Again, showcasing your judgment, being resourceful.
- Hamel Husain: all these things I discussed, like…
- Hamel Husain: the way you package that can be very different. And Kaggle is not necessarily looking for those.
- Antaripa Saha: Probably, like, last question that I can see is, many questions I've seen around these mock interviews, like, if there's any platform for mock interviews, and just a question to you from my side, like, given Claude, Claude code skills, Claude skills, Claude recently, the eval skills came up.
- Antaripa Saha: And a couple of, like, codecs and other skills, is this possible, to mimic some kind of, like, okay, what kind of… given you have some set of data or traces, to mimic what kind of eval process should go around, or in general, the interview process?
- Hamel Husain: Yeah, I would say, like, feel free, I mean, you should use whatever tools you can. It's part of resourcefulness, use your coding agent, use the eval skills, use anything you learned in this class, etc.
- Hamel Husain: I would… I would, like, be very careful of not turning your brain off, and saying, like, oh, like.
- Hamel Husain: What is an… how can I solve this interview with an agent?
- Hamel Husain: You know, because that is going to cut against you. Because that's what everyone else is doing.
- Hamel Husain: And you do not want to look the same as everybody else.
- Hamel Husain: Like, the person needs to read your report.
- Hamel Husain: or listen to your presentation, I need to hear something different. And the way you do that is this, like.
- Hamel Husain: way that I showed.
- Antaripa Saha: And… how is Data Science Interview different from an eval interview process? I feel it's kind of like correlation is there, but yeah.
- Hamel Husain: That's a good question. It's been a while since I did a data science interview.
- Hamel Husain: It depends, like, who you're interviewing, so, like, you know, if it's a data science interviewing you, it might feel like a data science interview.
- Hamel Husain: And, you know, you have to also remember, like.
- Hamel Husain: There's a lot of variance in the skill of the interviewer.
- Hamel Husain: And, like, their sophistication.
- Hamel Husain: A lot of people don't know evals.
- Hamel Husain: But that's okay. If you understand the topic, and you can teach something, again, this is gonna, like, set you way apart. It's gonna look very different. You're gonna be like, wow, okay, that's… that's a very coherent argument. I learned something here.
- Hamel Husain: Data science interviews tend to be…
- Hamel Husain: I haven't done it in a while, so I don't… I actually don't know. Maybe Ankur would get a better idea, but, like, it's more technical, they might, like, quit, like, you know, want to know, like, your, like, your general machine learning skills that go, like, outside, this. You know, they might ask you to build a predictive model.
- Hamel Husain: Debug a predictive model. There is some overlap, but there's a lot of other things in predictive models.
- Hamel Husain: That…
- Hamel Husain: you would have to contend with. They might ask you to, yeah, like, the depths of, like, machine learning, architecture.
- Hamel Husain: They might ask you to do, like, a small training run, so it can be different.
- Hamel Husain: It is different. But it's hard to know. There's a lot of variance to data science as well.
- Antaripa Saha: Yeah, we, we are almost done with the questions. One out of scope question from this, session is how to get clients related to error analysis.
- Hamel Husain: Yeah.
- Hamel Husain: How to get clients, okay.
- Hamel Husain: The best way to get clients is to provide value. That sounds super…
- Hamel Husain: Ridiculous of a sentence, like, you didn't help me.
- Hamel Husain: What I mean by that is, Provide value first, so…
- Hamel Husain: Work for free, or put out lots of high-quality blog posts for free. Basically, like, show lots of value, and help people.
- Hamel Husain: And then they… that is the best way to get people to find you.
- Hamel Husain: Which is… what we do for this course. Maybe you found us because of that.
- Hamel Husain: And so, the same thing applies for consulting.
- Hamel Husain: You can ask your questions live, by the way, you don't have to go through, Antaripa as a proxy if you don't want to.
- Manasi Dharmadhikari: Hey, I have a question, Hamel.
- Manasi Dharmadhikari: Sure. So, great session, thank you for doing that, and I personally felt it was comfortable for talking or interviewing with people who already know Eval.
- Manasi Dharmadhikari: But I feel weird when other party does not know what they are asking, or even what I'm talking, so I feel extremely restless in those conversations, so what to do in that situation?
- Hamel Husain: Oh, I totally understand what you're feeling. So, when I encounter the situations, I have a range of emotions. One is, like.
- Hamel Husain: It ranges all the way from.
- Hamel Husain: Should I even be talking to this person?
- Hamel Husain: If I was interviewing a job, like, I would think, like, do I want to work here? Like, why are they interviewing me? Like, what's going on? Am I going to go into a situation where I have to, like, start from scratch? Like…
- Hamel Husain: You're interviewing them, too. You're interviewing them.
- Manasi Dharmadhikari: True, yeah.
- Hamel Husain: So, that… keep that in mind.
- Hamel Husain: If you really want the job, Despite that.
- Hamel Husain: This is when you kind of swallow the pill and say, like, let me try to teach something.
- Hamel Husain: Here.
- Manasi Dharmadhikari: okay
- Manasi Dharmadhikari: Yeah, and another question I had is, this was a great structure, but as I mentioned previously, I was asked to prepare a project or an eval system, right, to present in 15 to 20 minutes.
- Manasi Dharmadhikari: Without any data or without any concept given by them, right? In such cases, what should I cover? I have created one sample, posted it on Discord, but still curious to know.
- Hamel Husain: Can you tell me more about that? Like, so you were…
- Hamel Husain: Yeah, like, how much time were you given to…
- Hamel Husain: Prepare, like, what did they give you something that you.
- Manasi Dharmadhikari: No, they have asked me whenever I'm ready, I can schedule the interview.
- Manasi Dharmadhikari: So time was not the issue there, but to present it, I had 15 to 20 minutes and.
- Hamel Husain: Okay, and there's no data set, no nothing, it's like…
- Manasi Dharmadhikari: basically.
- Hamel Husain: How would you… okay, so I would just, like.
- Hamel Husain: Think about what you learned in this class.
- Hamel Husain: And just, I would just teach a mini version of this class.
- Manasi Dharmadhikari: Okay. Okay.
- Manasi Dharmadhikari: Thank you.
- Hamel Husain: Yeah.
+ Hamel Husain: model provider or the other, like, just be… just do whatever's best for your business, you know? Yeah. And test them,
+ Hamel Husain: And yeah, you should totally test it. And they're all, like, they're very capable models all over the place.
+ Hamel Husain: So… I tried to not have… Any emotional attachment?
+ Hamel Husain: Two models, and I don't think you should either.
+ zarakhan: Shreya, I'll add one thing before you respond, and the context really is.
+ zarakhan: A lot of people hate to do upfront work.
+ zarakhan: A lot of people… and that's important when you're doing quick product development, but sometimes something's been launched for, like, a year, and they don't want to go back and do the upfront work. So the two flavors I've seen is on the agent side, for example, you presented agent workflows, which are super cost-efficient in some manners, but take you having to think about all the steps, so some people just throw the agent loop.
+ zarakhan: Instead of doing the workflow, because it takes upfront work. I see the same thing with models, like.
+ zarakhan: Having to do fine-tuning takes a little bit of upfront work, it could be.
+ Shreya Shankar: Absolutely.
+ zarakhan: So people just want to do the frontier. What you both are saying is that it is worth building your eval framework to really stay independent and, like.
+ zarakhan: Could you position that as your moat, as your business? Like, how do we get business people to invest in this, is maybe my question.
+ Shreya Shankar: Yeah, okay, so that's a good question. I agree with Hamel. I think that, like, evals are agnostic to any configuration of, like, agent or harness or workflow, and the goal is to have this agnostic eval set so that way you can do what's best for your business, as Hamel said, pick the right model, fine-tune, or whatever.
+ Shreya Shankar: I will say, I think if I were to project, like, 2 years out from now, if, like, agent development is successful, I imagine that we will have, like, an agent development lifecycle, like we have software development lifecycle, in that the first stage is going to be some sort of MVP or prototyping. This will be with a frontier agent. Critical in this stage, you also need to be investing in evals. You need to build your eval set.
+ Shreya Shankar: And you know you will have made it out of the stage if you have some sort of product-market fit with that frontier agent. And if you're able to do that, then the question becomes, like, how are we going to reduce the costs here? And then you're probably going to move towards the second stage of, let's try making it a workflow, or let's try making it, I don't know, like, let's try fine-tuning a model. And what I imagine is, like.
+ Shreya Shankar: You know, an open weights model one year, two years from now.
+ Shreya Shankar: is gonna be a pretty good base to be able to fine-tune your application logic on, and I don't think we would be so worried as, like, oh, a new frontier model will come out and just blow our, agent, or our fine-tuned model out of the water. I think that the evals is a moat, as you're saying, and.
+ Shreya Shankar: if we fine-tune well, and a lot of the fine-tuning is… in the past, like, a year ago, two years ago, has really been to… to bake in capabilities into the model in the fine-tuning stage, and we don't really need that anymore. Like, I think these frontier models already have all the capabilities under the sun for most businesses. Rather, what fine-tuning is doing is building… bringing in
+ Shreya Shankar: The customer-specific taste, customer-specific jargon.
+ Shreya Shankar: And… yeah, like, that's the kind of stuff that, you know, will… it makes sense to do fine-tuning with. So I don't know what… if I answer your question, I think that, like.
+ Shreya Shankar: evals… agnostic evals are the most important thing. I think you don't want to get too attached, but I do eventually see a world in which, like, there will be base models that are good enough that have all the capabilities necessary for all business tasks, and, like, they will be fine-tuned in the future.
+ zarakhan: No, this is super helpful.
+ zarakhan: I'll let a couple people respond, because I see a few people's hands up, and Shrirang just posted a really good blog that someone wrote, evals is the moat. I'm gonna raise my hand to support you all in your rebranding. Evals is, like, taste installation, or some other… we need some fancy jargon words to make people do this.
+ Shreya Shankar: Yeah, it's really not necessarily capabilities anymore, rather it is this kind of taste, and… Yeah, it just doesn't make sense to not have evals, because you can assume everybody is using AI to build their product now, and so if you don't have evals, then your product will have no differentiation. So, yeah, I don't…
+ Shreya Shankar: I feel like the case for evals has never been more clear anymore.
+ zarakhan: Thank you.
+ Hamel Husain: Vladimir.
+ Vladimir Rodeski: So you showed this chart of Pareto frontier and
+ Vladimir Rodeski: If you have, let's say, the cost is really not an issue.
+ Vladimir Rodeski: And specifically with Claude Code, they have.
+ Hamel Husain: I need to get into your business.
+ Shreya Shankar: you.
+ Vladimir Rodeski: Well, Cloud Code, let's say they have fixed, fixed fees you pay. So, like, you have extra tokens, that's… you're not trying to save some tokens. You already paid for them.
+ Vladimir Rodeski: So, you really want to increase accuracy.
+ Vladimir Rodeski: And you try all different models on all of your evals, and, you know, there are some models done better than the other, but you feel like it's still not quite there yet.
+ Vladimir Rodeski: So, which things have you found that really helps improve accuracy? And I'm thinking about…
+ Vladimir Rodeski: you know, like, this Agentic patterns, where you have one, like, critic, then reviews, or multiple models, they, like, review your stuff, and then…
+ Vladimir Rodeski: put it together, and then they find something that none… you know, each individual model didn't find. So these types of things.
+ Vladimir Rodeski: What do you use, and when do you use them, and how do you see that improving accuracy or not?
+ Shreya Shankar: Oh, it's really hard to give a general answer to that question for me, because it's just, try whatever strategy, and look at your evals.
+ Shreya Shankar: that's my take. I don't know, like, sometimes having multi-agent works well, sometimes spending more reasoning tokens works well, sometimes it doesn't, and, you know, I've been both sides of the coin, so maybe Hamel has more helpful advice to give here.
+ Hamel Husain: I am, like, a large language model at this point, so I will… my tokens are super predictable, like.
+ Hamel Husain: So, what helps the most is looking at your data.
+ Hamel Husain: I'm not exaggerating, so it's like, what I always find is if I can't get the model to do what I want, I look at those specific failures very carefully and think about it for a while.
+ Hamel Husain: Like, why is this happening? What's causing this?
+ Hamel Husain: What's causing this to happen?
+ Hamel Husain: Is it context rot? Is a tool call not doing what it's supposed to do?
+ Hamel Husain: Is it just not… is it just a failure, you know, generalization? Is it just, like, the model is not being dumb?
+ Hamel Husain: Okay, I can do, like, that's a hard… that, you know, then maybe we need fine-tuning, but you have to be really skeptical of that. Take on a lot of complexity.
+ Hamel Husain: And I usually find, by looking at the data very carefully, like, I usually… it's… it becomes obvious after thinking about it for a while.
+ Hamel Husain: Don't underestimate looking at the data.
+ Vladimir Rodeski: Got it. Thank you.
  Hamel Husain: Catherine.
- Catherine Alvarado: Hey, thank you for running this session. Okay, so my question… so I'm curious for, for…
- Catherine Alvarado: those of us who have access to evals at work, or have access to the data that powers the evals, or can… or have the ability to investigate it, through Claude or any methods, like, how can we mimic this interview process you've described at work as, like, little
- Catherine Alvarado: as like tests to get better at it. 'Cause sometimes it feels like.
- Hamel Husain: Hmm.
- Catherine Alvarado: It's The interview process is very different from like what you're actually like, what's actually needed at work.
- Hamel Husain: So, I'll say the best way to get good at it is to, like, do this Evals process with your data. You will find so many problems in your data.
- Hamel Husain: and tricky things?
- Hamel Husain: And then what I would do, just for fun, is to create an interview question.
- Hamel Husain: It will help you, like, solidify.
- Hamel Husain: Like, how you would… Take your data, maybe anonymized version of it for a candidate, and, like,
- Hamel Husain: You know, like, use, like, create a test.
- Hamel Husain: Based upon all the stuff you learned.
- Hamel Husain: Working with your data, and the evals you created, and the problems you found, and the data that you had to deal with.
- Hamel Husain: All that messy data that you had to figure out how to, like You know, use for evals.
- Hamel Husain: Umm.
- Hamel Husain: That might be a good way. If you can, like, you know…
- Hamel Husain: Yeah, like, use that to create… help create or work with someone to help create… maybe you already have an interview loop that has evals in it, or you want to introduce that.
- Hamel Husain: That's, like, a nice way to help practice it.
- Catherine Alvarado: Thank you.
- Hamel Husain: Yeah.
- Hamel Husain: Is… how do I pronounce the name? Juie? Is that…
- Juie Darwade: Hi, yeah, it's Zoe here. Okay. I have a two-part question. One quick question being, I'm a software developer, a hardcore Java, side, and I'm trying to transition into this. So, what would be your suggestions when somebody from software, hardcore software, is transitioning into
- Juie Darwade: the AI engineer, AI valve space.
- Hamel Husain: Yeah, the best thing to do is to do some interviews.
- Hamel Husain: Is to jump right into it. I mean, you probably don't want to interview at the target place, like, your favorite places at first. And this is, like, general interview advice at any technical interview. You might have already been doing this before, if you're a software engineer, like.
- Hamel Husain: You know, when you prepare for this, like, interview season, where you're trying to get a job, usually you try to, like, interview at a bunch of places. It's very similar.
- Hamel Husain: You know, there's, like…
- Hamel Husain: people are diff… so, like, there is this… so I mentioned, like, around half of the jobs I've seen have the word evals in it.
- Hamel Husain: you know.
- Hamel Husain: You might not even be asked about Evals.
- Hamel Husain: That's always a possibility.
- Hamel Husain: That's why I tell you to go interview, because
- Hamel Husain: You will find out, like, what level do you need to know this for the roles that you are interested in.
- Hamel Husain: And you will start pattern matching, oh, okay, like, these roles want evals.
- Hamel Husain: So, like, I'm gonna…
- Hamel Husain: I'm gonna really focus on evals, versus, like, it could be the case, like, the ones you're trying to go towards, they may mention evals, they might ask you just a question about it, they might not give you a take-home, they might just, like, ask you, so it's good that you know.
- Juie Darwade: But.
- Hamel Husain: Okay, so, like, just do some interviews, like…
- Juie Darwade: Okay, okay. And my second question would be, since you mentioned that Kaggle also might not be a really great source to get, like, a whole picture of practicing for evals, somebody who
- Juie Darwade: technically doesn't have access to, like, enterprise pipelines, eval pipelines, to be actually day in and day out looking at them, like, apart from the cartwheel that we did today, how do I keep working on that skill, since I won't have access beyond?
- Juie Darwade: This.
- Hamel Husain: The best thing I would… I could, like, suggest here is, like, build your own things, and eval them.
- Juie Darwade: Okay.
- Hamel Husain: So, yeah.
- Hamel Husain: There's some hackathons that are coming up.
- Hamel Husain: Like, my friend Brian.
- Hamel Husain: is gonna put up a hackathon soon that has, like, a lot of evals stuff going on. It's in the Bay Area.
- Hamel Husain: Just remind me on Discord and I'll dig up the link. I have to ask him.
- Hamel Husain: But yeah, the best way is, like, build stuff in this email.
- Juie Darwade: Okay.
- Juie Darwade: Correct.
- Juie Darwade: Thanks.
- Hamel Husain: Do you guess?
- Jigish Patel: Thank you. Similar question. My background is very hands-on engineering, so where I'm focusing my energies right now is.
- Jigish Patel: production, infrastructure, GitOps, that's my space, platform engineering, that's sort of a space, but just like everything else, I'm finding Agentic approaches are…
- Jigish Patel: like, letting me do things that would take months before. So I think this is part interview, part career sort of a transition. Like, things are in a flux, right, everywhere in terms of, like, what is expected, what will this role look like 3 months down the line. So…
- Jigish Patel: I guess some of it is, like, how do you transition? And then I heard your advice, like, build, like, build agents or… and apply these approaches there.
- Jigish Patel: Yeah, but beyond that, it just, like.
- Jigish Patel: how do I transition in that kind of role? Ideally, like, best case is to get into a role that requires that and learn hands-on, right? But I'm having a little difficulty identifying how do I bridge that, or how do I get there.
- Jigish Patel: Oh.
- Hamel Husain: Yeah, I mean, the best thing to do is to build stuff and get Practice at it,
- Hamel Husain: There's a lot of different levels, like…
- Hamel Husain: One is to learn and get good at it yourself, so you're internally self-confident about things you might build.
- Hamel Husain: it is really helpful if you can provide value, just like the consulting thing. It's like, if you can…
- Hamel Husain: Write about it, help people, show value upfront. It really helps with things like jobs.
- Hamel Husain: Because, like, if someone comes across something that you wrote, that you shared, that's really helpful, several times.
- Hamel Husain: Okay, like.
- Hamel Husain: Way more likely to get hired.
- Hamel Husain: That's, like, an approach I've used.
- Hamel Husain: I'll probably take it to the extreme at this point, because I'm teaching a course, but…
- Hamel Husain: I just think it's super effective.
- Hamel Husain: And yeah, that's basically, that's the main thing is like the practice and And showing value.
- Jigish Patel: Okay.
- Jigish Patel: Yeah, I'm not… that prolific on LinkedIn and things like that, but it seems like that's… that's…
- Hamel Husain: Oh, yeah, that's not what I'm telling you to do. You can be anything. It doesn't have to be LinkedIn. Like, it could be.
- Jigish Patel: Right.
- Hamel Husain: Whatever. It could be, like, GitHub, it can be whatever. I don't want you… okay, you don't have to go that way. If that's not something that resonates with you.
- Hamel Husain: You know, it's also, like, just…
- Hamel Husain: Doing a lot of interviews could give you an idea of what people are looking for.
- Hamel Husain: You know, I would just go direct to the source and, like, learn by doing interviews.
- Hamel Husain: Honestly.
- Hamel Husain: Because, like, everything else is gonna be, like, lossy. I don't want you to spend, like, 6 months doing all this, like, practice…
- Hamel Husain: And then go interview.
- Hamel Husain: You know.
- Jigish Patel: Yeah. Yeah. Actually, I do have my personal projects and all. So I think that's what I'm leaning towards, like, showcasing what I've already built and kind of that goes along the lines of what you're suggesting.
- Jigish Patel: Okay, thank you.
- Hamel Husain: Yeah.
- Hamel Husain: Michael.
- Michael Tuminello: Hi, I'm sorry to not be on screen. That was a really great session.
- Michael Tuminello: I'm just curious, there's, there's a lot of terminology associated with this course in general, and, you know, from recall at K to overfitting to… I'm just wondering if there's, like, a…
- Michael Tuminello: A glossary anywhere, or any idea of, like, you know, what terms that
- Michael Tuminello: Product managers should know, versus data scientists, versus engineers, like… So you just…
- Michael Tuminello: you know, know this is something I should absolutely know going into the interview.
- Michael Tuminello: Umm.
- Michael Tuminello: And these are terms that I don't necessarily need to care about unless I'm a data scientist.
- Hamel Husain: I'm not sure that people are going to quiz you on terminology. You can take the course reader and put it into Claude.
- Hamel Husain: That's the best way. I would be doing you a disservice if I just gave you a glossary, or gave you, like, this thing, like, memorize this. Don't do that.
- Hamel Husain: You have AI that can help you navigate information. The course reader is actually quite
- Hamel Husain: Extensive. It's, like, 200 pages, or it will be by the time This thing ends.
- Hamel Husain: You can do that. I wouldn't necessarily study that way, though.
- Hamel Husain: Because…
- Hamel Husain: there's just so much variance in jobs, okay? People have different lenses. So, someone that is a software engineer.
- Hamel Husain: is going to interview you like a software engineer. Someone who has a data science background is going to introduce you more like a data scientist. They're not going to tell you that.
- Hamel Husain: They might not even know that they're doing that. That's what's gonna happen. You know, someone that has, like, a machine learning background, whatever, they're gonna… and it's gonna… someone with a design background.
- Hamel Husain: Someone with a product manager background. It's, like, actually depends, like, who designed the interview, who is conducting the interview.
- Hamel Husain: And then people's knowledge is so jagged.
- Hamel Husain: What I have found is… and this is hap… this is with, data science, too, or any… even, like, software engineering. I found that people, if they have accumulated certain expertise in an area.
- Hamel Husain: They will interview you about that.
- Hamel Husain: They will include that, because they… there's a bias towards If I know this,
- Hamel Husain: It seems… there's a bias towards thinking that if you know something, that is, like, part of the minimum bar of being successful.
- Hamel Husain: It it it
- Hamel Husain: It, like, originates a little bit from imposter syndrome in a weird way. It's like, oh, like.
- Hamel Husain: I can't believe I'm here, I know these facts, these set of facts should be all part of the minimum bar.
- Hamel Husain: And so that's my experience over, like, 25 years of doing, these, like, technical interviews, technical, non-technical, whatever.
- Hamel Husain: And so I would just say, just go Interview.
- Hamel Husain: Again, like, don't we, like, because especially AI, like, it's new.
- Hamel Husain: A lot of people don't know, a lot of people are still learning, a lot of people think they know, they don't know, it's, like, crazy.
- Hamel Husain: Let's go Interview. That's going to be way better.
- Hamel Husain: And, like, kind of use the first 3 interviews to, like, then back into, okay, this is what I'm gonna focus on.
- Michael Tuminello: Thanks, appreciate it.
- Hamel Husain: Yeah.
- Hamel Husain: Zooey?
- Hamel Husain: Did I pronounce it right this time?
- Juie Darwade: Just a quick follow-up. So I was just wondering if what's the probability of a data scientist taking our interview for AI Evals versus like a software? What's like what the way you said that there might be different people taking the interview? Currently, based on the job climate that you see, would it be what would be the probability of a data you will be interviewing in front of a data scientist versus like a…
- Hamel Husain: Very low, very low.
- Juie Darwade: Okay.
- Hamel Husain: Me, it would be high, because I'm kind of looking… if I were to look at roles, it's probably be more attracted to
- Hamel Husain: Things that have a data science flavor in it.
- Hamel Husain: You know, because I have some strengths there.
- Hamel Husain: But I would say most of the people… maybe…
- Hamel Husain: Either a product manager or a software engineer.
- Juie Darwade: Exactly.
- Hamel Husain: Really, it depends on the role. So if you said you're a software engineer.
- Hamel Husain: I would guess… That most people interviewing would be software engineers?
- Juie Darwade: Right, okay.
- Hamel Husain: Because I'm assuming you would be interviewing for some software engineering or software engineering adjacent role.
- Hamel Husain: so, yeah.
- Juie Darwade: Okay, and so, because I guess I was… the reason I asked that question was because a lot of times when we did go through the course, a lot of times it did feel slightly more data science-y.
- Juie Darwade: So I was wondering if that's the more obviously leaning direction. So yeah.
- Hamel Husain: Yeah.
- Juie Darwade: Taken aback by the response. Saskar.
- Hamel Husain: So it's like, okay, as you know, there's so many dimensions to engineering.
- Hamel Husain: Right? Like, you don't just write code in… Isolation.
- Hamel Husain: It's really good as an engineer if you can have some product thinking, if you can have some design thinking.
- Hamel Husain: In addition to your systems thinking,
- Hamel Husain: With.
- Hamel Husain: And it's also good if you can have some of this, like, eval thinking. It happens, like, data science may not have been so…
- Hamel Husain: critical… to… engineers before?
- Hamel Husain: Because… Not all engineers are touching AI before.
- Hamel Husain: There's this, like, the over… there was overlap, but it was, like.
- Hamel Husain: much, much smaller than it is today. I would say today.
- Hamel Husain: it's kind of weird if you're not using AI anywhere, like, as a feature, it would be strange. And then for that reason, that's why you need the data science, like, some of those data science components. And so.
- Hamel Husain: I would say…
- Hamel Husain: you know, the level of expertise… so, like, it's not… okay, if a software engineer is interviewing you, it really depends on their level of expertise with the subject.
- Hamel Husain: And that kind of… It's like, how much they know about evals is gonna depend on, one.
- Hamel Husain: Have they… you know, a lot of it's gonna depend on what kind of problems have they encountered in the real world.
- Hamel Husain: Like, if they have been building applications at scale.
- Hamel Husain: touching a lot of users, they probably have to have evals. Just think about, like, whatever, I'm gonna pick a…
- Hamel Husain: company at random, like Notion, okay? So, like, Notion has a lot of AI features, whatever, and they have a lot of users.
- Hamel Husain: So, it would be weird if they didn't know about evals. I think they do.
- Hamel Husain: You know, whereas something that's, like, more pre…
- Hamel Husain: like, product market fit, or, like, just getting started, they may not have a reason to know about EVALS.
- Juie Darwade: Good.
- Juie Darwade: That.
- Juie Darwade: Makes sense. Right.
- Hamel Husain: Any other questions?
- Hamel Husain: Ankur, what do you what do you okay. I was gonna call it something.
- Mukesh Yadav: No, it's not a question. I just want to second whatever you said about interviews because my experience has been very similar before. Before the interview, I used to take the job profile, feed it to Claude.
- Mukesh Yadav: And it'll try to create a training plan. And when you do actual Interview, it's completely different.
- Mukesh Yadav: So… I don't know how to rely when they put a job posting.
- Mukesh Yadav: It's not… I don't know, what, criteria they use when they build a job profile, but in interviews, I never saw any similarity.
- Mukesh Yadav: Absolutely.
- Hamel Husain: Absolutely. I've been doing data, like, data science interviews. I've had…
- Hamel Husain: I've known people that have insisted that you derive the gradient descent rule from scratch.
- Hamel Husain: All the way from that, all the way to
- Hamel Husain: you know, present a model that you've built. Very two ends of the spectrum.
- Hamel Husain: There's a lot of variance in interviews. There's some of it is, like, unavoidable, you won't be able to generalize, because the… it's so noisy, but you can… it's good, like, that's why you should do… that's why you should do it.
- Hamel Husain: Avin?
- Avin Arumugam: Hamel, please feel free not to answer this and say it's not relevant, but how would you
- Avin Arumugam: talk… so I'm thinking about Agentic Commerce, right? Everyone's talking about Agentic Commerce, all the different agents that they're building, and most of the executives, my peers, will be like, we don't need to do evals. Like, yeah, just make sure that it's right. Like, how would you tell them, like, no, these evals are now going to become fundamental to how you need to do for shopping? What's the…
- Avin Arumugam: How do you get them to understand that piece so that you need to have evals in all these pieces?
- Avin Arumugam: Does that make sense?
+ Hamel Husain: Oh, you're on mute.
+ Catherine Alvarado: Oh, sorry about that. Alright, hey, I'm a little sad this is our last class, but I'll be popping into the next batch, so it's not really the end for me. But I guess this is… this kind of builds on to what, some of the questions that Zara was asking, and it's phrased a little…
+ Catherine Alvarado: oddly, but I'm curious to hear what you folks have to say. So, last time we talked about the benevolent dictator.
+ Catherine Alvarado: And I'd love to learn from both of you, like, what have you noticed makes… of course, regarding evals, like, what makes a successful benevolent dictator at work, and what makes them unsuccessful? And then, like.
+ Catherine Alvarado: I guess for me, as an IC, if you're looking to, like.
+ Catherine Alvarado: Pitch.
+ Catherine Alvarado: or convince an engineering audience versus, like, a non-technical audience? Like, how… how does… how do you… how do you change… like, what… what.
+ Catherine Alvarado: should you point out or highlight when you're trying to, I don't know, highlight the importance of evals, tell your team to do more evals? Of course, lead by example, but I'm just curious to hear what you folks have to say about that.
+ Hamel Husain: Yeah, so, okay, so there's several questions there. Okay, so…
+ Hamel Husain: The leading by the example is really the only way about, like, that I have to convince people, to… to adopt evals.
+ Hamel Husain: They're really… yeah, and my mean of leading by example is to, like, really, like, find issues constantly through error analysis, and be surfacing that, and be, like, become known as the most knowledgeable person on the team.
+ Hamel Husain: That's how you kind of gain influence, and then you can start talking about evals. Now, as far as the benevolent dictator is concerned.
+ Hamel Husain: You know, a good benevolent dictator is doing the aggregation of taste work.
+ Hamel Husain: So they're… Kind of somebody who… is able to… Approximate… the consensus…
+ Hamel Husain: Consensus is a bad word, because consensus sometimes is just a fool's errand.
+ Hamel Husain: Like we saw in Isaac's talk?
+ Hamel Husain: If you recall, and if you don't haven't seen that talk, you should go watch the recording, because but
+ Hamel Husain: you know, is someone that can make a decision, but then also be informed by other people. They're not just sitting in a silo, being like, I'm the benevolent dictator with, like, their tin hat… tinfoil hat on and, like, some mustache, right? Like, they… they, like, are talking to people and whatever.
+ Hamel Husain: And the way to convince your engineering team about this concept of benevolent dictator is really just about cost.
+ Hamel Husain: I think engineering teams understand the exponential increase in overhead costs, as you have
+ Hamel Husain: more people on a team. There's, like, a kind of…
+ Hamel Husain: A concept I think engineers are aware of.
+ Hamel Husain: And it's also to keep in mind you're not striving for perfection, you're striving for progress.
+ Hamel Husain: So even if you're not as benevolent dictator, you're not getting everything right, as long as you are getting more, like, most of it.
+ Hamel Husain: I wouldn't even say most, enough of it, right? It's still a progress. It can still be a progress over nothing.
+ Hamel Husain: It can still… and it still often is progress compared to the complete Sort of…
+ Hamel Husain: Let's say you're gonna get completely locked.
+ Hamel Husain: trying to do this on, like, a pure consensus basis. You won't move forward, because it'll be so expensive, you're gonna spend, like, 2 hours on every trace, or something. Forever.
+ Hamel Husain: And then, if you do that.
+ Hamel Husain: That will kill evals faster than anything else.
+ Hamel Husain: No one will want to do evals and be like, forget evals.
+ Hamel Husain: And they would be right to do that.
+ Hamel Husain: Because it would be so expensive, it just wouldn't make sense, but I can't afford this.
+ Hamel Husain: So…
+ Hamel Husain: You kind of have to… your… your job is, like, because you can see around the corner where they can't. They have, like, one concern in mind, but you have to have the cost concern in mind.
+ Shreya Shankar: I don't have that much to add to that. Angela has a good question. Should we aspire to be a benevolent dictator? I think this is really personality dependent as well. Like, I'm a really…
+ Shreya Shankar: bad, benevolent dictator. Hamel is a very good one. You kind of need to be the… no, I, like, it's really personality-related, like, I really don't like…
+ Shreya Shankar: So, first of all, I'm not very good at applying consistent judgment at scale, like, that's just not my strength.
+ Shreya Shankar: And some people are good at it, some people are not. The other thing is that you… you know, you will have to be the one who's, like, doing a lot of this work, and, you know, you need to have that motivation.
+ Shreya Shankar: For lack of a better term. And, like, I'm somebody who doesn't like to block other people, like, I'm very much an IC kind of type, rather than a manager type. So, you know, it really depends on your personality. I think the benevolent dictator approach is great, I just don't want to be the benevolent dictator.
+ Shreya Shankar: So.
+ Hamel Husain: Yeah, I kind of don't want to be the valedictorian either.
+ Shreya Shankar: Yeah, but, like, unfortunately, if you have a skill set and you're, like, good at it, then…
+ Hamel Husain: Yeah, yeah.
+ Shreya Shankar: get saddled into this position, right? It's like a management 101 more so than anything.
+ Hamel Husain: One like middle ground of benevolent dictator is like.
+ Hamel Husain: If you do error analysis enough, across enough things.
+ Hamel Husain: You… it's a skill.
+ Hamel Husain: It doesn't seem like it's a skill, but it's a skill that generalizes very well.
+ Hamel Husain: Like, when someone comes to me.
+ Hamel Husain: with a problem in their… with their AI, because I do consulting and whatnot.
+ Hamel Husain: I… I immediately say, like, let's look at a trace.
+ Hamel Husain: And sometimes people get scammed, they're like, what do you mean? Look at the trace, what's the trace? And, like, we get through that. It's like, no, let's look at, like, 20 traces together.
+ Hamel Husain: And every single time I've done this.
+ Hamel Husain: Over the last, like, 3 years.
+ Hamel Husain: And it's, like, more than 50 companies at this point. Every single time, like, in the first 10 minutes.
+ Hamel Husain: We know… Like, some major things that are going wrong.
+ Hamel Husain: So, that is really useful.
+ Hamel Husain: Because nobody's gonna do that outside this class, because that's not something that people tell people to do.
+ Hamel Husain: Outside this class.
+ Hamel Husain: So I will start with that. You can… you can add, like, tremendous value by doing that.
+ Hamel Husain: I could, like, hypothetically, I could just do that for the rest of my life. Only that.
+ Hamel Husain: And I could probably add, like, value.
+ Hamel Husain: That's how valuable it is.
+ Catherine Alvarado: Okay, thank you.
+ Catherine Alvarado: Yeah.
+ Catherine Alvarado: I don't… I mean, I don't aspire to be a benevolent dictator, but I just…
+ Catherine Alvarado: I see how we create evals, and just from learning in this class, I'm like, there's…
+ Catherine Alvarado: we need to do it better. We need to do something better, and I think it's hard to get the knowledge from this class unless you're…
+ Catherine Alvarado: present. Like, I tried to take… get it by building my own evals with a prototype agent, and I was like, what am I doing? And I read Hamel's blog, and I was like, this is information overload, and so, like, I kind of had to come to this class to, like, be like, okay. But I think it's…
+ Catherine Alvarado: It's hard to to show people unless they, like, experience it, but sometimes it's hard for them to experience it if they don't know what it is.
+ Catherine Alvarado: Anyway, that wasn't really a question, but I'll stop.
+ Shreya Shankar: I'm really happy you said this, because it reinforces the value of school for me. The whole point of school is to distill knowledge into bite-sized, digestible concepts. Like, all the work is into what the curriculum is, and, you know, yeah.
+ Hamel Husain: Yeah, Zara is teaching evals. We might have her talk about that in a minute.
+ Hamel Husain: As well. Okay, just meet.
+ Jasmeet Kaur: Yeah. So I just wanted to add what Catherine just said that
+ Jasmeet Kaur: So, in our company, basically, me and my team of applied researchers basically educate people on events, like, why it is important. We did, like, a small series of, presentations to PMs.
+ Jasmeet Kaur: So what we were seeing from leadership was that frontier model are good, just apply them, they will do the job.
+ Jasmeet Kaur: But, since we are a private researcher, we knew that this is not how it works. Until you basically prompt tune it, you do evaluation, you get label data set, it's not something that you can just rely on. And that's basically me and my team actually did, and
+ Jasmeet Kaur: We are so proud that now everyone is on board on this evals and doing things slowly and going in production with confidence. So this is something that we did actually in our whole company and it worked.
+ Jasmeet Kaur: So, yeah, I would encourage, like, if people can do the same thing, because, in certain domains, you cannot just put the agent in production with the first.
+ Hamel Husain: How are you able to convince people?
+ Jasmeet Kaur: So.
+ Hamel Husain: It seems like you were successful in convincing people that evals are important. Can you talk about that?
+ Jasmeet Kaur: Yeah, we basically… it's not just me, it's basically my whole team. We are the applied researchers, or PhDs, in our team, and we basically, convince our CT, CTO on
+ Jasmeet Kaur: our team doing the series of presentation to PMs, so we wanted to onboard PMs, basically, not…
+ Jasmeet Kaur: not individual contributors, exactly the PMs, because what we were seeing, that individual team are coming up with their own idea of building the agent in their domain.
+ Jasmeet Kaur: And deploying into production in front of customers. So I am from the healthcare domain, so we don't want, like, individual team or engineers directly putting the agents in front of customers without doing some evaluation or RAI. So we did some, guidelines, and we showcased the cases where it can fail and what can it…
+ Jasmeet Kaur: how it can harm. So, series of, series of presentations to, PMs, and we…
+ Jasmeet Kaur: with the help of our CTPO, we basically could able to convince them that if you are building anything, you should consult our team.
+ Jasmeet Kaur: And, basically, we're gonna do eval for you guys. We're gonna consult you and see whether this… this agent is…
+ Jasmeet Kaur: like, ready to be put in production or not, until… unless, like, nobody can do, like, do or directly implement AI or agent, and, you know, without doing the evaluation. So now it's a protocol in our company, like.
+ Jasmeet Kaur: They need to consult us first before putting anything in production in front of customers.
+ Jasmeet Kaur: So, good thing is, like, we didn't get a ca- like, we did- it's not that something we failed, like, we failed in the production, and then we realized, we just first realized that this is not how it's gonna work. Because we- in this domain, we cannot, afford a failure here.
+ Jasmeet Kaur: Yeah.
+ Hamel Husain: really great.
+ Shreya Shankar: Did you get, like, resistance to this? Because it…
+ Shreya Shankar: does hinder… so there's two things I've seen here, is one, it makes people go slower, like, it hinders the velocity. The other thing is that it makes the.
+ Shreya Shankar: projects, less vibe-codable. Like, you can't just one-shot all of your tickets with an agent. And I'm… so therefore.
+ Shreya Shankar: I would expect people to resist this. I'm curious if you face resistance.
+ Jasmeet Kaur: We did face resistance, and in some of the cases.
+ Jasmeet Kaur: We have to do… showcase them not doing the eval and doing the eval, or doing it in a right way, with the, researchers and, applied engineers.
+ Jasmeet Kaur: We actually had… we have to fought a war, and it was really difficult, but, like, I am super proud of my team that we were able to pull it out.
+ Jasmeet Kaur: And we were able to showcase, like, what will happen if you don't do the eval, and what will happen if you don't basically go slowly, and so we have to showcase them consequences before that can happen, so…
+ Jasmeet Kaur: Yeah, I, the resistance was there from the leadership, like, because, like, competition is so much in the industry that I would not say that they are wrong, but I would say that also, like.
+ Jasmeet Kaur: It was just like we were super cautious as applied researchers in our team that we cannot let this happen.
+ Jasmeet Kaur: And, yeah, our manager was with us, so, it was great to have, like, a whole team get together on these, and…
+ Jasmeet Kaur: building those series of presentations where we showcase the value, and we did, like, an A-B kind of testing, like, what if you do this without EVAL, and what you do this with EVAL? So, it was, like, a practical showcase to them, yeah.
+ Shreya Shankar: That's awesome. Congrats. I mean, I'm sure a lot of people will bug you for how you did it.
+ Jasmeet Kaur: And I have one question that my team is also, like, struggling right now, is the model deprecation cycle. So, we do a lot of eval, and we do go through labeling the data set and doing the evaluation.
+ Jasmeet Kaur: And some of the, labeling is just the validation, right? Not, like, the ground truth labeling. So, what happened if the… we are seeing that a model deprecate in a year or so, and frontier model, and when you prompt tune them, and then when the new model come up, you have to do the same again cycle.
+ Jasmeet Kaur: Is there any way to, optimize this? Because this takes a lot of time for us, and we are struggling for, yeah, with the modeled application cycle.
+ Hamel Husain: Do you think is there is your are your labels?
+ Hamel Husain: Becoming stale as well?
+ Hamel Husain: Do you feel like what's the state of the label data that you have?
+ Jasmeet Kaur: It does not, but some… yeah, sometimes, like, the labels are not just the labels, they basically do the validation on the model output, so if we change the model, we have to redo the validation.
+ Jasmeet Kaur: Right? And that required a lot more…
+ Hamel Husain: Can you tell me more about the validation? Is that like you?
+ Hamel Husain: Yeah, give me an example, like, what do you mean by…
+ Jasmeet Kaur: Yeah.
+ Hamel Husain: you.
+ Jasmeet Kaur: So, sometime, like, it just labels, like, you basically, do… you basically give them your labelers, like.
+ Jasmeet Kaur: what would be the output of this, and they label whether this is… this should be the output or not. Sometimes it's like, if you have a summary of something, then you do the labeling or validation of whether there's no clinical interpretation, whether there's no hallucination, there's no omission, those kind of things, right?
+ Hamel Husain: So.
+ Jasmeet Kaur: So you cannot have preset labeling for that. You just do the validation. And when those kind of model get deprecated in production, you have to redo that labeling. And for us, we have to do it on large sample and required.
+ Jasmeet Kaur: labeling again and onboarding the clinical SMEs again to do that task. So that's something that we are facing.
+ Hamel Husain: Okay, so you have human as a judge.
+ Jasmeet Kaur: Yeah.
+ Hamel Husain: Yeah, you have, and so, so what you want to do is you want to think really hard about having good automated evals that are generalized.
+ Hamel Husain: So that, like, the data… That you collect, and the labels you have.
+ Hamel Husain: hold true, like, this is definitely good or bad, or whatever. Now, for those human-as-a-judge things, like, you're just…
+ Hamel Husain: You know, looking at some data.
+ Hamel Husain: see if you can move some of those into automated evals. Like, are you saying, like, okay, this clinical summary is bad? Can we turn that into an automated eval? My… I mean, hopefully you should be able to move them over to automated evals.
+ Hamel Husain: And then when you, you know, you have more of your…
+ Hamel Husain: evals in your automated eval suite, then it becomes… this… that's where you start to have a flywheel. That's the thing that…
+ Hamel Husain: tends to last.
+ Hamel Husain: And then you can switch models and do… switch whatever, harnesses, retrieval, strategy, whatever, and then you can measure against those automated evals. But you want to build up those automated evals.
+ Jasmeet Kaur: So rather than doing the, like once we get the validation set from our labelers, we can have LLM as judge calibrated to that.
+ Jasmeet Kaur: And that will help us to even be changing the model.
+ Hamel Husain: Yeah, you definitely want to turn that into automated evals. You're already doing all the hard parts.
+ Hamel Husain: Like, you're doing a lot of labeling and looking.
+ Jasmeet Kaur: Add data.
+ Hamel Husain: So don't let that go to waste.
+ Jasmeet Kaur: Yeah, okay. Yeah, that's something that I've been considering, having, some automated and see, is there any, like, good practice of, like.
+ Jasmeet Kaur: Having automated evals.
+ Hamel Husain: Exactly what we taught you in this course, so it's, like, the LM as a judge, it's the code-based, things, the code-based evals, and, like, yeah, it's the way we teach you how to do LM as a judge, or you can use a classifier, if you want to use a classifier. You just have to make sure that they are calibrated to your labels.
+ Jasmeet Kaur: Yeah, okay.
+ Jasmeet Kaur: Yeah, that's something I have to do this month. So yeah, we'll see how it goes. Thank you.
+ Hamel Husain: Sounds good.
+ Hamel Husain: Iqbal.
+ IqbalBhatti: Hey, just a quick one. So, my question's about ontologies, like, it may or may not be related to this course necessarily, but as you're going through traces, you kind of, like, find more and more information about
+ IqbalBhatti: who the actors are, and, like, because my product is more about, you know, discovery and… or, you know, it's like I'm trying to detect slander, to protect brands. And, you know, it's like, the people making recurrent claims, or how often a claim is made, is very, very important.
+ IqbalBhatti: to kind of, like, just contextualize that globally, kind of, like, you know, ties back to commercial impact. So, you know, how many sales is the company losing because, you know, people are retweeting this, etc, etc.
+ IqbalBhatti: So, in making ontologies, I tried the Evo ontology, paper. I wasn't really getting really good results, with implementing that, so…
+ IqbalBhatti: the ontology diagrams that I'm getting out of it, when I visualize it, they make a lot of sense, but for some reason, I'm just not nailing the…
+ IqbalBhatti: the right thing where, you know, ontologies is working better than even a plain semantic search, for example, so I know that it's missing things. So…
+ IqbalBhatti: would appreciate any steer, in that direction. Have you worked with ontologies? What's your thoughts about it?
+ Hamel Husain: Yeah, ontologies remind me a lot of graph databases.
+ Hamel Husain: And.
+ Hamel Husain: Most of the time, you don't need it.
+ Hamel Husain: I'm just gonna be blunt.
+ Hamel Husain: It's a nerd snipe.
+ Hamel Husain: Is a very elegant idea.
+ Hamel Husain: From an engineering perspective?
+ Hamel Husain: And I think it's an elegant idea. However, it's not without its own complexities. As you have alluded to, in your experiments, you found that it wasn't doing anything, and your plain semantic search was just fine.
+ Hamel Husain: That doesn't surprise me.
+ Hamel Husain: I even have some YouTube videos about this, where I've interviewed some people, and we kind of go off the rails on,
+ Hamel Husain: Graph databases.
+ Hamel Husain: My advice is, like, keep it as simple as possible.
+ Hamel Husain: Don't… get enamored with… complexity.
+ Hamel Husain: That's my general advice. I haven't. I don't know specifically about anthologies.
+ Hamel Husain: Per se, but… You know, be really sure that you need it.
+ Hamel Husain: And you prove it to yourself with evals that you need this level of complexity.
+ IqbalBhatti: Oh yeah, that's exactly. So they weren't performing in my eval, so I'm going to throw out the idea for now. And the second thing is that, you know, it's like, at the end of this, when people are done with their questions, I don't want to block anybody, but, like, I'd also, you know, be happy to show what I've built, basically.
+ IqbalBhatti: while… during this course, I can share my screen and show you guys what I've built.
+ IqbalBhatti: And, you know, just kind of, like, ask the cohort for feedback about, you know.
+ IqbalBhatti: where just product ideas and stuff like that. So I'm happy to do that at the end.
  Hamel Husain: Okay.
- Hamel Husain: So, you're saying, okay, Agentic Commerce.
- Hamel Husain: How do you get people organic agentic commerce to.
- Hamel Husain: Consider evals? Is that…
- Avin Arumugam: Right.
- Hamel Husain: The best way is to do error analysis and show them problems.
- Avin Arumugam: Got it, okay.
- Hamel Husain: Don't even talk about Evals, just say, hey, like, this is my understanding of what's going wrong.
- Hamel Husain: And just, like, showcase your understanding of… the system.
- Hamel Husain: I will start there.
- Avin Arumugam: Oh, alright, thank you.
- Hamel Husain: Ankur, what do you think? What's your feeling about this presentation?
- Hamel Husain: I know you've… you're, like, a veteran data scientist.
- Hamel Husain: You know, what do you think about… Any… any reflections? Anything?
- Ankur Bhatia: I found it to be extremely helpful. Hamel, you know I love you, so I'm a big fan of how you present information and how it comes across.
- Ankur Bhatia: I mean, for me it's…
- Ankur Bhatia: This Evals thing is, like, a new way of looking at data, or it's like a new, like.
- Ankur Bhatia: I guess, realm of data science, in a way.
- Ankur Bhatia: is how I personally think about it, because, like you, I have the same tinted data science glasses.
- Ankur Bhatia: But for me, I think the… the main thing is, like, just getting reps in, because I feel like
- Ankur Bhatia: anybody in any role, whether it's engineering, data science, product management, whatever, is good. Like, the experience is what really matters, and being able to, like, identify and be familiar with
- Ankur Bhatia: different sort of scenarios. So I'm just trying to, like, I'm building, like you said, I'm building my own agents and retrieval agents to do evals on them so I can practice, because right now, I think I'm just slow.
- Ankur Bhatia: identifying and… Getting to, like, the crux of the matter.
- Hamel Husain: It's really… it's really interesting you said that, like.
- Hamel Husain: So, it sounds like it's not… Like a str… like.
- Hamel Husain: like, you didn't come with all the knowledge already, even though you're a veteran data scientist, like, maybe I'm overestimating the amount of
- Hamel Husain: Overlap. Maybe because I've been doing evals too long, between data science and evals.
- Ankur Bhatia: I think, like, certain aspects with, like, TPR, TNR, recall precision, those things data science… like, all the data scientists are probably very familiar with, a lot of PMs are familiar with, but just, like, the exercise of…
- Ankur Bhatia: going through the steps. Like, each homework takes me the time that, you know, it's…
- Ankur Bhatia: you've prescribed out. So, like, I'm spending, like, 3-4 hours at least going through, reading the code, reading the traces, making sure, like, Claude's not doing anything it's not supposed to. And I feel like then for an interview setting, I wouldn't want to tell it, hey, go do this, and then it does something that… it's gonna make me look real bad. Now there's, like, a…
- Ankur Bhatia: secondary effect to…
- Ankur Bhatia: like, relying on this agent, and if the whole point of, like, an Evals interview is to, like, make sure your agent's doing something well, and then you outsource something and it does it wrong, like, it's not a good look, I imagine.
- Hamel Husain: That's really helpful. So, yeah, I mean, like.
- Hamel Husain: Yeah, I don't think it's the case that you need to be a data scientist.
- Hamel Husain: to be good at evals. She's heard it from Ankor.
- Hamel Husain: Okay, like, he's learning exact same as everyone else with different backgrounds.
- Hamel Husain: So, I wouldn't go…
- Hamel Husain: deep into a rabbit hole after this course, and start… take a data science course. I don't think you need to do that.
- Hamel Husain: I would just focus on the techniques that we are.
- Hamel Husain: teaching you.
- Hamel Husain: All right, we do have another session in this class. I was just looking at the calendar. We have one with Isaac, optimizing retrieval. So I'll actually go to that. That's in 5 minutes.
- Hamel Husain: So… I'm gonna take a little bit of a break.
- Hamel Husain: But I'll see you there in 5 minutes. Thank you so much, this was a lot of fun.
+ Hamel Husain: Okay, yeah, if we don't have time, I would actually suggest, like, recording a video.
+ Hamel Husain: So that we can all just watch it and think about it.
+ Hamel Husain: Because sometimes it's hard for me to…
+ Hamel Husain: If it's that level of, like, hey, showing your product.
+ Hamel Husain: It's probably better for me to watch it and think about it for, like, 15 minutes. Does that make sense?
+ IqbalBhatti: Absolutely.
+ Hamel Husain: Angela.
+ AngelaPaap: But, awesome.
+ AngelaPaap: I have not had the opportunity to, like, persuade somebody to do the evals yet. Obviously, that's my thing.
+ AngelaPaap: I know in the beginning of the course, Shrirang, you had mentioned the example of the airline.
+ AngelaPaap: And in this course, through the cartwheel, example.
+ AngelaPaap: you know, some of the things that I identified were… we all identified, like, showing the policy name. We don't want to see the policy name.
+ AngelaPaap: With all of your experience, and probably the lack of information online about evals, could you give us some other examples from, like, a product metrics perspective on why you want to do evals that make it so it's not, just.
+ AngelaPaap: A nice to have, but a necessity.
+ AngelaPaap: Like, his brain.
+ Hamel Husain: years.
+ AngelaPaap: struggling understanding, like trying to get a real scary use case.
+ Hamel Husain: Yeah, okay, ping me.
+ AngelaPaap: discord.
+ Hamel Husain: I'll send you, like, 4 blog posts.
+ Shreya Shankar: Yeah.
+ Hamel Husain: I have, like, I have, like, all these… I have, like, a lot of case studies.
+ Shreya Shankar: Hamel's like collected a like a.
+ AngelaPaap: care.
+ Shreya Shankar: yourself as an apples.
+ Hamel Husain: There'll be some point…
+ AngelaPaap: It was iconic.
+ Hamel Husain: just, have a, like, a retrieval mechanism that just, like… but I'm… we're not there yet.
+ Hamel Husain: Okay.
+ Hamel Husain: Okay, vladimir.
+ Vladimir Rodeski: A quick question.
+ Vladimir Rodeski: I really enjoyed the course. I think there's a lot of new material.
+ Vladimir Rodeski: For your upcoming next cohort, or the next few cohorts, are you planning to make any significant modifications.
+ Hamel Husain: Yeah, maybe let Shreya answer this. I will say it's a live thing, so if things happen in the world, we do change things. Like, have you seen this? We did that here, and I know that we are, you know, but anyways, just.
+ Shreya Shankar: Yeah, a… Mmm.
+ Shreya Shankar: The flow is gonna be the same, basically. It's gonna be the same high-level concepts, we just might kind of condense some material together. For example, I'm gonna put lessons 1 and 2 in the same lesson. That's just one example. And I… I'm interested in trying to say something more interesting about safety. I just think that this is gonna be something that is gonna be…
+ Shreya Shankar: P0 for a lot of companies in 2027, so… but we don't have a good answer to how to reason about safety risks for, like, a non-frontier model company, so for your company or your products, how do you reason about those risks? So we're still thinking about that.
+ Shreya Shankar: And then the last piece that is gonna be new is there's a bunch of interesting research now that my lab is working on around how to apply cheap decision models at scale to do analytics on data. So I'm gonna do a guest lecture.
+ Shreya Shankar: I don't know if I would call myself a guest lecturer, but I'm going to do a lecture on, kind of, the research developments, how you think about, efficiently applying JEV to, you know, millions of documents or records in your databases.
+ Vladimir Rodeski: Very cool.
+ Vladimir Rodeski: Thank you.
+ Hamel Husain: Alright, any other questions?
+ Shreya Shankar: Well, finish early, I guess.
+ zarakhan: There's some coming in the chat here. If you guys want to stay on.
+ Shreya Shankar: Oh.
+ Shreya Shankar: Can we have human biases and how to avoid them while humans do annotations? Oh, that's a good thing. Yeah, I'll add to my list.
+ Shreya Shankar: I don't know if I have anything very intelligent to say there.
+ Shreya Shankar: Other than… You know, do open coding and axial coding, and…
+ Shreya Shankar: a lot of the best practices there, as in our reader, kind of naturally try to prevent against these human biases. But yeah, we can think about that.
+ Shreya Shankar: Let's see… A lot of these questions, I think, are also better answered async, so just post in Discord. Like, there's many things that, you know, require resources, so… or blog posts, so just post them in Discord so we can send them over.
+ Shreya Shankar: Hamel, any questions come to mind for you?
+ Hamel Husain: Yeah, no questions. As I mentioned in the lecture, we'd love your feedback, so please do that. Give us feedback, you know, love your honest feedback.
+ Hamel Husain: Maven also allows you to do a review. You'll get an email from Maven.
+ Hamel Husain: So do that. I know Vladimir has done this like four times, so he's probably given us four reviews. But yeah.
+ Hamel Husain: It's great to talk to y'all.
+ Hamel Husain: Okay, Awesome has a question, we'll do Awesome.
+ ASIM: Hey, how are you, Hamel? Thank you. So I just want to know you mentioned in the course we did some and I'm I'm I sometimes I mix terminologies, but there is some verification example in the course, like verification verifier, the heavy.
+ Shreya Shankar: Oh.
+ ASIM: Like, I just want to know which assignment is that, or where.
+ Shreya Shankar: LLM judge, sorry, I shouldn't have said verifier, I should have said evaluator. So any LLM judge or automated evaluator that you made from lesson five.
+ ASIM: Okay.
+ Shreya Shankar: Yeah.
+ ASIM: And last thing is that the formal verification techniques is a totally different trajectory, right Shreya?
+ Shreya Shankar: Yes, I'm hopeful that in a future cohort, I can bring in some of the.
+ Shreya Shankar: like, basically teach some AI ex-formal verification techniques for how to ensure that at least you prevent against some bugs. The challenge is that you can't provide against all bugs, and that people… I also want to do it in an approachable way, so you don't have to, like, learn what TLA Plus is before…
+ Shreya Shankar: Doing this, so there's a lot that is under development there.
+ ASIM: Okay, thank you so much, appreciate it. Thank you.
+ Hamel Husain: Okay, this is a good question. I get a lot from Catherine. How do I stay up to date on what happens in the industry?
+ Hamel Husain: I have a group chat with, Shreya and, another friend.
+ Hamel Husain: And they tell me a lot of things. Find a friend that is on your… wavelength, or that you like, that is interested in AI, and, like, I think zone in on things you're interested in. I use X.
+ Hamel Husain: X is good and bad, like, there's a lot of stuff going on there, it can be, like, fire hose, you can get addicted to it, this social media, be careful, blah blah, all those things.
+ Hamel Husain: But a lot of things happen on X.
+ Hamel Husain: Umm.
+ Hamel Husain: And I'm basically, yeah, have that… I just, like, have trusted friends.
+ Hamel Husain: You can always follow us.
+ Hamel Husain: If you don't have trusted friends, we can kind of, you know, you can follow us on social media, we talk about things that we find interesting. That might be a good baseline.
+ Shreya Shankar: Yeah, my other feedback here is to, like, be very strongly opinionated and focused on what your interests are. Like, for myself.
+ Shreya Shankar: I just don't follow all the news, and I don't try to. Like, I know that I have certain interests, like, I care specifically about evals, I care about, data processing with LLMs, like, I'm so laser-focused on these topics, and then…
+ Shreya Shankar: any new things that come out, like, like, for example, these, like, world models, or physical intelligence, like, I'm sure that's really interesting, but I try not to try to keep up with, you know, all of these different, topics, because otherwise I will overload myself.
+ Hamel Husain: Alright, I think we can call it.
+ Hamel Husain: Thank you so much.
+ Hamel Husain: And, like, yeah, check out the O'Reilly thing, the book thing that we're giving you, that's a great way to, like, browse topics and get deep into it. So.
+ Hamel Husain: Yeah, like, like, for example, the KV cache thing.
+ Shreya Shankar: Yeah.
+ Hamel Husain: That's an excellent like. Reading Sebastian Roshka's book is a great way to.
+ Shreya Shankar: Oh, I should plug my lab blog for those of you.
+ Hamel Husain: Oh yeah, let's do that.
+ Shreya Shankar: technically interested in what is happening. So.
+ Shreya Shankar: You know, there it is.
+ Shreya Shankar: Yeah, you can follow along for…
+ Shreya Shankar: We're trying to post blog posts every other week or so. So a lot of the stuff around KV caching, inference optimization is up in the works.
+ ASIM: I.
+ Hamel Husain: Share it on the screen real quick. I'll share this lab thing on the screen just because people watch the recording.
+ ASIM: I mean, I.
+ Hamel Husain: It's not loading.
+ ASIM: Hamel, I just have a very quick question. The school community that you have, you're still part of it, right?
+ Hamel Husain: Oh, I'm in the… yeah, like, Isaac is running that.
+ Hamel Husain: So I'm not. I'm not running it.
+ Hamel Husain: I'm not running it. Isaac is actually running it. I handed it off to Isaac. But there's… yeah. So, okay, I'll talk about it in a second. This is a full stack data, this is Shreya's thing, check it out, fsdatalab.github.io.
+ Hamel Husain: She's running a lab at Carnegie Mellon University, where she starts next year.
+ Hamel Husain: As a, what is the title?
+ Hamel Husain: I don't want to get it wrong.
+ Shreya Shankar: Professor.
+ Hamel Husain: Assistant professor.
+ Shreya Shankar: Professor, yeah.
+ Hamel Husain: You can sign up here.
+ Hamel Husain: To get on the email list?
+ Hamel Husain: But there's already, like, 2 blog posts. These are all very interesting topics. If you've enjoyed Shreya's teaching, you will enjoy these blog posts.
+ Hamel Husain: So they're very technical. They go like very deep, but hey, it's cool. You should check it out. You should definitely start with this one.
+ Hamel Husain: This, like, first one building an ultra-high throughput AI SQL engine?
+ Hamel Husain: So yeah, definitely check that out. There is… I'll, I'll,
+ Hamel Husain: For the school thing, I would actually recommend checking out Isaac's page. He's…
+ Hamel Husain: You've seen him in the course. Just check out this page, IsaacFlatt.com, you can figure out all the things he does. He's a really good person to follow as well.
+ Hamel Husain: Including, like, a community he runs, including this course that he's doing on the document processing PDF to production.
+ ASIM: Just a very quick last question, very quick question, Jayshree. Is there going to be any open research opportunities or something to collaborate? I'm just thinking, is that a possibility? And not with you, but, like, in general, if there are such opportunities.
+ Shreya Shankar: Yeah, so, we are really just getting started, so we will formally start and, like, I'll have a launch post and whatever in 2027. There are a couple… there are a few ways to collaborate. One is, if you want to be a user of the systems, like, all the systems that we build are open source, and so we… want to work directly with people who want to use the system, so just check them out if they're interesting to you, you want to incorporate them.
+ Shreya Shankar: within your company or your organization, then, I mean, you could probably get started doing it anyways, but then also reach out to me and tell me, so that way we can make sure that some of the students can be engineering support in case anything, goes on there. The other way to kind of get involved, be on the mailing list. We'll always send blog post updates and paper updates for when we write papers.
+ Shreya Shankar: And then this is… I'll tell you guys, because, you know, you're in the course, but we will be fundraising also soon, so if you're interested in sponsoring some of the projects, that we have, and…
+ Shreya Shankar: I can go into that in detail, like, send me an email.
+ ASIM: Thank you very, very much. Appreciate it.
+ Shreya Shankar: Yeah.
+ Hamel Husain: Alright, well, thank you so much, everybody.
+ Hamel Husain: It was a pleasure.
+ Shreya Shankar: Yeah, super fun.
+ ASIM: Thank.
+ Shreya Shankar: Don't worry, you'll see.
+ Hamel Husain: online?
+ Shreya Shankar: us in Discord. You'll see us next Saturday.
+ Shreya Shankar: I don't know.
+ Jasmeet Kaur: Thank you.
+ ASIM: all.
+ Hamel Husain: Take it easy. Thanks.
